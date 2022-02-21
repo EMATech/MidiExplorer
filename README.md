@@ -40,7 +40,7 @@ Features / TODO list
     - [ ] Bluetooth Low Energy (BLE-MIDI)
     - [ ] RTP-MIDI / IETF RFC 6295
     - [ ] Virtual
-  - [ ] **(WIP)** Effective Connections
+  - [X] Effective connections
   - [ ] Refresh
     - [X] Manual
     - [ ] Auto with reconnect

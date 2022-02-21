@@ -10,7 +10,8 @@
 
 * Author(s): Raphaël Doursenaud <rdoursenaud@free.fr>
 """
-from typing import Any, Optional, Tuple
+import sys
+from typing import Any, Optional
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 import mido  # https://mido.readthedocs.io/en/latest/
@@ -119,41 +120,100 @@ def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None
     :param user_data: argument is Optionally used to pass your own python data into the function.
     :return:
     """
-    logger.log_debug(f"Sender: {sender}  \t App data:{app_data} \t User data:{user_data}")
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
+    logger.log_debug(f"Sender: {sender!r}")
+    logger.log_debug(f"App data: {app_data!r}")
+    logger.log_debug(f"User data: {user_data!r}")
 
 
 # callback runs when user attempts to connect attributes
-def link_callback(sender: int | str, app_data: Any) -> None:
-    logger.log_debug(f"Create link{app_data!r}")
+def link_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
+    logger.log_debug(f"Sender: {sender!r}")
+    logger.log_debug(f"App data: {app_data!r}")
+    logger.log_debug(f"User data: {user_data!r}")
+
     # app_data -> (link_id1, link_id2)
     dpg.add_node_link(app_data[0], app_data[1], parent=sender)
     dpg.configure_item(app_data[0], shape=dpg.mvNode_PinShape_TriangleFilled)
     dpg.configure_item(app_data[1], shape=dpg.mvNode_PinShape_TriangleFilled)
 
-    # TODO: effective connection
-
     node1_parent_label, node1_label, node2_parent_label, node2_label = _nodes_labels(app_data[0], app_data[1])
+
+    # Connection
+    port = None
+    direction = None
+    node = None
+    if "IN_" in node1_label:
+        direction = node1_label[:2]  # Extract 'IN'
+        port_name = node1_label[3:]  # Filter out 'IN_'
+        logger.log_info(f"Opening MIDI input: {port_name}")
+        port = mido.open_input(port_name)
+        node = app_data[0]
+    elif "OUT_" in node2_label:
+        direction = node2_label[:3]  # Extract 'OUT'
+        port_name = node2_label[4:]  # Filter out 'OUT_'
+        logger.log_info(f"Opening MIDI output: {port_name}")
+        port = mido.open_output(port_name)
+        node = app_data[1]
+    else:
+        logger.log_warning(f"{node1_label} or {node2_label} is not a hardware port!")
+    if port:
+        logger.log_debug(f"Successfuly opened {port!r}. Attaching it to the probe.")
+        node_user_data = {direction: port}
+        dpg.set_item_user_data(node, node_user_data)
+        logger.log_debug(f"Attached {dpg.get_item_user_data(node)} to the probe node")
+
     logger.log_info(f"Connect \"{node1_parent_label} {node1_label}\" to \"{node2_parent_label} {node2_label}\"")
 
 
 # callback runs when user attempts to disconnect attributes
 def delink_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
+    logger.log_debug(f"Sender: {sender!r}")
+    logger.log_debug(f"App data: {app_data!r}")
+    logger.log_debug(f"User data: {user_data!r}")
+
     # Get the nodes that this link was connected to
     conf = dpg.get_item_configuration(app_data)  # In attr_1 and attr_2
+
+    logger.log_debug(f"Identified nodes: {conf!r}")
 
     # FIXME: only change shape if no other link is active on the node!
     dpg.configure_item(conf['attr_1'], shape=dpg.mvNode_PinShape_Triangle)
     dpg.configure_item(conf['attr_2'], shape=dpg.mvNode_PinShape_Triangle)
 
     node1_parent_label, node1_label, node2_parent_label, node2_label = _nodes_labels(conf['attr_1'], conf['attr_2'])
+
+    # Disconnection
+    direction = None
+    node = None
+    if "IN_" in node1_label:
+        direction = node1_label[:2]  # Extract 'IN'
+        node = conf['attr_1']
+    elif "OUT_" in node2_label:
+        direction = node2_label[:3]  # Extract 'OUT'
+        node = conf['attr_2']
+    else:
+        logger.log_warning(f"{node1_label} or {node2_label} is not a hardware port!")
+    if direction:
+        node_user_data = dpg.get_item_user_data(node)
+        port = node_user_data[direction]
+        logger.log_info(f"Closing & Detaching MIDI port {port} from the probe.")
+        del node_user_data[direction]
+        dpg.set_item_user_data(node, node_user_data)
+        port.close()
+
+    logger.log_info(f"Connect \"{node1_parent_label} {node1_label}\" to \"{node2_parent_label} {node2_label}\"")
+
     logger.log_info(f"Disconnect \"{node1_parent_label} {node1_label}\" from \"{node2_parent_label} {node2_label}\"")
 
     logger.log_debug(f"Delete link {app_data!r}")
-
     # app_data -> link_id
     dpg.delete_item(app_data)
-
-    # TODO: effective disconnection
 
 
 def _toggle_log() -> None:
@@ -210,7 +270,7 @@ if __name__ == '__main__':
 
             with dpg.menu(label="Display"):
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
-                dpg.add_menu_item(label="Toggle Log (F12)", callback=_toggle_log())
+                dpg.add_menu_item(label="Toggle Log (F12)", callback=_toggle_log)
 
             dpg.add_menu_item(label="About")  # TODO
 
@@ -247,7 +307,7 @@ if __name__ == '__main__':
                     dpg.add_button(label="Add virtual input")
 
             with dpg.node(label="PROBE",
-                          pos=[360, 25]):
+                          pos=[360, 25]) as probe:
                 with dpg.node_attribute(label="In",
                                         attribute_type=dpg.mvNode_Attr_Input,
                                         shape=dpg.mvNode_PinShape_Triangle):
@@ -322,7 +382,7 @@ if __name__ == '__main__':
 
     with dpg.handler_registry():
         dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)  # Fullscreen on F11
-        dpg.add_key_press_handler(key=123, callback=_toggle_log)
+        dpg.add_key_press_handler(key=123, callback=_toggle_log)  # Log on F12
 
     dpg.create_viewport(title='MIDI Explorer', width=1920, height=1080)
 
