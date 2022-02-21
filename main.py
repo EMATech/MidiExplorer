@@ -47,8 +47,9 @@ def _init_logger() -> None:
 
 def _init_midi() -> None:
     mido.set_backend('mido.backends.rtmidi')
-    logger.log_debug(f"Using {mido.backend.name}.")
-    logger.log_debug(f"RtMidi APIs:{mido.backend.module.get_api_names()}")
+
+    logger.log_debug(f"Using {mido.backend.name}")
+    logger.log_debug(f"RtMidi APIs: {mido.backend.module.get_api_names()}")
 
 
 def _sort_ports(names: list) -> list | None:
@@ -58,21 +59,28 @@ def _sort_ports(names: list) -> list | None:
     return sorted(set(names))
 
 
-def _nodes_labels(node1, node2) -> tuple[str | None, str | None, str | None, str | None]:
-    node1_label = dpg.get_item_label(node1)
-    node1_parent_label = dpg.get_item_label(dpg.get_item_parent(node1))
-    node2_label = dpg.get_item_label(node2)
-    node2_parent_label = dpg.get_item_label(dpg.get_item_parent(node2))
-    return node1_parent_label, node1_label, node2_parent_label, node2_label
+def _nodes_labels(pin1, pin2) -> tuple[str | None, str | None, str | None, str | None]:
+    pin1_label = dpg.get_item_label(pin1)
+    node1_label = dpg.get_item_label(dpg.get_item_parent(pin1))
+    pin2_label = dpg.get_item_label(pin2)
+    node2_label = dpg.get_item_label(dpg.get_item_parent(pin2))
+
+    logger.log_debug(f"Identified pin1 '{pin1}' as '{pin1_label}' from '{node1_label}' node and "
+                     f"pin2 '{pin2}' as '{pin2_label}' from '{node2_label}'.")
+
+    return node1_label, pin1_label, node2_label, pin2_label
 
 
 def _refresh_midi_ports() -> None:
     dpg.configure_item(refresh_midi_modal, show=False)  # Close popup
 
     midi_inputs = _sort_ports(mido.get_input_names())
-    logger.log_debug(repr(midi_inputs))
+
+    logger.log_debug(f"Available MIDI inputs: {midi_inputs}")
+
     midi_outputs = _sort_ports(mido.get_output_names())
-    logger.log_debug(repr(midi_outputs))
+
+    logger.log_debug(f"Available MIDI outputs: {midi_outputs}")
 
     # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
     # Delete links
@@ -105,9 +113,14 @@ def save_init() -> None:
     dpg.save_init_file(INIT_FILENAME)
 
 
+def _get_pin_text(pin: int | str) -> None:
+    return dpg.get_value(dpg.get_item_children(pin, 1)[0])
+
+
 ###
 # Callbacks
 ###
+
 
 def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """
@@ -121,99 +134,104 @@ def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None
     :return:
     """
     # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
-    logger.log_debug(f"Sender: {sender!r}")
-    logger.log_debug(f"App data: {app_data!r}")
-    logger.log_debug(f"User data: {user_data!r}")
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
 
 
-# callback runs when user attempts to connect attributes
-def link_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+def link_callback(sender: int | str, app_data: (dpg.mvNode, dpg.mvNode), user_data: Optional[Any]) -> None:
     # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
-    logger.log_debug(f"Sender: {sender!r}")
-    logger.log_debug(f"App data: {app_data!r}")
-    logger.log_debug(f"User data: {user_data!r}")
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
 
-    # app_data -> (link_id1, link_id2)
-    dpg.add_node_link(app_data[0], app_data[1], parent=sender)
-    dpg.configure_item(app_data[0], shape=dpg.mvNode_PinShape_TriangleFilled)
-    dpg.configure_item(app_data[1], shape=dpg.mvNode_PinShape_TriangleFilled)
+    pin1 = app_data[0]
+    pin2 = app_data[1]
+    node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
 
-    node1_parent_label, node1_label, node2_parent_label, node2_label = _nodes_labels(app_data[0], app_data[1])
+    logger.log_debug(f"Connection between pins: '{pin1}' & '{pin2}'.")
 
     # Connection
     port = None
     direction = None
-    node = None
-    if "IN_" in node1_label:
-        direction = node1_label[:2]  # Extract 'IN'
-        port_name = node1_label[3:]  # Filter out 'IN_'
-        logger.log_info(f"Opening MIDI input: {port_name}")
+    pin = None
+    if "IN_" in pin1_label:
+        direction = pin1_label[:2]  # Extract 'IN'
+        port_name = pin1_label[3:]  # Filter out 'IN_'
+        logger.log_info(f"Opening MIDI input: {port_name}.")
         port = mido.open_input(port_name)
-        node = app_data[0]
-    elif "OUT_" in node2_label:
-        direction = node2_label[:3]  # Extract 'OUT'
-        port_name = node2_label[4:]  # Filter out 'OUT_'
-        logger.log_info(f"Opening MIDI output: {port_name}")
+        pin = pin1
+    elif "OUT_" in pin2_label:
+        direction = pin2_label[:3]  # Extract 'OUT'
+        port_name = pin2_label[4:]  # Filter out 'OUT_'
+        logger.log_info(f"Opening MIDI output: {port_name}.")
         port = mido.open_output(port_name)
-        node = app_data[1]
+        pin = pin2
     else:
-        logger.log_warning(f"{node1_label} or {node2_label} is not a hardware port!")
+        logger.log_warning(f"{pin1_label} or {pin2_label} is not a hardware port!")
     if port:
-        logger.log_debug(f"Successfuly opened {port!r}. Attaching it to the probe.")
-        node_user_data = {direction: port}
-        dpg.set_item_user_data(node, node_user_data)
-        logger.log_debug(f"Attached {dpg.get_item_user_data(node)} to the probe node")
+        logger.log_debug(f"Successfully opened {port!r}. Attaching it to the probe.")
+        pin_user_data = {direction: port}
+        dpg.set_item_user_data(pin, pin_user_data)
+        logger.log_debug(f"Attached {dpg.get_item_user_data(pin)} to the probe {direction} pin.")
 
-    logger.log_info(f"Connect \"{node1_parent_label} {node1_label}\" to \"{node2_parent_label} {node2_label}\"")
+        dpg.add_node_link(pin1, pin2, parent=sender)
+        dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_TriangleFilled)
+        dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_TriangleFilled)
+
+        logger.log_info(f"Connected \"{node1_label}: {_get_pin_text(pin1)}\" to "
+                        f"\"{node2_label}: {_get_pin_text(pin2)}\".")
 
 
 # callback runs when user attempts to disconnect attributes
-def delink_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Optional[Any]) -> None:
     # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}")
-    logger.log_debug(f"Sender: {sender!r}")
-    logger.log_debug(f"App data: {app_data!r}")
-    logger.log_debug(f"User data: {user_data!r}")
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
 
-    # Get the nodes that this link was connected to
-    conf = dpg.get_item_configuration(app_data)  # In attr_1 and attr_2
+    # Get the pins that this link was connected to
+    conf = dpg.get_item_configuration(app_data)
+    pin1 = conf['attr_1']
+    pin2 = conf['attr_2']
+    node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
 
-    logger.log_debug(f"Identified nodes: {conf!r}")
-
-    # FIXME: only change shape if no other link is active on the node!
-    dpg.configure_item(conf['attr_1'], shape=dpg.mvNode_PinShape_Triangle)
-    dpg.configure_item(conf['attr_2'], shape=dpg.mvNode_PinShape_Triangle)
-
-    node1_parent_label, node1_label, node2_parent_label, node2_label = _nodes_labels(conf['attr_1'], conf['attr_2'])
+    logger.log_debug(f"Disconnection between pins: '{pin1}' & '{pin2}'.")
 
     # Disconnection
     direction = None
-    node = None
-    if "IN_" in node1_label:
-        direction = node1_label[:2]  # Extract 'IN'
-        node = conf['attr_1']
-    elif "OUT_" in node2_label:
-        direction = node2_label[:3]  # Extract 'OUT'
-        node = conf['attr_2']
+    pin = None
+    if "IN_" in pin1_label:
+        direction = pin1_label[:2]  # Extract 'IN'
+        pin = pin1
+    elif "OUT_" in pin2_label:
+        direction = pin2_label[:3]  # Extract 'OUT'
+        pin = pin2
     else:
-        logger.log_warning(f"{node1_label} or {node2_label} is not a hardware port!")
+        logger.log_warning(f"{pin1_label} or {pin2_label} is not a hardware port!")
     if direction:
-        node_user_data = dpg.get_item_user_data(node)
-        port = node_user_data[direction]
-        logger.log_info(f"Closing & Detaching MIDI port {port} from the probe.")
-        del node_user_data[direction]
-        dpg.set_item_user_data(node, node_user_data)
+        pin_user_data = dpg.get_item_user_data(pin)
+        port = pin_user_data[direction]
+
+        logger.log_info(f"Closing & Detaching MIDI port {port} from the probe {direction} pin.")
+
+        del pin_user_data[direction]
+        dpg.set_item_user_data(pin, pin_user_data)
         port.close()
 
-    logger.log_info(f"Connect \"{node1_parent_label} {node1_label}\" to \"{node2_parent_label} {node2_label}\"")
+        logger.log_debug(f"Deleting link {app_data!r}.")
 
-    logger.log_info(f"Disconnect \"{node1_parent_label} {node1_label}\" from \"{node2_parent_label} {node2_label}\"")
+        dpg.delete_item(app_data)
 
-    logger.log_debug(f"Delete link {app_data!r}")
-    # app_data -> link_id
-    dpg.delete_item(app_data)
+        # FIXME: only change shape if no other link is active on the node!
+        dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_Triangle)
+        dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_Triangle)
+
+        logger.log_info(f"Disconnected \"{node1_label}: {_get_pin_text(pin1)}\" from "
+                        f"\"{node2_label}: {_get_pin_text(pin2)}\".")
 
 
 def _toggle_log() -> None:
@@ -227,7 +245,7 @@ def decode(sender: int | str, app_data: Any) -> None:
         decoded = f"Warning: {e!s}"
         pass
 
-    logger.log_debug(decoded)
+    logger.log_debug(f"Raw message {app_data} decoded to: {decoded}.")
 
     dpg.set_value('generator_decoded_message', decoded)
 

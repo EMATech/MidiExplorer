@@ -32,8 +32,18 @@ Features / TODO list
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
   - [ ] Icons
-  - [ ] About
-  - [ ] **(WIP)** Save state
+  - [ ] About window
+  - [X] Node editor window
+    - [X] Inputs
+    - [X] Outputs
+    - [x] Modules
+  - [ ] **(WIP)** Probe data window
+  - [ ] **(WIP)** Generator data window
+  - [x] Log window
+  - [ ] Actions
+    - [x] Toggle fullscreen (F11)
+    - [x] Toggle log (F12)
+    - [ ] **(WIP)** Save state (Buggy at the moment)
 - [ ] I/O management
   - [ ] List MIDI I/O
     - [x] USB / IEEE-1394 (OS level)
