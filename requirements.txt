@@ -1,0 +1,4 @@
+dearpygui
+dearpygui-ext==0.9.3  # FIXME: Upstream bug prevents installation of 0.9.4
+mido
+python-rtmidi
