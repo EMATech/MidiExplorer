@@ -3,7 +3,7 @@ MIDI Explorer
 
 Yet another MIDI monitoring, debugging and manipulating tool.
 
-![GUI prototype](GUIprototype.png)
+![GUI](GUIwithprobedata.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
