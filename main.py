@@ -10,7 +10,9 @@
 
 * Author(s): Raphaël Doursenaud <rdoursenaud@free.fr>
 """
+import math
 import sys
+import time
 from typing import Any, Optional
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
@@ -20,7 +22,6 @@ import mido.backends.rtmidi  # For PyInstaller
 from dearpygui_ext.logger import mvLogger
 
 global logger, log_window
-
 DEBUG = True
 INIT_FILENAME = "midiexplorer.ini"
 
@@ -36,7 +37,7 @@ def _init_logger() -> None:
             width=1920,
             height=225,
             pos=[0, 815],
-            show=DEBUG
+            show=DEBUG,
     ) as log_window:
         logger = mvLogger(log_window)
     if DEBUG:
@@ -117,6 +118,17 @@ def _get_pin_text(pin: int | str) -> None:
     return dpg.get_value(dpg.get_item_children(pin, 1)[0])
 
 
+def add_probe_data(timestamp: float, source: str, raw_msg: str) -> None:
+    # TODO: insert new data at the top of the table
+    with dpg.table_row(parent=probe_data_table):
+        dpg.add_text(timestamp)
+        dpg.add_selectable(label="source", span_columns=True)
+        dpg.add_text(midi_data.hex())
+        dpg.add_text(repr(midi_data))
+
+    dpg.set_y_scroll(probe_data, -1.0)  # Autoscroll
+
+
 ###
 # Callbacks
 ###
@@ -167,26 +179,26 @@ def link_callback(sender: int | str,
     # Connection
     port = None
     direction = None
-    pin = None
+    probe_pin = None
     if "IN_" in pin1_label:
         direction = pin1_label[:2]  # Extract 'IN'
         port_name = pin1_label[3:]  # Filter out 'IN_'
         logger.log_info(f"Opening MIDI input: {port_name}.")
         port = mido.open_input(port_name)
-        pin = pin1
+        probe_pin = pin2
     elif "OUT_" in pin2_label:
         direction = pin2_label[:3]  # Extract 'OUT'
         port_name = pin2_label[4:]  # Filter out 'OUT_'
         logger.log_info(f"Opening MIDI output: {port_name}.")
         port = mido.open_output(port_name)
-        pin = pin2
+        probe_pin = pin1
     else:
         logger.log_warning(f"{pin1_label} or {pin2_label} is not a hardware port!")
     if port:
         logger.log_debug(f"Successfully opened {port!r}. Attaching it to the probe.")
         pin_user_data = {direction: port}
-        dpg.set_item_user_data(pin, pin_user_data)
-        logger.log_debug(f"Attached {dpg.get_item_user_data(pin)} to the probe {direction} pin.")
+        dpg.set_item_user_data(probe_pin, pin_user_data)
+        logger.log_debug(f"Attached {dpg.get_item_user_data(probe_pin)} to the {probe_pin} pin user data.")
 
         dpg.add_node_link(pin1, pin2, parent=sender)
         dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_TriangleFilled)
@@ -214,23 +226,23 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
 
     # Disconnection
     direction = None
-    pin = None
+    probe_pin = None
     if "IN_" in pin1_label:
         direction = pin1_label[:2]  # Extract 'IN'
-        pin = pin1
+        probe_pin = pin2
     elif "OUT_" in pin2_label:
         direction = pin2_label[:3]  # Extract 'OUT'
-        pin = pin2
+        probe_pin = pin1
     else:
         logger.log_warning(f"{pin1_label} or {pin2_label} is not a hardware port!")
     if direction:
-        pin_user_data = dpg.get_item_user_data(pin)
+        pin_user_data = dpg.get_item_user_data(probe_pin)
         port = pin_user_data[direction]
 
         logger.log_info(f"Closing & Detaching MIDI port {port} from the probe {direction} pin.")
 
         del pin_user_data[direction]
-        dpg.set_item_user_data(pin, pin_user_data)
+        dpg.set_item_user_data(probe_pin, pin_user_data)
         port.close()
 
         logger.log_debug(f"Deleting link {app_data!r}.")
@@ -334,23 +346,26 @@ if __name__ == '__main__':
                 with dpg.popup(dpg.last_item()):
                     dpg.add_button(label="Add virtual input")
 
-            with dpg.node(label="PROBE",
+            with dpg.node(tag='probe_node',
+                          label="PROBE",
                           pos=[360, 25]) as probe:
-                with dpg.node_attribute(label="In",
+                with dpg.node_attribute(tag='probe_in',
+                                        label="In",
                                         attribute_type=dpg.mvNode_Attr_Input,
-                                        shape=dpg.mvNode_PinShape_Triangle):
+                                        shape=dpg.mvNode_PinShape_Triangle) as probe_in:
                     dpg.add_text("In")
 
-                with dpg.node_attribute(label="Thru",
+                with dpg.node_attribute(tag='probe_thru',
+                                        label="Thru",
                                         attribute_type=dpg.mvNode_Attr_Output,
-                                        shape=dpg.mvNode_PinShape_Triangle):
+                                        shape=dpg.mvNode_PinShape_Triangle) as probe_thru:
                     dpg.add_text("Thru")
 
             with dpg.node(label="GENERATOR",
                           pos=[360, 125]):
                 with dpg.node_attribute(label="Out",
                                         attribute_type=dpg.mvNode_Attr_Output,
-                                        shape=dpg.mvNode_PinShape_Triangle):
+                                        shape=dpg.mvNode_PinShape_Triangle) as gen_out:
                     dpg.add_text("Out", indent=2)
 
             with dpg.node(label="FILTER/TRANSLATOR",
@@ -377,20 +392,22 @@ if __name__ == '__main__':
             no_close=True,
             collapsed=False,
             pos=[960, 20]
-    ):
+    ) as probe_data:
 
-        with dpg.table(header_row=True, policy=dpg.mvTable_SizingStretchProp) as probe_table:
-            dpg.add_table_column(label="Timestamp")
+        # TODO: Add auto-scrolling option
+        # TODO: Add clear option
+        # TODO: Allow sorting
+
+        with dpg.table(header_row=True,
+                       freeze_rows=1,
+                       policy=dpg.mvTable_SizingFixedFit,
+                       resizable=True,  # FIXME: Scroll the table instead of the window when available upstream
+                       # scrollY=True,
+                       clipper=True) as probe_data_table:
+            dpg.add_table_column(label="Timestamp (ms)")
             dpg.add_table_column(label="Source")
-            dpg.add_table_column(label="Raw Message")
-            dpg.add_table_column(label="Decoded Message")
-
-            with dpg.table_row():
-                # FIXME: sample message
-                dpg.add_text("0,00")
-                dpg.add_selectable(label="Sample input", span_columns=True)
-                dpg.add_text("F0 XX YY F7")
-                dpg.add_text("SySex")
+            dpg.add_table_column(label="Raw Message (HEX)")
+            dpg.add_table_column(label="Decoded Message", width_stretch=True)
 
     with dpg.window(
             label="Generator",
@@ -399,7 +416,7 @@ if __name__ == '__main__':
             no_close=True,
             collapsed=False,
             pos=[960, 715]
-    ):
+    ) as gen_data:
 
         message = dpg.add_input_text(label="Raw Message", hint="XXYYZZ", hexadecimal=True, callback=decode)
         dpg.add_input_text(label="Decoded", readonly=True, hint="Automatically decoded raw message",
@@ -422,5 +439,23 @@ if __name__ == '__main__':
     dpg.setup_dearpygui()
     dpg.show_viewport()
     dpg.set_primary_window(main_window, True)
-    dpg.start_dearpygui()
+    # dpg.start_dearpygui()
+    while dpg.is_dearpygui_running():
+        ###
+        # MIDI Data receive & handling: Polling mode
+        ###
+        # FIXME: Use callback mode to avoid framerate dependency
+        probe_in_user_data = dpg.get_item_user_data(probe_in)
+        if probe_in_user_data:
+            # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
+            midi_data = probe_in_user_data["IN"].poll()
+            if midi_data:
+                logger.log_debug(f"Received MIDI data from probe input: {midi_data}")
+                probe_thru_user_data = dpg.get_item_user_data(probe_thru)
+                if probe_thru_user_data:
+                    # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
+                    logger.log_debug(f"Sending MIDI data to probe thru")
+                    probe_thru_user_data["OUT"].send(midi_data)
+                add_probe_data(int(round(time.time() * 1000)), probe_in, midi_data)
+        dpg.render_dearpygui_frame()
     dpg.destroy_context()

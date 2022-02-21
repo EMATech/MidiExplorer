@@ -59,10 +59,10 @@ Features / TODO list
   - [ ] Save state
 - [ ] Modules (Plugins?)
   - [ ] Instances management (Add/Remove)
-  - [ ] **(WIP)** Virtual Debug Probe
-    - [ ] Read raw input
-    - [ ] Table decode input
-    - [ ] Thru support
+  - [x] Virtual Debug Probe
+    - [x] Read raw input
+    - [x] Table decode input
+    - [x] Thru support
   - [ ] Generator
     - [ ] Generate raw output
     - [ ] Buffer/Clipboard any message (raw or decoded) to output
