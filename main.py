@@ -10,7 +10,6 @@
 
 * Author(s): Raphaël Doursenaud <rdoursenaud@free.fr>
 """
-import math
 import sys
 import time
 from typing import Any, Optional
@@ -118,7 +117,7 @@ def _get_pin_text(pin: int | str) -> None:
     return dpg.get_value(dpg.get_item_children(pin, 1)[0])
 
 
-def add_probe_data(timestamp: float, source: str, raw_msg: str) -> None:
+def add_probe_data(timestamp: float, source: str, data: str) -> None:
     # TODO: insert new data at the top of the table
     with dpg.table_row(parent=probe_data_table):
         dpg.add_text(timestamp)
@@ -448,14 +447,19 @@ if __name__ == '__main__':
         probe_in_user_data = dpg.get_item_user_data(probe_in)
         if probe_in_user_data:
             # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
-            midi_data = probe_in_user_data["IN"].poll()
-            if midi_data:
+            while True:
+                timestamp = int(round(time.time() * 1000))  # Current time in ms
+                midi_data = probe_in_user_data["IN"].poll()
+                if not midi_data:
+                    break
                 logger.log_debug(f"Received MIDI data from probe input: {midi_data}")
                 probe_thru_user_data = dpg.get_item_user_data(probe_thru)
                 if probe_thru_user_data:
                     # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
                     logger.log_debug(f"Sending MIDI data to probe thru")
                     probe_thru_user_data["OUT"].send(midi_data)
-                add_probe_data(int(round(time.time() * 1000)), probe_in, midi_data)
+                add_probe_data(timestamp=timestamp,
+                               source=probe_in,
+                               data=midi_data)
         dpg.render_dearpygui_frame()
     dpg.destroy_context()
