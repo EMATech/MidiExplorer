@@ -140,18 +140,29 @@ def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None
     logger.log_debug(f"\tUser data: {user_data!r}")
 
 
-def link_callback(sender: int | str, app_data: (dpg.mvNode, dpg.mvNode), user_data: Optional[Any]) -> None:
+def link_callback(sender: int | str,
+                  app_data: (dpg.mvNodeAttribute, dpg.mvNodeAttribute),
+                  user_data: Optional[Any]) -> None:
     # Debug
     logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
     logger.log_debug(f"\tSender: {sender!r}")
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
 
-    pin1 = app_data[0]
-    pin2 = app_data[1]
+    pin1: dpg.mvNodeAttribute = app_data[0]
+    pin2: dpg.mvNodeAttribute = app_data[1]
     node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Connection between pins: '{pin1}' & '{pin2}'.")
+
+    # Only allow one link per pin for now
+    for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), 0):
+        if dpg.get_item_info(children)['type'] == 'mvAppItemType::mvNodeLink':
+            link_conf = dpg.get_item_configuration(children)
+            if pin1 == link_conf['attr_1'] or pin2 == link_conf['attr_1'] or \
+                    pin1 == link_conf['attr_2'] or pin2 == link_conf['attr_2']:
+                logger.log_warning("Only one connection per pin is allowed at the moment.")
+                return
 
     # Connection
     port = None
@@ -195,8 +206,8 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
 
     # Get the pins that this link was connected to
     conf = dpg.get_item_configuration(app_data)
-    pin1 = conf['attr_1']
-    pin2 = conf['attr_2']
+    pin1: dpg.mvNodeAttribute = conf['attr_1']
+    pin2: dpg.mvNodeAttribute = conf['attr_2']
     node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Disconnection between pins: '{pin1}' & '{pin2}'.")
@@ -226,7 +237,6 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
 
         dpg.delete_item(app_data)
 
-        # FIXME: only change shape if no other link is active on the node!
         dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_Triangle)
         dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_Triangle)
 
