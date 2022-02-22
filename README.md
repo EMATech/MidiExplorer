@@ -3,7 +3,7 @@ MIDI Explorer
 
 Yet another MIDI monitoring, debugging and manipulating tool.
 
-![GUI](GUIwithinputmonitor.png)
+![GUI](GUIwithtypemonitor.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
@@ -60,7 +60,9 @@ Features / TODO list
 - [ ] Modules (Plugins?)
   - [ ] Instances management (Add/Remove)
   - [x] Virtual Debug Probe
-    - [x] Channels & System activity monitor with customizable persistence
+    - [x] Activity monitor with customizable persistence
+      - [x] Channels & System
+      - [x] Message type
     - [x] Read raw input
     - [x] Table decode input
     - [x] Thru support

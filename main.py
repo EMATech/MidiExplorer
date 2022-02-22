@@ -17,11 +17,12 @@ from typing import Any, Optional
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 import mido  # https://mido.readthedocs.io/en/latest/
 import mido.backends.rtmidi  # For PyInstaller
+from dearpygui.demo import show_demo
 from dearpygui_ext.logger import mvLogger  # https://dearpygui-ext.readthedocs.io/en/latest/index.html
 
 global logger, log_win, previous_timestamp, probe_data_counter
 
-DEBUG = False
+DEBUG = True
 INIT_FILENAME = "midiexplorer.ini"
 START_TIME = time.time()
 
@@ -460,6 +461,7 @@ if __name__ == '__main__':
                                       callback=lambda: dpg.show_tool(dpg.mvTool_ItemRegistry))
                     dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
                     dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
+                    dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
 
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label="Save configuration", callback=_save_init)
