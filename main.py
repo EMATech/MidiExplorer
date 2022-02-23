@@ -1160,14 +1160,14 @@ if __name__ == '__main__':
     ) as probe_data:
 
         with dpg.menu_bar():
-            with dpg.menu(label="Options"):
-                dpg.add_checkbox(label="0 velocity note-on is note-off (default)",
-                                 source='zero_velocity_note_on_is_note_off')
+            with dpg.menu(label="Settings"):
                 dpg.add_slider_float(tag='blink_duration_slider',
                                      label="Persistence (s)",
                                      min_value=0, max_value=0.5, source='blink_duration',
                                      callback=lambda:
                                      dpg.set_value('blink_duration', dpg.get_value('blink_duration_slider')))
+                dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
+                                 source='zero_velocity_note_on_is_note_off')
 
         # Input Activity Monitor
         dpg.add_child_window(tag='act_mon', label="Input activity monitor", height=50, border=False)
