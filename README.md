@@ -28,7 +28,7 @@ Features / TODO list
   - [ ] Apple Mac OS X
   - [ ] GNU/Linux
 - [ ] MIDI protocol
-  - [x] v1.x
+  - [x] v1.0
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
   - [ ] Icons
@@ -80,12 +80,13 @@ Features / TODO list
     - [ ] Overwrite
     - [ ] Append
 
+
 Legal notice
 ------------
 
 ### License
 
-Copyright 2022 Raphaël Doursenaud
+Copyright 2022 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).
 

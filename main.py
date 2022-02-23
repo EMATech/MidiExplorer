@@ -35,10 +35,50 @@ DEBUG = True
 # TODO: contribute to mido?
 ###
 
+# Page 7
+MODE = {
+    1: {
+        'omni': True,
+        'poly': True,
+    },
+    2: {
+        'omni': True,
+        'poly': False,
+    },
+    3: {
+        'omni': False,
+        'poly': True,
+    },
+    4: {
+        'omni': False,
+        'poly': False,
+    },
+}
+RX_MODE = {
+    1: "Voice messages are received from all Voice channels "
+       "and assigned to voices polyphonically",
+    2: "Voice messages are received from all Voice Channels, "
+       "and control only one voice, monophonically",
+    3: "Voice messages are received in Voice Channel N only, "
+       "and are assigned to voices polyphonically",
+    4: "Voice messages are received in Voice channels N though N+M-1, "
+       "and assigned monophonically to voices 1 though M, respectively. "
+       "The number of voices \"M\" is specified by the third byte of the Mono Mode Message.",
+}
+TX_MODE = {
+    1: "All voice messages are transmitted in Channel N.",
+    2: "Voice messages for one voice are sent in Channel N.",
+    3: "Voice messages for all voices are sent in Channel N.",
+    4: "Voice messages for voices 1 through M are transmitted in Voice Channels N through N+M-1, respectively. "
+       "(Single voice per channel).",
+}
+DEFAULT_BASIC_CHANNEL = 0  # Equivalent to 1 in MIDI parlance
+DEFAULT_MODE = 1
+
 # Page 8
 POWER_UP_DEFAULT = {
-    "basic_channel": 1,
-    "mode": 1,  # Omni On/Poly
+    "basic_channel": DEFAULT_BASIC_CHANNEL,
+    "mode": DEFAULT_MODE,  # Omni On/Poly
 }
 
 # Page 10
