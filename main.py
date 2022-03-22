@@ -26,6 +26,7 @@ from midi.constants import NOTE_OFF_VELOCITY
 # PROGRAM CONSTANTS
 ###
 START_TIME = time.time()  # Initialize ASAP
+NS2MS = 1000
 INIT_FILENAME = "midiexplorer.ini"
 DEBUG = True
 
@@ -33,7 +34,7 @@ DEBUG = True
 ###
 # GLOBAL VARIABLES
 #
-# FIXME: global variables should ideally be eliminated as they are a poor programming style0
+# FIXME: global variables should ideally be eliminated as they are a poor programming style
 ###
 global logger, log_win, previous_timestamp, probe_data_counter
 previous_timestamp = START_TIME
@@ -61,9 +62,9 @@ def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None
     logger.log_debug(f"\tUser data: {user_data!r}")
 
 
-def link_callback(sender: int | str,
-                  app_data: (dpg.mvNodeAttribute, dpg.mvNodeAttribute),
-                  user_data: Optional[Any]) -> None:
+def link_node_callback(sender: int | str,
+                       app_data: (dpg.mvNodeAttribute, dpg.mvNodeAttribute),
+                       user_data: Optional[Any]) -> None:
     # Debug
     logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
     logger.log_debug(f"\tSender: {sender!r}")
@@ -72,11 +73,12 @@ def link_callback(sender: int | str,
 
     pin1: dpg.mvNodeAttribute = app_data[0]
     pin2: dpg.mvNodeAttribute = app_data[1]
-    node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
+    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Connection between pins: '{pin1}' & '{pin2}'.")
 
     # Only allow one link per pin for now
+    # TODO: Automatically add merger node when linked to multiple nodes.
     for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), 0):
         if dpg.get_item_info(children)['type'] == 'mvAppItemType::mvNodeLink':
             link_conf = dpg.get_item_configuration(children)
@@ -94,6 +96,9 @@ def link_callback(sender: int | str,
         port_name = pin1_label[3:]  # Filter out 'IN_'
         logger.log_info(f"Opening MIDI input: {port_name}.")
         port = mido.open_input(port_name)
+        if not dpg.get_value('polling'):
+            port.callback = midi_receive_callback
+            logger.log_info("Attached MIDI receive callback!")
         probe_pin = pin2
     elif "OUT_" in pin2_label:
         direction = pin2_label[:3]  # Extract 'OUT'
@@ -118,7 +123,7 @@ def link_callback(sender: int | str,
 
 
 # callback runs when user attempts to disconnect attributes
-def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Optional[Any]) -> None:
+def delink_node_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Optional[Any]) -> None:
     # Debug
     logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
     logger.log_debug(f"\tSender: {sender!r}")
@@ -129,7 +134,7 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
     conf = dpg.get_item_configuration(app_data)
     pin1: dpg.mvNodeAttribute = conf['attr_1']
     pin2: dpg.mvNodeAttribute = conf['attr_2']
-    node1_label, pin1_label, node2_label, pin2_label = _nodes_labels(pin1, pin2)
+    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Disconnection between pins: '{pin1}' & '{pin2}'.")
 
@@ -152,6 +157,7 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
 
         del pin_user_data[direction]
         dpg.set_item_user_data(probe_pin, pin_user_data)
+        port.callback = None  # Needed to prevent threads from locking and crashing
         port.close()
 
         logger.log_debug(f"Deleting link {app_data!r}.")
@@ -165,11 +171,11 @@ def delink_callback(sender: int | str, app_data: dpg.mvNodeLink, user_data: Opti
                         f"\"{node2_label}: {_get_pin_text(pin2)}\".")
 
 
-def _toggle_log() -> None:
+def toggle_log_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     dpg.configure_item(log_win, show=not dpg.is_item_visible(log_win))
 
 
-def _decode(sender: int | str, app_data: Any) -> None:
+def decode_callback(sender: int | str, app_data: Any) -> None:
     try:
         decoded = repr(mido.Message.from_hex(app_data))
     except (TypeError, ValueError) as e:
@@ -179,6 +185,30 @@ def _decode(sender: int | str, app_data: Any) -> None:
     logger.log_debug(f"Raw message {app_data} decoded to: {decoded}.")
 
     dpg.set_value('generator_decoded_message', decoded)
+
+
+def polling_callback(sender: int | str, app_data: bool, user_data: Optional[Any]) -> None:
+    """
+    Sets/unsets the MIDI receive callback based off the widget checkbox's status
+
+    :param sender: Polling checkbox widget
+    :param app_data: Checkbox status
+    :param user_data: Polling checkbox user data
+    :return: None
+    """
+    pin = dpg.get_item_parent(sender)
+    pin_user_data = dpg.get_item_user_data(pin)
+    if pin_user_data:
+        port = pin_user_data["IN"]
+
+        if app_data:
+            port.callback = None
+            logger.log_info("Removed MIDI receive callback!")
+        else:
+            port.callback = midi_receive_callback
+            logger.log_info("Attached MIDI receive callback!")
+
+    dpg.set_value('polling', app_data)
 
 
 ###
@@ -214,37 +244,59 @@ def _init_midi() -> None:
     logger.log_debug(f"RtMidi APIs: {mido.backend.module.get_api_names()}")
 
 
-def _sort_ports(names: list) -> list | None:
-    # TODO: extract the ID
-    # TODO: add option to sort by ID rather than name
-    # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
-    return sorted(set(names))
+def _extract_port_infos(name: str) -> dict:
+    """
+    Extracts ID and label from an rtmidi port name
+    """
+    # FIXME: is this cross-platform compatible?
+    port_id = name.split()[-1]
+    port_label = name[0:-len(port_id) - 1]
+    logger.log_debug(f"Found port #{port_id}: {port_label}")
+    return {
+        'id': port_id,
+        'label': port_label,
+        'name': name,
+    }
 
 
-def _nodes_labels(pin1, pin2) -> tuple[str | None, str | None, str | None, str | None]:
-    pin1_label = dpg.get_item_label(pin1)
-    node1_label = dpg.get_item_label(dpg.get_item_parent(pin1))
-    pin2_label = dpg.get_item_label(pin2)
-    node2_label = dpg.get_item_label(dpg.get_item_parent(pin2))
+def _extract_pin_node_labels(pin: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None]:
+    """
+    Extracts pin and parent node labels from pin object
+    """
+    pin_label = dpg.get_item_label(pin)
+    node_label = dpg.get_item_label(dpg.get_item_parent(pin))
+    return node_label, pin_label
 
-    logger.log_debug(f"Identified pin1 '{pin1}' as '{pin1_label}' from '{node1_label}' node and "
-                     f"pin2 '{pin2}' as '{pin2_label}' from '{node2_label}'.")
 
+def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
+                       pin2: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None, str | None, str | None]:
+    """
+    Extracts pins and nodes labels from two pin objects
+    """
+    node1_label, pin1_label = _extract_pin_node_labels(pin1)
+    node2_label, pin2_label = _extract_pin_node_labels(pin2)
     return node1_label, pin1_label, node2_label, pin2_label
+
+
+def _extract_ports_infos(names: list[str]) -> list[dict] | None:
+    ports = []
+    for name in names:
+        ports.append(_extract_port_infos(name))
+    return ports
 
 
 def _refresh_midi_ports() -> None:
     dpg.configure_item(refresh_midi_modal, show=False)  # Close popup
 
-    midi_inputs = _sort_ports(mido.get_input_names())
-
+    midi_inputs = _extract_ports_infos(mido.get_input_names())
     logger.log_debug(f"Available MIDI inputs: {midi_inputs}")
 
-    midi_outputs = _sort_ports(mido.get_output_names())
-
+    midi_outputs = _extract_ports_infos(mido.get_output_names())
     logger.log_debug(f"Available MIDI outputs: {midi_outputs}")
 
+    # TODO: add option to sort by ID or by name?
     # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
+
     # Delete links
     dpg.delete_item(connections_editor, children_only=True, slot=0)
 
@@ -253,22 +305,28 @@ def _refresh_midi_ports() -> None:
     dpg.delete_item(outputs_node, children_only=True)
 
     for midi_in in midi_inputs:
-        with dpg.node_attribute(label="IN_" + midi_in,
+        with dpg.node_attribute(label="IN_" + midi_in['name'],
                                 attribute_type=dpg.mvNode_Attr_Output,
                                 shape=dpg.mvNode_PinShape_Triangle,
                                 parent=inputs_node):
-            dpg.add_text(midi_in)
+            with dpg.group(horizontal=True):
+                dpg.add_text(midi_in['id'])
+                dpg.add_text(midi_in['label'])
             with dpg.popup(dpg.last_item()):
-                dpg.add_button(label=f"Remove {midi_in} input")  # TODO
+                dpg.add_button(label=f"Hide {midi_in['label']} input")  # TODO
+                dpg.add_button(label=f"Remove {midi_in['label']} input")  # TODO: for virtual ports only
 
     for midi_out in midi_outputs:
-        with dpg.node_attribute(label="OUT_" + midi_out,
+        with dpg.node_attribute(label="OUT_" + midi_out['name'],
                                 attribute_type=dpg.mvNode_Attr_Input,
                                 shape=dpg.mvNode_PinShape_Triangle,
                                 parent=outputs_node):
-            dpg.add_text(midi_out)
+            with dpg.group(horizontal=True):
+                dpg.add_text(midi_out['id'])
+                dpg.add_text(midi_out['label'])
             with dpg.popup(dpg.last_item()):
-                dpg.add_button(label=f"Remove {midi_out} output")  # TODO
+                dpg.add_button(label=f"Hide {midi_out['label']} output")  # TODO
+                dpg.add_button(label=f"Remove {midi_out['label']} output")  # TODO: for virtual ports only
 
 
 def _save_init() -> None:
@@ -280,6 +338,14 @@ def _get_pin_text(pin: int | str) -> None:
 
 
 def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
+    """
+    Decodes and present data received from the probe.
+
+    :param timestamp:
+    :param source:
+    :param data:
+    :return:
+    """
     # TODO: insert new data at the top of the table
     # TODO: color coding by event type
     global previous_timestamp, probe_data_counter
@@ -290,22 +356,28 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
                        before=f'probe_data_{previous_data}'):
         # Timestamp (ms)
-        dpg.add_text((timestamp - START_TIME) * 1000)
+        dpg.add_text(str((timestamp - START_TIME) * NS2MS))
+
         # Delta (ms)
-        # In polling mode we are bound to the frame rendering time.
-        # For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
-        if previous_timestamp is not None:
-            dpg.add_text((timestamp - previous_timestamp) * 1000)
-        else:
-            dpg.add_text("0.0")
+        delta = "0.0"
+        if data.time:
+            delta = data.time * NS2MS
+            # logger.log_debug("Using rtmidi time delta")
+        elif previous_timestamp is not None:
+            delta = (timestamp - previous_timestamp) * NS2MS
+        dpg.add_text(str(delta))
         previous_timestamp = timestamp
+
         # Source
         dpg.add_selectable(label="source", span_columns=True)
+
         # Raw message
         dpg.add_text(data.hex())
+
         # Decoded message
         if DEBUG:
-            dpg.add_text(repr(midi_data))
+            dpg.add_text(repr(data))
+
         # Channel
         if hasattr(data, 'channel'):
             dpg.add_text(data.channel)
@@ -313,28 +385,42 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         else:
             dpg.add_text("Global")
             _mon_blink('s')
+
         # Status
         dpg.add_text(data.type)
         _mon_blink(data.type)
+
         # Data 1 & 2
+        data0 = ""
+        data1 = ""
         if 'note' in data.type:
-            dpg.add_text(data.note)  # TODO: decode to human readable
-            dpg.add_text(data.velocity)
+            data0 = data.note  # TODO: decode to human readable
+            data1 = data.velocity
             if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
                 _mon_blink('note_off')
-        elif 'control' in data.type:
-            dpg.add_text(data.control)  # TODO: decode to human readable
-            dpg.add_text(data.value)
-        elif 'pitchwheel' in data.type:
-            dpg.add_text(data.pitch)
-            dpg.add_text("")
-        elif 'sysex' in data.type:
-            dpg.add_text(data.data)
-            dpg.add_text("")  # TODO: decode device ID
-        else:
-            # TODO: decode other types
-            dpg.add_text("")
-            dpg.add_text("")
+        elif 'polytouch' == data.type:
+            data0 = data.note
+            data1 = data.value
+        elif 'control_change' == data.type:
+            data0 = data.control  # TODO: decode to human readable
+            data1 = data.value
+        elif 'program_change' == data.type:
+            data0 = data.program
+        elif 'aftertouch' == data.type:
+            data0 = data.value
+        elif 'pitchwheel' == data.type:
+            data0 = data.pitch
+        elif 'sysex' == data.type:
+            data0 = data.data  # TODO: decode device ID
+        elif 'quarter_frame' == data.type:
+            data0 = data.frame_type  # TODO: decode
+            data1 = data.frame_value  # TODO: decode
+        elif 'songpos' == data.type:
+            data0 = data.pos
+        elif 'song_select' == data.type:
+            data0 = data.song
+        dpg.add_text(data0)
+        dpg.add_text(data1)
 
     # TODO: per message type color
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
@@ -356,7 +442,7 @@ def _mon_blink(channel: int | str) -> None:
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
 
 
-def _update_blink_status():
+def _update_blink_status() -> None:
     for channel in range(16):
         now = time.time() - START_TIME
         if dpg.get_value(f"mon_{channel}_active_until") < now:
@@ -401,15 +487,61 @@ def _update_blink_status():
         dpg.bind_item_theme('mon_reset', None)
 
 
-def _clear_probe_data_table():
+def _clear_probe_data_table() -> None:
     dpg.delete_item('probe_data_table', children_only=True, slot=1)
     _init_details_table_data()
 
 
-def _init_details_table_data():
+def _init_details_table_data() -> None:
     # Initial data for reverse scrolling
     with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
         pass
+
+
+def _handle_received_data(timestamp: float, midi_data: mido.Message) -> None:
+    """
+    Handle received MIDI data and echoes "Soft Thru" messages.
+    """
+    logger.log_debug(f"Received MIDI data from probe input: {midi_data}")
+    probe_thru_user_data = dpg.get_item_user_data(probe_thru)
+    if probe_thru_user_data:
+        # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
+        logger.log_debug(f"Echoing MIDI data to probe thru")
+        probe_thru_user_data["OUT"].send(midi_data)
+    _add_probe_data(timestamp=timestamp,
+                    source=probe_in,
+                    data=midi_data)
+
+
+def midi_receive_callback(midi_data: mido.Message) -> None:
+    """
+    MIDI data receive in "callback" mode.
+    """
+    timestamp = time.time()
+    logger.log_debug(f"Callback data: {midi_data}")
+    _handle_received_data(timestamp, midi_data)
+
+
+def poll_processing() -> None:
+    """
+    MIDI data receive in "polling" mode.
+
+    Shorter MIDI message (1-byte) interval is 320us.
+    In polling mode we are bound to the frame rendering time.
+    At 60FPS frame time is about 16.7ms
+    This amounts to up to 53 MIDI bytes per frame (52.17)!
+    That's why callback mode is to be preferred
+    For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
+    """
+    probe_in_user_data = dpg.get_item_user_data(probe_in)
+    if probe_in_user_data:
+        # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
+        while True:
+            timestamp = time.time()
+            midi_data = probe_in_user_data["IN"].poll()
+            if not midi_data:  # Could also use iter_pending() instead.
+                break
+            _handle_received_data(timestamp, midi_data)
 
 
 ###
@@ -420,6 +552,11 @@ if __name__ == '__main__':
 
     _init_logger()
 
+    if DEBUG:
+        logger.log_debug(f"Using MIDO:")
+        logger.log_debug(f"\t - version: {mido.__version__}")
+        logger.log_debug(f"\t - backend: {mido.backend}")
+
     if not DEBUG:
         dpg.configure_app(init_file=INIT_FILENAME)
 
@@ -427,6 +564,7 @@ if __name__ == '__main__':
     # DEAR PYGUI VALUES
     ###
     with dpg.value_registry():
+        dpg.add_bool_value(tag='polling', default_value=False)
         dpg.add_string_value(tag='generator_decoded_message', default_value='')
         dpg.add_float_value(tag='blink_duration', default_value=.25)  # seconds
         for channel in range(16):  # Monitoring status
@@ -452,6 +590,13 @@ if __name__ == '__main__':
         dpg.add_float_value(tag='mon_reset_active_until', default_value=0)  # seconds
         # Per standard, consider note-on with velocity set to 0 as note-off
         dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
+
+    ###
+    # DEAR PYGUI THEMES
+    ###
+    with dpg.theme(tag='__red'):
+        with dpg.theme_component(dpg.mvButton):
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 0, 0))
 
     with dpg.window(
             tag='main_win',
@@ -482,7 +627,7 @@ if __name__ == '__main__':
 
             with dpg.menu(label="Display"):
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
-                dpg.add_menu_item(label="Toggle Log (F12)", callback=_toggle_log)
+                dpg.add_menu_item(label="Toggle Log (F12)", callback=toggle_log_callback)
 
             dpg.add_menu_item(label="About")  # TODO
 
@@ -511,10 +656,8 @@ if __name__ == '__main__':
 
             dpg.add_menu_item(label="Add probe")  # TODO
 
-            # TODO: Add a toggle between input polling and callback modes
-
-        with dpg.node_editor(callback=link_callback,
-                             delink_callback=delink_callback) as connections_editor:
+        with dpg.node_editor(callback=link_node_callback,
+                             delink_callback=delink_node_callback) as connections_editor:
             with dpg.node(label="INPUTS",
                           pos=[10, 10]) as inputs_node:
                 # Dynamically populated
@@ -529,6 +672,14 @@ if __name__ == '__main__':
                                         attribute_type=dpg.mvNode_Attr_Input,
                                         shape=dpg.mvNode_PinShape_Triangle) as probe_in:
                     dpg.add_text("In")
+
+                with dpg.node_attribute(tag='probe_settings',
+                                        label="Settings",
+                                        attribute_type=dpg.mvNode_Attr_Static):
+                    dpg.add_checkbox(tag='polling_checkbox',
+                                     label="Polling",
+                                     source='polling',
+                                     callback=polling_callback)
 
                 with dpg.node_attribute(tag='probe_thru',
                                         label="Thru",
@@ -588,10 +739,6 @@ if __name__ == '__main__':
             for channel in range(18):
                 dpg.add_table_column()
 
-            with dpg.theme(tag='__red'):
-                with dpg.theme_component(dpg.mvButton):
-                    dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 0, 0))
-
             with dpg.table_row():
                 dpg.add_text("Channels:")
                 for channel in range(16):  # Channel messages
@@ -623,11 +770,16 @@ if __name__ == '__main__':
                 dpg.add_button(tag='mon_aftertouch', label="CHPR")
                 with dpg.tooltip(dpg.last_item()):
                     dpg.add_text("Channel Pressure (Channel Aftertouch)")
-                dpg.add_button(tag='mon_pitchwheel', label="PTCH")
+                dpg.add_button(tag='mon_pitchwheel', label="PBC")
                 with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Pitch Bend")
+                    dpg.add_text("Pitch Bend Change")
 
                 # TODO: Channel mode messages (page 20) (CC 120-127)
+
+                # System exclusive messages
+                dpg.add_button(tag='mon_sysex', label="SYX ")
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("System Exclusive (aka SysEx)")
 
                 # System common messages (page 27)
                 dpg.add_button(tag='mon_quarter_frame', label=" QF ")
@@ -667,11 +819,6 @@ if __name__ == '__main__':
                 with dpg.tooltip(dpg.last_item()):
                     dpg.add_text("Reset")
 
-                # System exclusive messages
-                dpg.add_button(tag='mon_sysex', label="SYX ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("System Exclusive (aka SysEx)")
-
             with dpg.table_row():
                 dpg.add_text("Controllers:")
                 # TODO: Control Changes (page 11)
@@ -707,7 +854,7 @@ if __name__ == '__main__':
                 dpg.add_text("Running status:")
                 # FIXME: unimplemented upstream (page A-1)
 
-        dpg.add_child_window(tag='probe_table_container')
+        dpg.add_child_window(tag='probe_table_container', height=585)
 
         # Details buttons
         # FIXME: separated to not scroll with table child window until table scrolling is supported
@@ -747,7 +894,7 @@ if __name__ == '__main__':
                        freeze_rows=0,  # FIXME: 1 when table scrolling will be implemented upstream
                        policy=dpg.mvTable_SizingStretchSame,
                        # scrollY=True,  # FIXME: Scroll the table instead of the window when available upstream
-                       clipper=True):
+                       ):
             dpg.add_table_column(label="Timestamp (ms)")
             dpg.add_table_column(label="Delta (ms)")
             dpg.add_table_column(label="Source")
@@ -771,7 +918,8 @@ if __name__ == '__main__':
             pos=[960, 715]
     ) as gen_data:
 
-        message = dpg.add_input_text(label="Raw Message", hint="XXYYZZ (HEX)", hexadecimal=True, callback=_decode)
+        message = dpg.add_input_text(label="Raw Message", hint="XXYYZZ (HEX)", hexadecimal=True,
+                                     callback=decode_callback)
         dpg.add_input_text(label="Decoded", readonly=True, hint="Automatically decoded raw message",
                            source='generator_decoded_message')
         dpg.add_button(tag="generator_send_button", label="Send", enabled=False)
@@ -780,7 +928,7 @@ if __name__ == '__main__':
 
     with dpg.handler_registry():
         dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)  # Fullscreen on F11
-        dpg.add_key_press_handler(key=123, callback=_toggle_log)  # Log on F12
+        dpg.add_key_press_handler(key=123, callback=toggle_log_callback)  # Log on F12
 
     ###
     # DEAR PYGUI SETUP
@@ -802,30 +950,8 @@ if __name__ == '__main__':
     while dpg.is_dearpygui_running():  # Replaces dpg.start_dearpygui()
         _update_blink_status()
 
-        ###
-        # MIDI Data receive & handling: Polling mode
-        ###
-        # FIXME: Use callback mode to avoid framerate dependency.
-        # Shorter MIDI message (1-byte) is 320us.
-        # 60FPS frame time is 16.7ms
-        # This amounts to up to 53 MIDI bytes per frame (52.17)!
-        probe_in_user_data = dpg.get_item_user_data(probe_in)
-        if probe_in_user_data:
-            # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
-            while True:
-                timestamp = time.time()
-                midi_data = probe_in_user_data["IN"].poll()
-                if not midi_data:  # Could also use iter_pending() instead.
-                    break
-                logger.log_debug(f"Received MIDI data from probe input: {midi_data}")
-                probe_thru_user_data = dpg.get_item_user_data(probe_thru)
-                if probe_thru_user_data:
-                    # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
-                    logger.log_debug(f"Sending MIDI data to probe thru")
-                    probe_thru_user_data["OUT"].send(midi_data)
-                _add_probe_data(timestamp=timestamp,
-                                source=probe_in,
-                                data=midi_data)
+        if dpg.get_value('polling'):
+            poll_processing()
 
         dpg.render_dearpygui_frame()
 
