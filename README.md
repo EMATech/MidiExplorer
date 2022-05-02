@@ -25,10 +25,15 @@ Features / TODO list
 
 - [ ] Platform support
   - [ ] **(WIP)** Microsoft Windows
+    - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)
+      - via mido's RtMidi backend
+    - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
+      - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
   - [ ] Apple Mac OS X
   - [ ] GNU/Linux
 - [ ] MIDI protocol
   - [x] v1.0
+    - using mido
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
   - [ ] Icons
@@ -45,17 +50,20 @@ Features / TODO list
     - [x] Toggle log (F12)
     - [ ] **(WIP)** Save state (Buggy at the moment)
 - [ ] I/O management
+  - [ ] Select backend?
   - [ ] List MIDI I/O
     - [x] USB / IEEE-1394 (OS level)
     - [ ] Bluetooth Low Energy (BLE-MIDI)
+      - Requires WinRt for Microsoft Windows
     - [ ] RTP-MIDI / IETF RFC 6295
     - [ ] Virtual
+  - [ ] Sort by ID/Name
   - [X] Effective connections
   - [ ] Refresh
     - [X] Manual
     - [ ] Auto with reconnect
-  - [ ] Add/Remove
   - [ ] Virtual ports
+    - [ ] Add/Remove
   - [ ] Save state
 - [ ] Modules (Plugins?)
   - [ ] Instances management (Add/Remove)
@@ -66,13 +74,31 @@ Features / TODO list
         - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
       - [x] Channels & System
       - [x] Message type
+      - [x] Timing
+        - [ ] System
+        - [x] Hardware
+          - retrieved using a modified mido RtMidi backend
     - [x] Read raw input
     - [x] Table decode input
     - [x] Thru support
+  - [ ] Splitter
+  - [ ] Merger
   - [ ] Generator
     - [ ] Generate raw output
     - [ ] Buffer/Clipboard any message (raw or decoded) to output
   - [ ] Translator/Filter
+  - [ ] Standard MIDI File (SMF)
+    - [ ] Analyzer
+    - [ ] Player
+    - [ ] Recorder
+  - [ ] Protocol analyzers/decoders
+    - [ ] HUI
+    - [ ] LCU
+    - [ ] MCU
+  - [ ] Trigger/Response (Protocol emulator)
+    - [ ] HUI
+    - [ ] LCU
+    - [ ] MCU
   - [ ] Hardware toolbox
 - [ ] **(WIP)** Logging
   - [x] GUI
