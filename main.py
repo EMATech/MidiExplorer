@@ -31,7 +31,7 @@ from midi.constants import NOTE_OFF_VELOCITY
 START_TIME = time.time()  # Initialize ASAP
 US2MS = 1000
 INIT_FILENAME = "midiexplorer.ini"
-DEBUG = True
+DEBUG = True  # TODO: allow changing with a CLI parameter
 
 ###
 # GLOBAL VARIABLES
@@ -39,6 +39,7 @@ DEBUG = True
 # FIXME: global variables should ideally be eliminated as they are a poor programming style
 ###
 global logger, log_win, previous_timestamp, probe_data_counter
+
 previous_timestamp = START_TIME
 probe_data_counter = 0
 input_lock = threading.Lock()
@@ -464,9 +465,16 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             with dpg.tooltip(dpg.last_item()):
                 dpg.add_text(dec_label)
 
+        # Status
+        stat_label = data.type
+        _mon_blink(stat_label)
+        dpg.add_text(stat_label)
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(stat_label)
+
         # Channel
         if hasattr(data, 'channel'):
-            chan_label = data.channel
+            chan_label = data.channel + 1
             _mon_blink('c')
             _mon_blink(chan_label)
         else:
@@ -475,13 +483,6 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         dpg.add_text(chan_label)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(chan_label)
-
-        # Status
-        stat_label = data.type
-        _mon_blink(stat_label)
-        dpg.add_text(stat_label)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(stat_label)
 
         # Data 1 & 2
         data0 = ""
@@ -714,6 +715,15 @@ if __name__ == '__main__':
     ) as main_win:
 
         with dpg.menu_bar():
+            with dpg.menu(label="File"):
+                dpg.add_menu_item(label="Save configuration", callback=_save_init)
+
+            with dpg.menu(label="Display"):
+                dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
+                dpg.add_menu_item(label="Toggle Log (F12)", callback=toggle_log_callback)
+
+            dpg.add_menu_item(label="About")  # TODO: implement
+
             if DEBUG:
                 with dpg.menu(label="Debug"):
                     dpg.add_menu_item(label="Show About", callback=lambda: dpg.show_tool(dpg.mvTool_About))
@@ -727,15 +737,6 @@ if __name__ == '__main__':
                     dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
                     dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
                     dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
-
-            with dpg.menu(label="File"):
-                dpg.add_menu_item(label="Save configuration", callback=_save_init)
-
-            with dpg.menu(label="Display"):
-                dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
-                dpg.add_menu_item(label="Toggle Log (F12)", callback=toggle_log_callback)
-
-            dpg.add_menu_item(label="About")  # TODO
 
     with dpg.window(
             tag="conn_win",
@@ -757,16 +758,27 @@ if __name__ == '__main__':
                     dpg.add_button(label="Cancel", width=75,
                                    callback=lambda: dpg.configure_item(refresh_midi_modal, show=False))
 
-            dpg.add_menu_item(label="Refresh MIDI ports",
-                              callback=lambda: dpg.configure_item(refresh_midi_modal, show=True))
+            with dpg.menu(label="MIDI ports"):
+                dpg.add_menu_item(label="Refresh",
+                                  callback=lambda: dpg.configure_item(refresh_midi_modal, show=True))
+                # TODO: implement
+                dpg.add_menu_item(label="Add virtual Input")
+                dpg.add_menu_item(label="Add virtual Output")
+                dpg.add_menu_item(label="Add virtual I/O")
 
-            dpg.add_menu_item(label="Add probe")  # TODO
+            # TODO: implement & add to context menu
+            with dpg.menu(label="Add tool"):
+                dpg.add_menu_item(label="Probe")
+                dpg.add_menu_item(label="Generator")
+                dpg.add_menu_item(label="Filter/translator")
+                dpg.add_menu_item(label="Merger")
+                dpg.add_menu_item(label="Splitter")
 
         with dpg.node_editor(callback=link_node_callback,
                              delink_callback=delink_node_callback) as connections_editor:
             with dpg.node(tag='inputs_node',
                           label="INPUTS",
-                          pos=[10, 10]) as inputs_node:
+                          pos=[10, 25]) as inputs_node:
                 # Dynamically populated
                 pass
 
@@ -794,6 +806,7 @@ if __name__ == '__main__':
                                         shape=dpg.mvNode_PinShape_Triangle) as probe_thru:
                     dpg.add_text("Thru")
 
+            # TODO: implement
             with dpg.node(label="GENERATOR",
                           pos=[360, 165]):
                 with dpg.node_attribute(label="Out",
@@ -801,6 +814,7 @@ if __name__ == '__main__':
                                         shape=dpg.mvNode_PinShape_Triangle) as gen_out:
                     dpg.add_text("Out", indent=2)
 
+            # TODO: implement
             with dpg.node(label="FILTER/TRANSLATOR",
                           pos=[360, 250]):
                 with dpg.node_attribute(label="In",
@@ -812,8 +826,40 @@ if __name__ == '__main__':
                                         shape=dpg.mvNode_PinShape_Triangle):
                     dpg.add_text("Out", indent=2)
 
+            # TODO: implement
+            with dpg.node(label="MERGER",
+                          pos=[360, 350]):
+                with dpg.node_attribute(label="In1",
+                                        attribute_type=dpg.mvNode_Attr_Input,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("In1")
+                with dpg.node_attribute(label="In2",
+                                        attribute_type=dpg.mvNode_Attr_Input,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("In2")
+                with dpg.node_attribute(label="Out",
+                                        attribute_type=dpg.mvNode_Attr_Output,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("Out", indent=2)
+
+            # TODO: implement
+            with dpg.node(label="SPLITTER",
+                          pos=[360, 475]):
+                with dpg.node_attribute(label="In",
+                                        attribute_type=dpg.mvNode_Attr_Input,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("In")
+                with dpg.node_attribute(label="Out1",
+                                        attribute_type=dpg.mvNode_Attr_Output,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("Out1", indent=2)
+                with dpg.node_attribute(label="Out2",
+                                        attribute_type=dpg.mvNode_Attr_Output,
+                                        shape=dpg.mvNode_PinShape_Triangle):
+                    dpg.add_text("Out2", indent=2)
+
             with dpg.node(label="OUTPUTS",
-                          pos=[610, 10]) as outputs_node:
+                          pos=[610, 25]) as outputs_node:
                 # Dynamically populated
                 pass
 
@@ -836,9 +882,20 @@ if __name__ == '__main__':
                                      dpg.set_value('blink_duration', dpg.get_value('blink_duration_slider')))
                 dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
                                  source='zero_velocity_note_on_is_note_off')
+                # TODO: implement
+                with dpg.group(horizontal=True):
+                    dpg.add_text("EOX is a:")
+                    dpg.add_radio_button(
+                        items=(
+                            "System Common Message (default, MIDI specification compliant)",
+                            "System Exclusive Message"
+                        ),
+                        source='eox_system_message'
+                    )
 
-        # Input Activity Monitor
-        dpg.add_child_window(tag='act_mon', label="Input activity monitor", height=210, border=False)
+        # Activity Monitor
+        with dpg.collapsing_header(label="Activity Monitor", default_open=True):
+            dpg.add_child_window(tag='act_mon', height=210, border=False)
 
         with dpg.table(parent='act_mon', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
@@ -881,9 +938,9 @@ if __name__ == '__main__':
                 dpg.add_table_column()
 
             with dpg.table_row():
-                dpg.add_text("Messages")
+                dpg.add_text("Channel Messages")
 
-                dpg.add_text("Channel Voice")
+                dpg.add_text("Voice")
 
                 # Channel voice messages (page 9)
                 dpg.add_button(tag='mon_note_off', label="OFF ")
@@ -946,15 +1003,15 @@ if __name__ == '__main__':
             with dpg.table_row():
                 dpg.add_text()
 
-                dpg.add_text("Channel Mode")
+                dpg.add_text("Mode")
 
             with dpg.table_row():
-                dpg.add_text()
+                dpg.add_text("System Messages")
 
-                dpg.add_text("System Common")
+                dpg.add_text("Exclusive")
 
                 # System exclusive messages
-                dpg.add_button(tag='mon_sysex', label="SYX ")
+                dpg.add_button(tag='mon_sysex', label="SOX ")
                 with dpg.tooltip(dpg.last_item()):
                     dpg.add_text("System Exclusive aka SysEx\n"
                                  "\n"
@@ -962,10 +1019,25 @@ if __name__ == '__main__':
                                  f"Decimal:\t\t{' ':4}{0xF0:03d}\n"
                                  f"Binary:\t\t{0xF0:08b}\n")
 
+                # FIXME: mido is missing EOX (TODO: send PR)
+                # TODO: display according to settings
+                dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
+                with dpg.tooltip(dpg.last_item()):
+                    dpg.add_text("End of Exclusive\n"
+                                 "\n"
+                                 f"Hexadecimal:\t{' ':5}{0xF7:01X}\n"
+                                 f"Decimal:\t\t{' ':4}{0xF7:03d}\n"
+                                 f"Binary:\t\t{0xF7:08b}\n")
+
+            with dpg.table_row():
+                dpg.add_text()
+
+                dpg.add_text("Common")
+
                 # System common messages (page 27)
                 dpg.add_button(tag='mon_quarter_frame', label=" QF ")
                 with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("MIDI Time Code (MTC) SMPTE Quarter Frame\n"
+                    dpg.add_text("MIDI Time Code Quarter Frame\n"
                                  "\n"
                                  f"Hexadecimal:\t{' ':5}{0xF1:01X}\n"
                                  f"Decimal:\t\t{' ':4}{0xF1:03d}\n"
@@ -1011,19 +1083,20 @@ if __name__ == '__main__':
                                  f"Decimal:\t\t{' ':4}{0xF6:03d}\n"
                                  f"Binary:\t\t{0xF6:08b}\n")
 
-                # FIXME: mido is missing EOX (TODO: send PR)
-                dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("End of Exclusive\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF7:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF7:03d}\n"
-                                 f"Binary:\t\t{0xF7:08b}\n")
+                # Moved to Exclusive System Messages for now
+                # TODO: display according to settings
+                # dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
+                # with dpg.tooltip(dpg.last_item()):
+                #     dpg.add_text("End of Exclusive\n"
+                #                  "\n"
+                #                  f"Hexadecimal:\t{' ':5}{0xF7:01X}\n"
+                #                  f"Decimal:\t\t{' ':4}{0xF7:03d}\n"
+                #                  f"Binary:\t\t{0xF7:08b}\n")
 
             with dpg.table_row():
                 dpg.add_text()
 
-                dpg.add_text("System Real-Time")
+                dpg.add_text("Real-Time")
 
                 # System real time messages (page 30)
                 dpg.add_button(tag='mon_clock', label="CLK ")
@@ -1126,7 +1199,9 @@ if __name__ == '__main__':
                 dpg.add_text("Running Status")
                 # FIXME: unimplemented upstream (page A-1)
 
-        dpg.add_child_window(tag='probe_table_container', height=425)
+        # Data table
+        with dpg.collapsing_header(label="Data History", default_open=True):
+            dpg.add_child_window(tag='probe_table_container', height=425, border=False)
 
         # Details buttons
         # FIXME: separated to not scroll with table child window until table scrolling is supported
@@ -1150,8 +1225,8 @@ if __name__ == '__main__':
             dpg.add_table_column(label="Raw Message (HEX)")
             if DEBUG:
                 dpg.add_table_column(label="Decoded Message")
-            dpg.add_table_column(label="Channel")
             dpg.add_table_column(label="Status")
+            dpg.add_table_column(label="Channel")
             dpg.add_table_column(label="Data 1")
             dpg.add_table_column(label="Data 2")
 
@@ -1173,8 +1248,8 @@ if __name__ == '__main__':
             dpg.add_table_column(label="Raw Message (HEX)")
             if DEBUG:
                 dpg.add_table_column(label="Decoded Message")
-            dpg.add_table_column(label="Channel")
             dpg.add_table_column(label="Status")
+            dpg.add_table_column(label="Channel")
             dpg.add_table_column(label="Data 1")
             dpg.add_table_column(label="Data 2")
 

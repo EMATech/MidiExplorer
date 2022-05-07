@@ -76,6 +76,17 @@ MIDDLE_C_NOTE = 60
 DEFAULT_VELOCITY = 64
 NOTE_OFF_VELOCITY = 0
 
+# Page T-2
+CHANNEL_VOICE_MESSAGES = {
+    0x8: "Note Off",
+    0x9: "Note On",
+    0xA: "Polyphonic Key Pressure (Aftertouch)",
+    0xB: "Control Change",
+    0xC: "Program Change",
+    0xD: "Channel Pressure (Aftertouch)",
+    0xE: "Pitch Bend Change",
+}
+
 # Page T-3
 CONTROLLER_NUMBERS = {
     0: "Bank Select",
@@ -258,6 +269,10 @@ SYSTEM_REAL_TIME_MESSAGES = {
 }
 
 # Page T-8
+SYSTEM_EXCLUSIVE_MESSAGES = {
+    0xF0: "Start of System Exclusive",
+    0xF7: "End of System Exclusive",
+}
 # See SYSTEM_EXCLUSIVE_MANUFACTURER_ID
 
 # Page T-9
