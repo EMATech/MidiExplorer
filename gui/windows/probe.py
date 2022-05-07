@@ -8,6 +8,12 @@ from gui.config import DEBUG, START_TIME
 from gui.logger import Logger
 from midi.constants import NOTE_OFF_VELOCITY
 
+# This Python file uses the following encoding: utf-8
+#
+# SPDX-FileCopyrightText: 2021-2022 Raphaël Doursenaud <rdoursenaud@free.fr>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 US2MS = 1000
 
 ###
