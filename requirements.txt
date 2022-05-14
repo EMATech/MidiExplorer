@@ -1,4 +1,4 @@
-dearpygui
-dearpygui-ext==0.9.3  # FIXME: Upstream bug prevents installation of 0.9.4: https://github.com/hoffstadt/DearPyGui_Ext/issues/6
-mido  # FIXME: 1.2.11a1 with EOX, running status and delta time support
+dearpygui==1.6.2
+dearpygui-ext==0.9.5
+mido==1.2.11  # FIXME: 1.2.11a1 with EOX, running status and delta time support
 python-rtmidi  # mido backend. FIXME: build native backends for better granularity
