@@ -30,20 +30,20 @@ def create():
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
                 dpg.add_menu_item(label="Toggle Log (F12)", callback=gui.windows.log.toggle)
 
-            dpg.add_menu_item(label="About")  # TODO: implement
-
-            if DEBUG:
-                with dpg.menu(label="Debug"):
-                    dpg.add_menu_item(label="Show About", callback=lambda: dpg.show_tool(dpg.mvTool_About))
-                    dpg.add_menu_item(label="Show Metrics", callback=lambda: dpg.show_tool(dpg.mvTool_Metrics))
-                    dpg.add_menu_item(label="Show Documentation", callback=lambda: dpg.show_tool(dpg.mvTool_Doc))
-                    dpg.add_menu_item(label="Show Debug", callback=lambda: dpg.show_tool(dpg.mvTool_Debug))
-                    dpg.add_menu_item(label="Show Style Editor", callback=lambda: dpg.show_tool(dpg.mvTool_Style))
-                    dpg.add_menu_item(label="Show Font Manager", callback=lambda: dpg.show_tool(dpg.mvTool_Font))
-                    dpg.add_menu_item(label="Show Item Registry",
-                                      callback=lambda: dpg.show_tool(dpg.mvTool_ItemRegistry))
-                    dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
-                    dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
-                    dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
+            with dpg.menu(label="Help"):
+                if DEBUG:
+                    with dpg.menu(label="Debug"):
+                        dpg.add_menu_item(label="Show About", callback=lambda: dpg.show_tool(dpg.mvTool_About))
+                        dpg.add_menu_item(label="Show Metrics", callback=lambda: dpg.show_tool(dpg.mvTool_Metrics))
+                        dpg.add_menu_item(label="Show Documentation", callback=lambda: dpg.show_tool(dpg.mvTool_Doc))
+                        dpg.add_menu_item(label="Show Debug", callback=lambda: dpg.show_tool(dpg.mvTool_Debug))
+                        dpg.add_menu_item(label="Show Style Editor", callback=lambda: dpg.show_tool(dpg.mvTool_Style))
+                        dpg.add_menu_item(label="Show Font Manager", callback=lambda: dpg.show_tool(dpg.mvTool_Font))
+                        dpg.add_menu_item(label="Show Item Registry",
+                                          callback=lambda: dpg.show_tool(dpg.mvTool_ItemRegistry))
+                        dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
+                        dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
+                        dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
+                dpg.add_menu_item(label="About")  # TODO: implement
 
         return main_win

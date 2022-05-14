@@ -26,7 +26,11 @@ probe_data_counter = 0
 
 def create():
     with dpg.value_registry():
+        # Preferences
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
+        # Per standard, consider note-on with velocity set to 0 as note-off
+        dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
+        # Blink management
         dpg.add_float_value(tag='mon_c_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_s_active_until', default_value=0)  # seconds
         for channel in range(16):  # Monitoring status
@@ -50,8 +54,6 @@ def create():
         dpg.add_float_value(tag='mon_stop_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_active_sensing_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_reset_active_until', default_value=0)  # seconds
-        # Per standard, consider note-on with velocity set to 0 as note-off
-        dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
 
     ###
     # DEAR PYGUI THEME for red buttons

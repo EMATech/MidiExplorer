@@ -77,6 +77,7 @@ def link_node_callback(sender: int | str,
         logger.log_debug(f"Attached {dpg.get_item_user_data(probe_pin)} to the {probe_pin} pin user data.")
 
         dpg.add_node_link(pin1, pin2, parent=sender)
+
         dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_TriangleFilled)
         dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_TriangleFilled)
 
@@ -299,21 +300,30 @@ def create():
                     dpg.add_button(label="Cancel", width=75,
                                    callback=lambda: dpg.configure_item(refresh_midi_modal, show=False))
 
-            with dpg.menu(label="MIDI ports"):
+            with dpg.menu(label="Settings"):
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Input mode:")
+                    dpg.add_radio_button(items=("Callback", "Polling"),
+                                         source='input_mode',
+                                         callback=input_mode_callback)
+
+            with dpg.menu(label="Ports"):
                 dpg.add_menu_item(label="Refresh",
                                   callback=lambda: dpg.configure_item(refresh_midi_modal, show=True))
                 # TODO: implement
-                dpg.add_menu_item(label="Add virtual Input")
-                dpg.add_menu_item(label="Add virtual Output")
-                dpg.add_menu_item(label="Add virtual I/O")
+                with dpg.menu(label="Add virtual"):
+                    dpg.add_menu_item(label="Input")
+                    dpg.add_menu_item(label="Output")
+                    dpg.add_menu_item(label="I/O")
 
             # TODO: implement & add to context menu
-            with dpg.menu(label="Add tool"):
-                dpg.add_menu_item(label="Probe")
-                dpg.add_menu_item(label="Generator")
-                dpg.add_menu_item(label="Filter/translator")
-                dpg.add_menu_item(label="Merger")
-                dpg.add_menu_item(label="Splitter")
+            with dpg.menu(label="Tools"):
+                with dpg.menu(label="Add"):
+                    dpg.add_menu_item(label="Probe")
+                    dpg.add_menu_item(label="Generator")
+                    dpg.add_menu_item(label="Filter/translator")
+                    dpg.add_menu_item(label="Merger")
+                    dpg.add_menu_item(label="Splitter")
 
         with dpg.node_editor(callback=link_node_callback,
                              delink_callback=delink_node_callback) as connections_editor:
@@ -326,14 +336,6 @@ def create():
             with dpg.node(tag='probe_node',
                           label="PROBE",
                           pos=[360, 25]) as probe:
-                with dpg.node_attribute(tag='probe_settings',
-                                        label="Settings",
-                                        attribute_type=dpg.mvNode_Attr_Static):
-                    with dpg.group(horizontal=True):
-                        dpg.add_text("Mode:")
-                        dpg.add_radio_button(items=("Callback", "Polling"),
-                                             source='input_mode',
-                                             callback=input_mode_callback)
 
                 with dpg.node_attribute(tag='probe_in',
                                         label="In",
