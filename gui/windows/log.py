@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+"""
+Logging window
+"""
+
 import sys
 from typing import Any, Optional
 
@@ -13,11 +17,9 @@ from gui.config import DEBUG
 from gui.logger import Logger
 
 
-def create() -> dpg.window:
+def create() -> None:
     # TODO: allow logging to file
     # TODO: append/overwrite
-
-    global log_win
 
     with dpg.window(
             tag='log_win',
@@ -26,9 +28,8 @@ def create() -> dpg.window:
             height=225,
             pos=[0, 815],
             show=DEBUG,
-    ) as log_win:
+    ):
         pass
-    return log_win
 
 
 def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
@@ -40,4 +41,4 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
 
-    dpg.configure_item(log_win, show=not dpg.is_item_visible(log_win))
+    dpg.configure_item('log_win', show=not dpg.is_item_visible('log_win'))

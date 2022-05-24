@@ -1,18 +1,21 @@
-import time
-
-import mido
-from dearpygui import dearpygui as dpg
-
-import midi.input
-from gui.config import DEBUG, START_TIME
-from gui.logger import Logger
-from midi.constants import NOTE_OFF_VELOCITY
-
 # This Python file uses the following encoding: utf-8
 #
 # SPDX-FileCopyrightText: 2021-2022 Raphaël Doursenaud <rdoursenaud@free.fr>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+"""
+Probe window and management
+"""
+
+import time
+
+import mido
+from dearpygui import dearpygui as dpg
+
+from gui.config import DEBUG, START_TIME
+from gui.logger import Logger
+from midi.constants import NOTE_OFF_VELOCITY
 
 US2MS = 1000
 
@@ -22,9 +25,10 @@ US2MS = 1000
 # FIXME: global variables should ideally be eliminated as they are a poor programming style
 ###
 probe_data_counter = 0
+previous_timestamp = START_TIME
 
 
-def create():
+def create() -> None:
     with dpg.value_registry():
         # Preferences
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
@@ -66,19 +70,21 @@ def create():
             tag='probe_win',
             label="Probe",
             width=960,
-            height=695,
+            height=685,
             no_close=True,
             collapsed=False,
             pos=[960, 20]
-    ) as probe_win:
+    ):
 
         with dpg.menu_bar():
             with dpg.menu(label="Settings"):
-                dpg.add_slider_float(tag='mon_blink_duration_slider',
-                                     label="Persistence (s)",
-                                     min_value=0, max_value=0.5, source='mon_blink_duration',
-                                     callback=lambda:
-                                     dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider')))
+                dpg.add_slider_float(
+                    tag='mon_blink_duration_slider',
+                    label="Persistence (s)",
+                    min_value=0, max_value=0.5, source='mon_blink_duration',
+                    callback=lambda:
+                    dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider'))
+                )
                 dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
                                  source='zero_velocity_note_on_is_note_off')
                 # TODO: implement
@@ -94,7 +100,7 @@ def create():
 
         # Activity Monitor
         with dpg.collapsing_header(label="Activity Monitor", default_open=True):
-            dpg.add_child_window(tag='act_mon', height=210, border=False)
+            dpg.add_child_window(tag='act_mon', height=180, border=False)
 
         with dpg.table(parent='act_mon', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
@@ -400,11 +406,11 @@ def create():
 
         # Data table
         with dpg.collapsing_header(label="Data History", default_open=True):
-            dpg.add_child_window(tag='probe_table_container', height=425, border=False)
+            dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
         # Details buttons
         # FIXME: separated to not scroll with table child window until table scrolling is supported
-        dpg.add_child_window(parent='probe_table_container', tag='act_det_btns', label="Buttons", height=40,
+        dpg.add_child_window(parent='probe_table_container', tag='act_det_btns', label="Buttons", height=45,
                              border=False)
         with dpg.group(parent='act_det_btns', horizontal=True):
             dpg.add_checkbox(tag='probe_data_table_autoscroll', label="Auto-Scroll", default_value=True)
@@ -433,7 +439,7 @@ def create():
         # TODO: Show/hide columns
         # TODO: timegraph?
 
-        dpg.add_child_window(parent='probe_table_container', tag='act_det', label="Details", height=370, border=False)
+        dpg.add_child_window(parent='probe_table_container', tag='act_det', label="Details", height=340, border=False)
         with dpg.table(parent='act_det',
                        tag='probe_data_table',
                        header_row=False,  # FIXME: True when table scrolling will be implemented upstream
@@ -453,8 +459,6 @@ def create():
             dpg.add_table_column(label="Data 2")
 
             _init_details_table_data()
-
-    return probe_win
 
 
 def _clear_probe_data_table() -> None:
@@ -477,9 +481,11 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     :param data:
     :return:
     """
+    global probe_data_counter, previous_timestamp
+
     logger = Logger()
 
-    global probe_data_counter
+    logger.log_debug(f"Adding data from {source} to probe at {timestamp}: {data!r}")
 
     # TODO: insert new data at the top of the table
     previous_data = probe_data_counter
@@ -504,9 +510,10 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         if data.time:
             delta = data.time * US2MS
             logger.log_debug("Using rtmidi time delta")
-        elif midi.input.previous_timestamp is not None:
-            delta = (timestamp - midi.input.previous_timestamp) * US2MS
-        midi.input.previous_timestamp = timestamp
+        elif previous_timestamp is not None:
+            logger.log_debug("Rtmidi time delta not available. Computing timestamp locally.")
+            delta = (timestamp - previous_timestamp) * US2MS
+        previous_timestamp = timestamp
         delta_label = str(delta)
         dpg.add_text(delta_label)
         with dpg.tooltip(dpg.last_item()):
@@ -536,7 +543,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         if hasattr(data, 'channel'):
             chan_label = data.channel + 1
             _mon_blink('c')
-            _mon_blink(chan_label)
+            _mon_blink(data.channel)
         else:
             chan_label = "Global"
             _mon_blink('s')

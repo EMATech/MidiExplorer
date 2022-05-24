@@ -38,6 +38,8 @@ Features / TODO list
 - [ ] **(WIP)** Interactive GUI
   - [ ] Icons
   - [ ] About window
+  - [x] Fonts
+  - [ ] Custom theme
   - [X] Node editor window
     - [X] Inputs
     - [X] Outputs
@@ -57,8 +59,17 @@ Features / TODO list
       - Requires WinRt for Microsoft Windows
     - [ ] RTP-MIDI / IETF RFC 6295
     - [ ] Virtual
-  - [ ] Sort by ID/Name
-  - [X] Effective connections
+  - [x] Input reading modes
+    - [x] Polling
+    - [x] Callback
+  - [ ] **(WIP)** Sort by ID/Name
+  - [ ] Connections
+    - [x] Port to probe
+    - [x] Probe to port
+    - [x] Port to port
+    - [ ] Port to any module
+    - [ ] Any module to port
+    - [ ] Module to module
   - [ ] Refresh
     - [X] Manual
     - [ ] Auto with reconnect
@@ -75,9 +86,9 @@ Features / TODO list
       - [x] Channels & System
       - [x] Message type
       - [x] Timing
-        - [ ] System
         - [x] Hardware
           - retrieved using a modified mido RtMidi backend
+        - [x] System
     - [x] Read raw input
     - [x] Table decode input
     - [x] Thru support
@@ -112,7 +123,7 @@ Legal notice
 
 ### License
 
-Copyright 2022 Raphaël Doursenaud.
+Copyright 2021-2022 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).
 
@@ -137,6 +148,9 @@ See [LICENSE](LICENSE).
 - via [Dear PyGui](https://github.com/hoffstadt/DearPyGui)  
   Copyright (c) 2021 Dear PyGui, LLC  
   Used under the terms of the MIT License.
+- [Roboto Mono](https://github.com/googlefonts/RobotoMono)  
+  Copyright (c) 2015 The Roboto Mono Project Authors  
+  Used under the terms of the Apache License, Version 2.0.
 
 ### Trademarks
 

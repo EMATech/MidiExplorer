@@ -4,6 +4,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+"""
+Logger singleton
+
+Allows sharing it globally.
+"""
+
 from dearpygui_ext.logger import mvLogger
 
 

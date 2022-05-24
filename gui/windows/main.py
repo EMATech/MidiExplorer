@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+"""
+Main window
+"""
+
 from dearpygui import dearpygui as dpg
 from dearpygui.demo import show_demo
 
@@ -13,7 +17,7 @@ import gui.windows.log
 from gui.config import DEBUG
 
 
-def create():
+def create() -> None:
     with dpg.window(
             tag='main_win',
             label="MIDI Explorer",
@@ -21,7 +25,7 @@ def create():
             height=1080,
             no_close=True,
             collapsed=False,
-    ) as main_win:
+    ):
         with dpg.menu_bar():
             with dpg.menu(label="File"):
                 dpg.add_menu_item(label="Save configuration", callback=gui.config.save)
@@ -45,5 +49,3 @@ def create():
                         dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
                         dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
                 dpg.add_menu_item(label="About")  # TODO: implement
-
-        return main_win

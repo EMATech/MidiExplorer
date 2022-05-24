@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+"""
+Sample DearPyGUI callback
+"""
+
 import sys
 from typing import Any, Optional
 

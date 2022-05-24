@@ -11,6 +11,8 @@
 * Author(s): Raphaël Doursenaud <rdoursenaud@free.fr>
 """
 
+import ctypes
+
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
 import gui.logger
@@ -19,15 +21,16 @@ import gui.windows.gen
 import gui.windows.log
 import gui.windows.main
 import gui.windows.probe
-import midi.input
+import midi
 from gui.config import DEBUG, INIT_FILENAME, START_TIME
+from midi.ports import lock, queue
 
 if __name__ == '__main__':
     dpg.create_context()
 
     # Initialize logger ASAP
-    log_win = gui.windows.log.create()
-    logger = gui.logger.Logger(log_win)
+    gui.windows.log.create()
+    logger = gui.logger.Logger('log_win')
     if DEBUG:
         logger.log_level = 0  # TRACE
     else:
@@ -42,10 +45,10 @@ if __name__ == '__main__':
     ###
     # DOAR PYGUI WINDOWS
     ###
-    main_win = gui.windows.main.create()
-    conn_win = gui.windows.conn.create()
-    probe_win = gui.windows.probe.create()
-    gen_win = gui.windows.gen.create()
+    gui.windows.main.create()
+    gui.windows.conn.create()
+    gui.windows.probe.create()
+    gui.windows.gen.create()
 
     gui.windows.conn.refresh_midi_ports()
 
@@ -56,27 +59,47 @@ if __name__ == '__main__':
     ###
     # DEAR PYGUI SETUP
     ###
+
+    # Fonts. https://dearpygui.readthedocs.io/en/latest/documentation/fonts.html
+
+    # See: https://github.com/hoffstadt/DearPyGui/issues/1380
+    FONT_OVERSAMPLING_RATIO = 2
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    dpg.set_global_font_scale(1 / FONT_OVERSAMPLING_RATIO)
+
+    with dpg.font_registry():
+        dpg.add_font('fonts/Roboto-Regular.ttf', 15 * FONT_OVERSAMPLING_RATIO, tag='default_font')
+        dpg.add_font('fonts/RobotoMono-Regular.ttf', 15 * FONT_OVERSAMPLING_RATIO, tag='mono_font')
+
+    dpg.bind_font('default_font')
+    log_win_textbox = dpg.get_item_children('log_win', slot=1)[2]
+    dpg.bind_item_font(log_win_textbox, 'mono_font')
+    dpg.bind_item_font('probe_data_table_headers', 'mono_font')
+    dpg.bind_item_font('probe_data_table', 'mono_font')
+
     dpg.create_viewport(title='MIDI Explorer', width=1920, height=1080)
 
-    # Icons must be called before showing viewport
+    # Icons must be set before showing viewport (Can also be set when instantiating the viewport)
     # TODO: icons
     # dpg.set_viewport_small_icon("path/to/icon.ico")
     # dpg.set_viewport_large_icon("path/to/icon.ico")
 
+    # TODO: theme
+
     dpg.setup_dearpygui()
     dpg.show_viewport()
-    dpg.set_primary_window(main_win, True)
+    dpg.set_primary_window('main_win', True)
 
     ###
     # MAIN LOOP
     ###
     while dpg.is_dearpygui_running():  # Replaces dpg.start_dearpygui()
         if dpg.get_value('input_mode') == 'Polling':
-            with midi.input.lock:
+            with lock:
                 gui.windows.conn.poll_processing()
 
-        while not midi.input.queue.empty():
-            gui.windows.conn.handle_received_data(*midi.input.queue.get())
+        while not queue.empty():
+            gui.windows.conn.handle_received_data(*queue.get())
 
         gui.windows.probe.update_blink_status()
 

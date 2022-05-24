@@ -4,6 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+"""
+MIDI helpers
+"""
+
 import mido  # https://mido.readthedocs.io/en/latest/
 
 from gui.logger import Logger
