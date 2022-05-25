@@ -92,6 +92,10 @@ Features / TODO list
     - [x] Read raw input
     - [x] Table decode input
     - [x] Thru support
+    - [ ] Color code
+      - [ ] Per source
+      - [ ] Per channel
+      - [ ] Per message type
   - [ ] Splitter
   - [ ] Merger
   - [ ] Generator

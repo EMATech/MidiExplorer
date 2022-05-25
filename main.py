@@ -12,6 +12,7 @@
 """
 
 import ctypes
+import os.path
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
@@ -39,9 +40,6 @@ if __name__ == '__main__':
 
     midi.init()
 
-    if not DEBUG:
-        dpg.configure_app(init_file=INIT_FILENAME)
-
     ###
     # DOAR PYGUI WINDOWS
     ###
@@ -49,6 +47,10 @@ if __name__ == '__main__':
     gui.windows.conn.create()
     gui.windows.probe.create()
     gui.windows.gen.create()
+
+    if not DEBUG:
+        if os.path.exists(INIT_FILENAME):
+            dpg.configure_app(init_file=INIT_FILENAME)
 
     gui.windows.conn.refresh_midi_ports()
 

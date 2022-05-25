@@ -26,9 +26,14 @@ def create() -> None:
             no_close=True,
             collapsed=False,
     ):
+        gui.config.create_selectors()
+
         with dpg.menu_bar():
-            with dpg.menu(label="File"):
-                dpg.add_menu_item(label="Save configuration", callback=gui.config.save)
+            with dpg.menu(label="Configuration"):
+                dpg.add_menu_item(label="Load", callback=gui.config.load)
+                dpg.add_menu_item(label="Save", callback=gui.config.save)
+                dpg.add_menu_item(label="Save as", callback=gui.config.saveas)
+                dpg.add_menu_item(label="Reset", callback=gui.config.clear)
 
             with dpg.menu(label="Display"):
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
