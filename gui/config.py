@@ -8,13 +8,13 @@
 Configuration management
 """
 import os.path
-import time
 
+import time
 from dearpygui import dearpygui as dpg
 
 START_TIME = time.time()  # Initialize ASAP
 INIT_FILENAME = "midiexplorer.ini"
-DEBUG = True  # TODO: allow changing with CLI parameter to the main app
+DEBUG = False  # TODO: allow changing with CLI parameter to the main app
 
 
 def create_selectors():

@@ -99,11 +99,15 @@ def create() -> None:
         with dpg.theme_component(dpg.mvButton):
             dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 0, 0))
 
+    probe_win_height = 1020
+    if DEBUG:
+        probe_win_height = 685
+
     with dpg.window(
             tag='probe_win',
             label="Probe",
             width=1005,
-            height=685,
+            height=probe_win_height,
             no_close=True,
             collapsed=False,
             pos=[900, 20]
@@ -120,49 +124,54 @@ def create() -> None:
                 )
                 dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
                                  source='zero_velocity_note_on_is_note_off')
-                # TODO: implement
-                with dpg.group(horizontal=True):
-                    dpg.add_text("EOX is a:")
-                    dpg.add_radio_button(
-                        items=(
-                            "System Common Message (default, MIDI specification compliant)",
-                            "System Exclusive Message"
-                        ),
-                        source='eox_system_message'
-                    )
+                if DEBUG:
+                    # TODO: implement
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("EOX is a:")
+                        dpg.add_radio_button(
+                            items=(
+                                "System Common Message (default, MIDI specification compliant)",
+                                "System Exclusive Message"
+                            ),
+                            source='eox_system_message'
+                        )
 
         ###
         # Mode
         ###
-        # TODO
-        with dpg.collapsing_header(label="MIDI Mode", default_open=False):
-            dpg.add_child_window(tag='probe_midi_mode', height=10, border=False)
+        if DEBUG:
+            # TODO: implement
+            with dpg.collapsing_header(label="MIDI Mode", default_open=False):
+                dpg.add_child_window(tag='probe_midi_mode', height=10, border=False)
 
-            dpg.add_text("Not implemented yet")
+                dpg.add_text("Not implemented yet")
 
-            # FIXME: move to settings?
-            dpg.add_input_int(tag='mode_basic_chan', label="Basic Channel",
-                              default_value=midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
+                # FIXME: move to settings?
+                dpg.add_input_int(tag='mode_basic_chan', label="Basic Channel",
+                                  default_value=midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
 
-            dpg.add_radio_button(
-                tag='modes',
-                items=[
-                    "1",  # Omni On - Poly
-                    "2",  # Omni On - Mono
-                    "3",  # Omni Off - Poly
-                    "4",  # Omni Off - Mono
-                ],
-                default_value=midi.constants.POWER_UP_DEFAULT['mode'],
-                horizontal=True, enabled=False,
-            )
+                dpg.add_radio_button(
+                    tag='modes',
+                    items=[
+                        "1",  # Omni On - Poly
+                        "2",  # Omni On - Mono
+                        "3",  # Omni Off - Poly
+                        "4",  # Omni Off - Mono
+                    ],
+                    default_value=midi.constants.POWER_UP_DEFAULT['mode'],
+                    horizontal=True, enabled=False,
+                )
 
         ###
-        # Messages
+        # Status
         ###
-        with dpg.collapsing_header(label="Messages", default_open=True):
-            dpg.add_child_window(tag='probe_messages_container', height=180, border=False)
+        status_height = 154
+        if DEBUG:
+            status_height = 180
+        with dpg.collapsing_header(label="Status", default_open=True):
+            dpg.add_child_window(tag='probe_status_container', height=status_height, border=False)
 
-        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(3):
@@ -183,7 +192,7 @@ def create() -> None:
         dlen = 3  # Decimal
         blen = 4  # Binary
 
-        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
             for channel in range(17):
                 dpg.add_table_column()
@@ -195,7 +204,7 @@ def create() -> None:
                     dpg.add_button(tag=f"mon_{channel}", label=f"{channel + 1:2d}")
                     _add_tooltip_conv(f"Channel {channel + 1}", channel, hlen, dlen, blen)
 
-        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(9):
@@ -235,43 +244,44 @@ def create() -> None:
                 val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-            # TODO: Channel mode messages (page 20) (CC 120-127)
-            with dpg.table_row():
-                dpg.add_text()
+            if DEBUG:
+                # TODO: Channel mode messages (page 20) (CC 120-127)
+                with dpg.table_row():
+                    dpg.add_text()
 
-                dpg.add_text("Mode")
+                    dpg.add_text("Mode")
 
-                dpg.add_button(tag='mon_all_sound_off', label="ASOF")
-                val = 120
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_all_sound_off', label="ASOF")
+                    val = 120
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_reset_all_controllers', label="RAC ")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_reset_all_controllers', label="RAC ")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_local_control', label=" LC ")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_local_control', label=" LC ")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_all_notes_off', label="ANOF")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_all_notes_off', label="ANOF")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_omni_off', label="O OF")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_omni_off', label="O OF")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_omni_on', label="O ON")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_omni_on', label="O ON")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_mono_on', label="M ON")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_mono_on', label="M ON")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_poly_on', label="P ON")
-                val += 1
-                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    dpg.add_button(tag='mon_poly_on', label="P ON")
+                    val += 1
+                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text("System Messages")
@@ -366,13 +376,13 @@ def create() -> None:
         ###
         # Notes
         ###
-        with dpg.collapsing_header(label="Notes", default_open=False):
+        with dpg.collapsing_header(label="Notes", default_open=True):
             dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
 
-            # TODO: Staff?
-            # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
+        # TODO: Staff?
+        # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
 
-            # Keyboard
+        # Keyboard
         dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120,
                              border=False)
 
@@ -410,8 +420,8 @@ def create() -> None:
         ###
         # Controllers
         ###
-        with dpg.collapsing_header(label="Controllers", default_open=False):
-            dpg.add_child_window(tag='probe_controllers_container', height=200, border=False)
+        with dpg.collapsing_header(label="Controllers", default_open=True):
+            dpg.add_child_window(tag='probe_controllers_container', height=192, border=False)
 
         with dpg.table(tag='probe_controllers', parent='probe_controllers_container', header_row=False,
                        policy=dpg.mvTable_SizingFixedFit):
@@ -439,43 +449,47 @@ def create() -> None:
         ###
         # System Exclusive
         ###
-        with dpg.collapsing_header(label="System Exclusive", default_open=False):
-            dpg.add_child_window(tag='probe_sysex_container', height=20, border=False)
+        if DEBUG:
+            # TODO: implement
+            with dpg.collapsing_header(label="System Exclusive", default_open=False):
+                dpg.add_child_window(tag='probe_sysex_container', height=20, border=False)
 
-        with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
-                       policy=dpg.mvTable_SizingFixedFit):
-            dpg.add_table_column(label="Title")
+            with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
+                           policy=dpg.mvTable_SizingFixedFit):
+                dpg.add_table_column(label="Title")
 
-            for _i in range(17):
-                dpg.add_table_column()
+                for _i in range(17):
+                    dpg.add_table_column()
 
-            with dpg.table_row():
-                dpg.add_text("Not implemented yet")
-                # TODO: decode 1 or 3 byte IDs (page 34)
-                # TODO: decode sample dump standard (page 35)
-                # ACK, NAK, Wait, Cancel & EOF
-                # TODO: decode device inquiry (page 40)
-                # TODO: decode file dump (page 41)
-                # TODO: decode midi tuning (page 47)
-                # TODO: decode general midi system messages (page 52)
-                # TODO: decode MTC full message, user bits and real time cueing (page 53 + dedicated spec)
-                # TODO: decode midi show control (page 53 + dedicated spec)
-                # TODO: decode notation information (page 54)
-                # TODO: decode device control (page 57)
-                # TODO: decode MMC (page 58 + dedicated spec)
+                with dpg.table_row():
+                    dpg.add_text("Not implemented yet")
+                    # TODO: decode 1 or 3 byte IDs (page 34)
+                    # TODO: decode sample dump standard (page 35)
+                    # ACK, NAK, Wait, Cancel & EOF
+                    # TODO: decode device inquiry (page 40)
+                    # TODO: decode file dump (page 41)
+                    # TODO: decode midi tuning (page 47)
+                    # TODO: decode general midi system messages (page 52)
+                    # TODO: decode MTC full message, user bits and real time cueing (page 53 + dedicated spec)
+                    # TODO: decode midi show control (page 53 + dedicated spec)
+                    # TODO: decode notation information (page 54)
+                    # TODO: decode device control (page 57)
+                    # TODO: decode MMC (page 58 + dedicated spec)
 
         ###
         # Running Status
         ###
-        with dpg.collapsing_header(label="Running Status", default_open=False):
-            dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
-            # FIXME: unimplemented upstream (page A-1)
-            dpg.add_text("Not implemented yet", parent='probe_running_status_container')
+        if DEBUG:
+            # TODO: implement
+            with dpg.collapsing_header(label="Running Status", default_open=False):
+                dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
+                # FIXME: unimplemented upstream (page A-1)
+                dpg.add_text("Not implemented yet", parent='probe_running_status_container')
 
         ###
         # Data history table
         ###
-        with dpg.collapsing_header(label="Data History", default_open=True):
+        with dpg.collapsing_header(label="History", default_open=True):
             dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
         # Details buttons
@@ -572,10 +586,10 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             dpg.add_text(source)
 
         # Timestamp (ms)
-        ts_label = str((timestamp - START_TIME) * US2MS)
-        dpg.add_text(ts_label)
+        ts = (timestamp - START_TIME) * US2MS
+        dpg.add_text(f"{ts:n}")
         with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(ts_label)
+            dpg.add_text(f"{ts}")
 
         # Delta (ms)
         delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
@@ -586,10 +600,9 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
             delta = (timestamp - previous_timestamp) * US2MS
         previous_timestamp = timestamp
-        delta_label = str(delta)
-        dpg.add_text(delta_label)
+        dpg.add_text(f"{delta:n}")
         with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(delta_label)
+            dpg.add_text(f"{delta}")
 
         # Raw message
         raw_label = data.hex()

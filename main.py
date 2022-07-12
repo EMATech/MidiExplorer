@@ -45,7 +45,8 @@ if __name__ == '__main__':
     gui.windows.main.create()
     gui.windows.conn.create()
     gui.windows.probe.create()
-    gui.windows.gen.create()
+    if DEBUG:
+        gui.windows.gen.create()
 
     if not DEBUG:
         if os.path.exists(INIT_FILENAME):
@@ -72,10 +73,12 @@ if __name__ == '__main__':
     log_win_textbox = dpg.get_item_children('log_win', slot=1)[2]
     dpg.bind_item_font(log_win_textbox, 'mono_font')
 
-    dpg.bind_item_font('probe_midi_mode', 'mono_font')
-    dpg.bind_item_font('probe_messages_container', 'mono_font')
+    if DEBUG:
+        dpg.bind_item_font('probe_midi_mode', 'mono_font')
+    dpg.bind_item_font('probe_status_container', 'mono_font')
     dpg.bind_item_font('probe_controllers_container', 'mono_font')
-    dpg.bind_item_font('probe_sysex_container', 'mono_font')
+    if DEBUG:
+        dpg.bind_item_font('probe_sysex_container', 'mono_font')
     dpg.bind_item_font('probe_notes_container', 'mono_font')
 
     dpg.bind_item_font('probe_data_table_headers', 'mono_font')

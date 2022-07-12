@@ -16,6 +16,7 @@ from dearpygui import dearpygui as dpg
 
 import constants.dpg_slot as dpg_slot
 import mido
+from gui.config import DEBUG
 from gui.logger import Logger
 from gui.windows.probe import _add_probe_data
 from midi.ports import MidiInPort, MidiOutPort, queue
@@ -244,18 +245,19 @@ def refresh_midi_ports() -> None:
     dpg.delete_item('outputs_node', children_only=True)
 
     # Input ports
-    with dpg.node_attribute(
-            tag='inputs_settings',
-            parent='inputs_node',
-            attribute_type=dpg.mvNode_Attr_Static,
-            label="Settings",
-    ):
-
-        with dpg.group(label="Sort", horizontal=True):
-            dpg.add_text("Sorting:")
-            dpg.add_radio_button(items=("None", "by ID", "by Name"),
-                                 default_value="None")  # TODO:, callback=sort_inputs_callback)
-            # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
+    if DEBUG:
+        # TODO: implement
+        with dpg.node_attribute(
+                tag='inputs_settings',
+                parent='inputs_node',
+                attribute_type=dpg.mvNode_Attr_Static,
+                label="Settings",
+        ):
+            with dpg.group(label="Sort", horizontal=True):
+                dpg.add_text("Sorting:")
+                dpg.add_radio_button(items=("None", "by ID", "by Name"),
+                                     default_value="None")  # TODO:, callback=sort_inputs_callback)
+                # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
 
     for midi_in in midi_inputs:
         with dpg.node_attribute(
@@ -276,15 +278,17 @@ def refresh_midi_ports() -> None:
         dpg.add_button(label="Add virtual input")
 
     # Outputs ports
-    with dpg.node_attribute(parent='outputs_node',
-                            tag='outputs_settings',
-                            label="Settings",
-                            attribute_type=dpg.mvNode_Attr_Static):
-        with dpg.group(label="Sort", horizontal=True):
-            dpg.add_text("Sorting:")
-            dpg.add_radio_button(items=("None", "by ID", "by Name"),
-                                 default_value="None")  # TODO:, callback=sort_outputs_callback)
-            # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
+    if DEBUG:
+        # TODO: implement
+        with dpg.node_attribute(parent='outputs_node',
+                                tag='outputs_settings',
+                                label="Settings",
+                                attribute_type=dpg.mvNode_Attr_Static):
+            with dpg.group(label="Sort", horizontal=True):
+                dpg.add_text("Sorting:")
+                dpg.add_radio_button(items=("None", "by ID", "by Name"),
+                                     default_value="None")  # TODO:, callback=sort_outputs_callback)
+                # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
 
     for midi_out in midi_outputs:
         with dpg.node_attribute(
@@ -320,11 +324,15 @@ def create() -> None:
     with dpg.value_registry():
         dpg.add_string_value(tag='input_mode', default_value='Callback')
 
+    conn_win_height = 1020
+    if DEBUG:
+        conn_win_height = 795
+
     with dpg.window(
             tag="conn_win",
             label="Connections",
             width=900,
-            height=795,
+            height=conn_win_height,
             no_close=True,
             collapsed=False,
             pos=[0, 20]
@@ -357,20 +365,22 @@ def create() -> None:
                     label="Refresh",
                     callback=lambda: dpg.configure_item('refresh_midi_modal', show=True)
                 )
-                # TODO: implement
-                with dpg.menu(label="Add virtual"):
-                    dpg.add_menu_item(label="Input")
-                    dpg.add_menu_item(label="Output")
-                    dpg.add_menu_item(label="I/O")
+                if DEBUG:
+                    # TODO: implement
+                    with dpg.menu(label="Add virtual"):
+                        dpg.add_menu_item(label="Input")
+                        dpg.add_menu_item(label="Output")
+                        dpg.add_menu_item(label="I/O")
 
-            # TODO: implement & add to context menu
-            with dpg.menu(label="Tools"):
-                with dpg.menu(label="Add"):
-                    dpg.add_menu_item(label="Probe")
-                    dpg.add_menu_item(label="Generator")
-                    dpg.add_menu_item(label="Filter/translator")
-                    dpg.add_menu_item(label="Merger")
-                    dpg.add_menu_item(label="Splitter")
+            if DEBUG:
+                # TODO: implement & add to context menu
+                with dpg.menu(label="Tools"):
+                    with dpg.menu(label="Add"):
+                        dpg.add_menu_item(label="Probe")
+                        dpg.add_menu_item(label="Generator")
+                        dpg.add_menu_item(label="Filter/translator")
+                        dpg.add_menu_item(label="Merger")
+                        dpg.add_menu_item(label="Splitter")
 
         with dpg.node_editor(
                 tag='connections_editor',
@@ -406,79 +416,83 @@ def create() -> None:
                 ):
                     dpg.add_text("Thru")
 
-            # TODO: implement
-            with dpg.node(label="GENERATOR",
-                          pos=[360, 165]):
-                with dpg.node_attribute(
-                        tag='gen_out',
-                        attribute_type=dpg.mvNode_Attr_Output,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                        label="Out",
-                ):
-                    dpg.add_text("Out", indent=2)
+            if DEBUG:
+                # TODO: implement
+                with dpg.node(label="GENERATOR",
+                              pos=[360, 165]):
+                    with dpg.node_attribute(
+                            tag='gen_out',
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                            label="Out",
+                    ):
+                        dpg.add_text("Out", indent=2)
 
-            # TODO: implement
-            with dpg.node(label="FILTER/TRANSLATOR",
-                          pos=[360, 250]):
-                with dpg.node_attribute(
-                        label="In",
-                        attribute_type=dpg.mvNode_Attr_Input,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("In")
-                with dpg.node_attribute(
-                        label="Out",
-                        attribute_type=dpg.mvNode_Attr_Output,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("Out", indent=2)
+            if DEBUG:
+                # TODO: implement
+                with dpg.node(label="FILTER/TRANSLATOR",
+                              pos=[360, 250]):
+                    with dpg.node_attribute(
+                            label="In",
+                            attribute_type=dpg.mvNode_Attr_Input,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("In")
+                    with dpg.node_attribute(
+                            label="Out",
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("Out", indent=2)
 
-            # TODO: implement
-            with dpg.node(label="MERGER",
-                          pos=[360, 350]):
-                with dpg.node_attribute(
-                        label="In1",
-                        attribute_type=dpg.mvNode_Attr_Input,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("In1")
-                with dpg.node_attribute(
-                        label="In2",
-                        attribute_type=dpg.mvNode_Attr_Input,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("In2")
-                with dpg.node_attribute(
-                        label="Out",
-                        attribute_type=dpg.mvNode_Attr_Output,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("Out", indent=2)
+            if DEBUG:
+                # TODO: implement
+                with dpg.node(label="MERGER",
+                              pos=[360, 350]):
+                    with dpg.node_attribute(
+                            label="In1",
+                            attribute_type=dpg.mvNode_Attr_Input,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("In1")
+                    with dpg.node_attribute(
+                            label="In2",
+                            attribute_type=dpg.mvNode_Attr_Input,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("In2")
+                    with dpg.node_attribute(
+                            label="Out",
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("Out", indent=2)
 
-            # TODO: implement
-            with dpg.node(
-                    tag='splitter_node',
-                    pos=[360, 475],
-                    label="SPLITTER",
-            ):
-                with dpg.node_attribute(
-                        label="In",
-                        attribute_type=dpg.mvNode_Attr_Input,
-                        shape=dpg.mvNode_PinShape_Triangle,
+            if DEBUG:
+                # TODO: implement
+                with dpg.node(
+                        tag='splitter_node',
+                        pos=[360, 475],
+                        label="SPLITTER",
                 ):
-                    dpg.add_text("In")
-                with dpg.node_attribute(
-                        label="Out1",
-                        attribute_type=dpg.mvNode_Attr_Output,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("Out1", indent=2)
-                with dpg.node_attribute(
-                        label="Out2",
-                        attribute_type=dpg.mvNode_Attr_Output,
-                        shape=dpg.mvNode_PinShape_Triangle,
-                ):
-                    dpg.add_text("Out2", indent=2)
+                    with dpg.node_attribute(
+                            label="In",
+                            attribute_type=dpg.mvNode_Attr_Input,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("In")
+                    with dpg.node_attribute(
+                            label="Out1",
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("Out1", indent=2)
+                    with dpg.node_attribute(
+                            label="Out2",
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                    ):
+                        dpg.add_text("Out2", indent=2)
 
             with dpg.node(
                     tag='outputs_node',
@@ -527,7 +541,7 @@ def poll_processing() -> None:
     In polling mode we are bound to the frame rendering time.
     At 60 FPS frame time is about 16.7 ms
     This amounts to up to 53 MIDI bytes per frame (52.17)!
-    That's why callback mode is to be preferred
+    That's why callback mode is to be preferred.
     For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
     """
     # inputs = []
