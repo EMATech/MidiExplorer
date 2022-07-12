@@ -16,6 +16,7 @@ import os.path
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
 import gui.logger
+import gui.windows.about
 import gui.windows.conn
 import gui.windows.gen
 import gui.windows.log
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     ###
     # DOAR PYGUI WINDOWS
     ###
+    gui.windows.about.create()
     gui.windows.main.create()
     gui.windows.conn.create()
     gui.windows.probe.create()

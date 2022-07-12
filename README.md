@@ -35,9 +35,9 @@ Features / TODO list
   - [x] v1.0
     - using a modified mido
   - [ ] v2.0
-- [ ] **(WIP)** Interactive GUI
+- [ ] Interactive GUI
   - [x] Icons
-  - [ ] About window
+  - [x] About window
   - [x] Fonts
   - [ ] Custom theme
   - [X] Node editor window
@@ -45,12 +45,12 @@ Features / TODO list
     - [X] Outputs
     - [x] Modules
   - [x] Probe data window
-  - [ ] **(WIP)** Generator data window
+  - [ ] Generator data window
   - [x] Log window
   - [ ] Actions
     - [x] Toggle fullscreen (F11)
     - [x] Toggle log (F12)
-    - [ ] **(WIP)** Save state (Buggy at the moment)
+    - [ ] Save state (Buggy at the moment)
 - [ ] I/O management
   - [ ] Select backend?
   - [ ] List MIDI I/O
@@ -62,7 +62,7 @@ Features / TODO list
   - [x] Input reading modes
     - [x] Polling
     - [x] Callback
-  - [ ] **(WIP)** Sort by ID/Name
+  - [ ] Sort by ID/Name
   - [ ] Connections
     - [x] Port to probe
     - [x] Probe to port
@@ -124,7 +124,7 @@ Features / TODO list
     - [ ] MCU
     - Others?
   - [ ] Hardware toolbox
-- [ ] **(WIP)** Logging
+- [ ] Logging
   - [x] GUI
   - [ ] To file
     - [ ] Overwrite
@@ -164,6 +164,9 @@ Logo and icons released under the
 - via [Dear PyGui](https://github.com/hoffstadt/DearPyGui)  
   Copyright (c) 2021 Dear PyGui, LLC  
   Used under the terms of the MIT License.
+
+#### Fonts
+
 - [Roboto](https://github.com/googlefonts/Roboto)  
   Copyright (c) 2015 The Roboto Project Authors  
   Used under the terms of the Apache License, Version 2.0.

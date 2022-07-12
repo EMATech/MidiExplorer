@@ -53,4 +53,4 @@ def create() -> None:
                         dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
                         dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
                         dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
-                dpg.add_menu_item(label="About")  # TODO: implement
+                dpg.add_menu_item(label="About", callback=gui.windows.about.toggle)
