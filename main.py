@@ -88,8 +88,8 @@ if __name__ == '__main__':
 
     # Icons must be set before showing viewport (Can also be set when instantiating the viewport)
     # TODO: icons
-    # dpg.set_viewport_small_icon("path/to/icon.ico")
-    # dpg.set_viewport_large_icon("path/to/icon.ico")
+    dpg.set_viewport_small_icon('icons/midiexplorer.ico')
+    dpg.set_viewport_large_icon('icons/midiexplorer.ico')
 
     # TODO: theme
 

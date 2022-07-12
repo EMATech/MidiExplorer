@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="177" height="177" viewBox="0 0 177 177">
+	<style type="text/css">
+		.st0{fill:none;stroke:#000;stroke-width:2;}
+		.st1{fill:#fff;stroke:#000;stroke-width:2;stroke-linejoin:round;}
+		.st2{font-family:Liberation Sans,Arial;}
+		.st3{font-size:17px;}
+	</style>
+	<g id="midi">
+		<circle class="st1" cx="88.5" cy="88.5" r="87.5"/>
+		<path class="st0" d="M88.5,9C44.7,9,9,44.7,9,88.5c0,38.4,27.4,70.5,63.6,77.9c0.8-8.1,7.6-14.4,15.9-14.4s15.1,6.3,15.9,14.4
+		c36.2-7.4,63.6-39.5,63.6-77.9C168,44.7,132.3,9,88.5,9z"/>
+
+		<circle class="st0" cx="42.4" cy="88.6" r="11"/>
+		<circle class="st0" cx="55.9" cy="56" r="11"/>
+		<circle class="st0" cx="88.4" cy="42.4" r="11"/>
+		<circle class="st0" cx="121" cy="55.9" r="11"/>
+		<circle class="st0" cx="134.6" cy="88.4" r="11"/>
+
+	</g>
+	<g id="text">
+		<text transform="matrix(1 0 0 1 17 93)" class="st2 st3">3</text>
+		<text transform="matrix(1 0 0 1 33 48)" class="st2 st3">5</text>
+		<text transform="matrix(1 0 0 1 84 24)" class="st2 st3">2</text>
+		<text transform="matrix(1 0 0 1 133 47)" class="st2 st3">4</text>
+		<text transform="matrix(1 0 0 1 150 93)" class="st2 st3">1</text>
+	</g>
+</svg>

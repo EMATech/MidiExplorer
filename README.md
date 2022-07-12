@@ -1,5 +1,5 @@
-MIDI Explorer
-=============
+![Logo](icons/midiexplorer.svg) MIDI Explorer
+=============================================
 
 Yet another MIDI monitoring, debugging and manipulating tool.
 
@@ -36,7 +36,7 @@ Features / TODO list
     - using a modified mido
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
-  - [ ] Icons
+  - [x] Icons
   - [ ] About window
   - [x] Fonts
   - [ ] Custom theme
@@ -142,6 +142,9 @@ This software is released under the terms of the GNU General Public License, ver
 
 See [LICENSE](LICENSE).
 
+Logo and icons released under the
+[Creative Commons Attribution-Share Alike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/).
+
 ### Dependencies & License Acknowledgment
 
 - [Python](https://python.org) v3.10  
@@ -167,6 +170,19 @@ See [LICENSE](LICENSE).
 - [Roboto Mono](https://github.com/googlefonts/RobotoMono)  
   Copyright (c) 2015 The Roboto Mono Project Authors  
   Used under the terms of the Apache License, Version 2.0.
+
+#### Logo and icons
+
+Composite work based upon:
+
+- [MIDI connector](https://commons.wikimedia.org/wiki/File:MIDI_connector2.svg)  
+  Copyright [Fred the Oyster](https://commons.wikimedia.org/wiki/User:Fred_the_Oyster)  
+  Used under the terms of the
+  [Creative Commons Attribution-Share Alike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) license.
+- [Steering Wheel](https://commons.wikimedia.org/wiki/File:Steering_Wheel_Black.svg)  
+  Copyright [Spider](https://commons.wikimedia.org/wiki/User:Spider)  
+  Used under the terms of the
+  [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) license.
 
 ### Trademarks
 
