@@ -8,14 +8,14 @@
 Connections window and management
 """
 
-import sys
-import time
 from typing import Optional, Any
 
-import mido
+import sys
+import time
 from dearpygui import dearpygui as dpg
 
 import constants.dpg_slot as dpg_slot
+import mido
 from gui.logger import Logger
 from gui.windows.probe import _add_probe_data
 from midi.ports import MidiInPort, MidiOutPort, queue
@@ -323,7 +323,7 @@ def create() -> None:
     with dpg.window(
             tag="conn_win",
             label="Connections",
-            width=960,
+            width=900,
             height=795,
             no_close=True,
             collapsed=False,

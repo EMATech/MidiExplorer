@@ -3,7 +3,7 @@ MIDI Explorer
 
 Yet another MIDI monitoring, debugging and manipulating tool.
 
-![GUI](_screenshots/GUIwithmonitortitles.png)
+![GUI](_screenshots/GUIwithcontrollersandnotes.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
@@ -15,9 +15,9 @@ Language is currently Python to help with rapid prototyping and fast iteration. 
 Status
 ------
 
-Proof of concept!
+Proof of concept.
 
-Currently, in the prototyping phase.
+Alpha coming soon!
 
 
 Features / TODO list
@@ -33,7 +33,7 @@ Features / TODO list
   - [ ] GNU/Linux
 - [ ] MIDI protocol
   - [x] v1.0
-    - using mido
+    - using a modified mido
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
   - [ ] Icons
@@ -83,14 +83,21 @@ Features / TODO list
       - [x] Settings
         - [x] Persistence
         - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
-      - [x] Channels & System
       - [x] Message type
-      - [x] Timing
-        - [x] Hardware
-          - retrieved using a modified mido RtMidi backend
+        - [x] Channel
         - [x] System
+      - [x] Channel
+      - [x] Controllers
+      - [ ] SysEx
+      - [ ] Notes
+        - [x] Keyboard
+        - [ ] Staff
     - [x] Read raw input
     - [x] Table decode input
+    - [x] Timing
+      - [x] Hardware
+        - retrieved using a modified mido RtMidi backend
+      - [x] System
     - [x] Thru support
     - [ ] Color code
       - [ ] Per source
@@ -110,10 +117,12 @@ Features / TODO list
     - [ ] HUI
     - [ ] LCU
     - [ ] MCU
+    - Others?
   - [ ] Trigger/Response (Protocol emulator)
     - [ ] HUI
     - [ ] LCU
     - [ ] MCU
+    - Others?
   - [ ] Hardware toolbox
 - [ ] **(WIP)** Logging
   - [x] GUI
@@ -127,7 +136,7 @@ Legal notice
 
 ### License
 
-Copyright 2021-2022 Raphaël Doursenaud.
+Author: ©2021-2022 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).
 
@@ -152,6 +161,9 @@ See [LICENSE](LICENSE).
 - via [Dear PyGui](https://github.com/hoffstadt/DearPyGui)  
   Copyright (c) 2021 Dear PyGui, LLC  
   Used under the terms of the MIT License.
+- [Roboto](https://github.com/googlefonts/Roboto)  
+  Copyright (c) 2015 The Roboto Project Authors  
+  Used under the terms of the Apache License, Version 2.0.
 - [Roboto Mono](https://github.com/googlefonts/RobotoMono)  
   Copyright (c) 2015 The Roboto Mono Project Authors  
   Used under the terms of the Apache License, Version 2.0.

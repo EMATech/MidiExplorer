@@ -11,7 +11,6 @@
 * Author(s): Raphaël Doursenaud <rdoursenaud@free.fr>
 """
 
-import ctypes
 import os.path
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
@@ -64,18 +63,21 @@ if __name__ == '__main__':
 
     # Fonts. https://dearpygui.readthedocs.io/en/latest/documentation/fonts.html
 
-    # See: https://github.com/hoffstadt/DearPyGui/issues/1380
-    FONT_OVERSAMPLING_RATIO = 2
-    ctypes.windll.shcore.SetProcessDpiAwareness(2)
-    dpg.set_global_font_scale(1 / FONT_OVERSAMPLING_RATIO)
-
     with dpg.font_registry():
-        dpg.add_font('fonts/Roboto-Regular.ttf', 15 * FONT_OVERSAMPLING_RATIO, tag='default_font')
-        dpg.add_font('fonts/RobotoMono-Regular.ttf', 15 * FONT_OVERSAMPLING_RATIO, tag='mono_font')
+        dpg.add_font('fonts/Roboto-Regular.ttf', 14, tag='default_font')
+        dpg.add_font('fonts/RobotoMono-Regular.ttf', 14, tag='mono_font')
 
     dpg.bind_font('default_font')
+
     log_win_textbox = dpg.get_item_children('log_win', slot=1)[2]
     dpg.bind_item_font(log_win_textbox, 'mono_font')
+
+    dpg.bind_item_font('probe_midi_mode', 'mono_font')
+    dpg.bind_item_font('probe_messages_container', 'mono_font')
+    dpg.bind_item_font('probe_controllers_container', 'mono_font')
+    dpg.bind_item_font('probe_sysex_container', 'mono_font')
+    dpg.bind_item_font('probe_notes_container', 'mono_font')
+
     dpg.bind_item_font('probe_data_table_headers', 'mono_font')
     dpg.bind_item_font('probe_data_table', 'mono_font')
 

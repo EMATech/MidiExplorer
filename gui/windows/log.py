@@ -8,9 +8,9 @@
 Logging window
 """
 
-import sys
 from typing import Any, Optional
 
+import sys
 from dearpygui import dearpygui as dpg
 
 from gui.config import DEBUG
@@ -24,8 +24,8 @@ def create() -> None:
     with dpg.window(
             tag='log_win',
             label="Log",
-            width=1920,
-            height=225,
+            width=1905,
+            height=230,
             pos=[0, 815],
             show=DEBUG,
     ):

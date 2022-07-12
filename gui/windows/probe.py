@@ -9,10 +9,11 @@ Probe window and management
 """
 
 import time
-
-import mido
 from dearpygui import dearpygui as dpg
 
+import midi.constants
+import midi.notes
+import mido
 from gui.config import DEBUG, START_TIME
 from gui.logger import Logger
 from midi.constants import NOTE_OFF_VELOCITY
@@ -26,6 +27,17 @@ US2MS = 1000
 ###
 probe_data_counter = 0
 previous_timestamp = START_TIME
+
+
+def _add_tooltip_conv(title: str, value: int, hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
+    with dpg.tooltip(dpg.last_item()):
+        dpg.add_text(
+            f"{title}\n"
+            "\n"
+            f"Hexadecimal:\t{' ':{blen - hlen}}{value:0{hlen}X}\n"
+            f"Decimal:{' ':4}\t{' ':{blen - dlen}}{value:0{dlen}d}\n"
+            f"Binary:{' ':5}\t{value:0{blen}b}\n"
+        )
 
 
 def create() -> None:
@@ -58,6 +70,8 @@ def create() -> None:
         dpg.add_float_value(tag='mon_stop_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_active_sensing_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_reset_active_until', default_value=0)  # seconds
+        for controller in range(128):
+            dpg.add_float_value(tag=f'mon_cc_{controller}_active_until', default_value=0)  # seconds
 
     ###
     # DEAR PYGUI THEME for red buttons
@@ -69,11 +83,11 @@ def create() -> None:
     with dpg.window(
             tag='probe_win',
             label="Probe",
-            width=960,
+            width=1005,
             height=685,
             no_close=True,
             collapsed=False,
-            pos=[960, 20]
+            pos=[900, 20]
     ):
 
         with dpg.menu_bar():
@@ -98,11 +112,37 @@ def create() -> None:
                         source='eox_system_message'
                     )
 
-        # Activity Monitor
-        with dpg.collapsing_header(label="Activity Monitor", default_open=True):
-            dpg.add_child_window(tag='act_mon', height=180, border=False)
+        ###
+        # Mode
+        ###
+        # TODO
+        with dpg.collapsing_header(label="MIDI Mode", default_open=False):
+            dpg.add_child_window(tag='probe_midi_mode', height=10, border=False)
 
-        with dpg.table(parent='act_mon', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+            dpg.add_text("Not implemented yet")
+
+            dpg.add_input_int(tag='mode_basic_chan', label="Basic Channel",
+                              default_value=midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
+
+            dpg.add_radio_button(
+                tag='modes',
+                items=[
+                    "1",  # Omni On - Poly
+                    "2",  # Omni On - Mono
+                    "3",  # Omni Off - Poly
+                    "4",  # Omni Off - Mono
+                ],
+                default_value=midi.constants.POWER_UP_DEFAULT['mode'],
+                horizontal=True, enabled=False,
+            )
+
+        ###
+        # Messages
+        ###
+        with dpg.collapsing_header(label="Messages", default_open=True):
+            dpg.add_child_window(tag='probe_messages_container', height=180, border=False)
+
+        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(3):
@@ -119,7 +159,11 @@ def create() -> None:
                 with dpg.tooltip(dpg.last_item()):
                     dpg.add_text("System Message")
 
-        with dpg.table(parent='act_mon', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        hlen = 1  # Hexadecimal
+        dlen = 3  # Decimal
+        blen = 4  # Binary
+
+        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
             for channel in range(17):
                 dpg.add_table_column()
@@ -129,14 +173,9 @@ def create() -> None:
 
                 for channel in range(16):
                     dpg.add_button(tag=f"mon_{channel}", label=f"{channel + 1:2d}")
-                    with dpg.tooltip(dpg.last_item()):
-                        dpg.add_text(f"Channel {channel + 1}\n"
-                                     "\n"
-                                     f"Hexadecimal:\t{' ':2}{channel:01X}\n"
-                                     f"Decimal:\t\t{channel:03d}\n"
-                                     f"Binary:\t\t{channel:04b}\n")
+                    _add_tooltip_conv(f"Channel {channel + 1}", channel, hlen, dlen, blen)
 
-        with dpg.table(parent='act_mon', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='probe_messages_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(9):
@@ -148,67 +187,71 @@ def create() -> None:
                 dpg.add_text("Voice")
 
                 # Channel voice messages (page 9)
-                dpg.add_button(tag='mon_note_off', label="OFF ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Note-Off\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{8:01X}\n"
-                                 f"Decimal:\t\t{8:03d}\n"
-                                 f"Binary:\t\t{8:04b}\n")
+                dpg.add_button(tag='mon_note_off', label="N OF")
+                val = 8
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-                dpg.add_button(tag='mon_note_on', label=" ON ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Note-On\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{9:01X}\n"
-                                 f"Decimal:\t\t{9:03d}\n"
-                                 f"Binary:\t\t{9:04b}\n")
+                dpg.add_button(tag='mon_note_on', label="N ON")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 dpg.add_button(tag='mon_polytouch', label="PKPR")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Poly Key Pressure (Note Aftertouch)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{10:01X}\n"
-                                 f"Decimal:\t\t{10:03d}\n"
-                                 f"Binary:\t\t{10:04b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-                dpg.add_button(tag='mon_control_change', label=" CC ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Control Change""\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{11:01X}\n"
-                                 f"Decimal:\t\t{11:03d}\n"
-                                 f"Binary:\t\t{11:04b}\n")
+                dpg.add_button(tag='mon_control_change', label=" CC ")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-                dpg.add_button(tag='mon_program_change', label=" PC ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Program Change\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{12:01X}\n"
-                                 f"Decimal:\t\t{12:03d}\n"
-                                 f"Binary:\t\t{12:04b}\n")
+                dpg.add_button(tag='mon_program_change', label=" PC ")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 dpg.add_button(tag='mon_aftertouch', label="CHPR")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Channel Pressure (Channel Aftertouch)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{13:01X}\n"
-                                 f"Decimal:\t\t{13:03d}\n"
-                                 f"Binary:\t\t{13:04b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-                dpg.add_button(tag='mon_pitchwheel', label="PBC ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Pitch Bend Change\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':2}{14:01X}\n"
-                                 f"Decimal:\t\t{14:03d}\n"
-                                 f"Binary:\t\t{14:04b}\n")
+                dpg.add_button(tag='mon_pitchwheel', label="PBCH")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
             # TODO: Channel mode messages (page 20) (CC 120-127)
             with dpg.table_row():
                 dpg.add_text()
 
                 dpg.add_text("Mode")
+
+                dpg.add_button(tag='mon_all_sound_off', label="ASOF")
+                val = 120
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_reset_all_controllers', label="RAC ")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_local_control', label=" LC ")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_all_notes_off', label="ANOF")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_omni_off', label="O OF")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_omni_on', label="O ON")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_mono_on', label="M ON")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+
+                dpg.add_button(tag='mon_poly_on', label="P ON")
+                val += 1
+                _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text("System Messages")
@@ -217,22 +260,14 @@ def create() -> None:
 
                 # System exclusive messages
                 dpg.add_button(tag='mon_sysex', label="SOX ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("System Exclusive aka SysEx\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF0:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF0:03d}\n"
-                                 f"Binary:\t\t{0xF0:08b}\n")
+                val = 0xF0
+                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
                 # TODO: display according to settings
                 dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("End of Exclusive\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF7:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF7:03d}\n"
-                                 f"Binary:\t\t{0xF7:08b}\n")
+                val = 0xF7
+                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text()
@@ -241,62 +276,34 @@ def create() -> None:
 
                 # System common messages (page 27)
                 dpg.add_button(tag='mon_quarter_frame', label=" QF ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("MIDI Time Code Quarter Frame\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF1:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF1:03d}\n"
-                                 f"Binary:\t\t{0xF1:08b}\n")
+                val = 0xF1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_songpos', label="SGPS")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Song Position Pointer\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF2:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF2:03d}\n"
-                                 f"Binary:\t\t{0xF2:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_song_select', label="SGSL")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Song Select\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF3:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF3:03d}\n"
-                                 f"Binary:\t\t{0xF3:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 dpg.add_button(tag='undef1', label="UND ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Undefined. (Reserved)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF4:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF4:03d}\n"
-                                 f"Binary:\t\t{0xF4:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 dpg.add_button(tag='undef2', label="UND ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Undefined. (Reserved)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF5:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF5:03d}\n"
-                                 f"Binary:\t\t{0xF5:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_tune_request', label=" TR ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Tune Request\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF6:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF6:03d}\n"
-                                 f"Binary:\t\t{0xF6:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # Moved to Exclusive System Messages for now
                 # TODO: display according to settings
                 # dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                # with dpg.tooltip(dpg.last_item()):
-                #     dpg.add_text("End of Exclusive\n"
-                #                  "\n"
-                #                  f"Hexadecimal:\t{' ':5}{0xF7:01X}\n"
-                #                  f"Decimal:\t\t{' ':4}{0xF7:03d}\n"
-                #                  f"Binary:\t\t{0xF7:08b}\n")
+                # val += 1
+                # _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text()
@@ -305,89 +312,82 @@ def create() -> None:
 
                 # System real time messages (page 30)
                 dpg.add_button(tag='mon_clock', label="CLK ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Timing Clock\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF8:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF8:03d}\n"
-                                 f"Binary:\t\t{0xF8:08b}\n")
+                val = 0xF8
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='undef3', label="UND ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Undefined. (Reserved)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xF9:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xF9:03d}\n"
-                                 f"Binary:\t\t{0xF9:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_start', label="STRT")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Start\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFA:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFA:03d}\n"
-                                 f"Binary:\t\t{0xFA:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_continue', label="CTNU")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Continue\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFB:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFB:03d}\n"
-                                 f"Binary:\t\t{0xFB:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_stop', label="STOP")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Stop\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFC:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFC:03d}\n"
-                                 f"Binary:\t\t{0xFC:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='undef4', label="UND ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Undefined. (Reserved)\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFD:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFD:03d}\n"
-                                 f"Binary:\t\t{0xFD:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_active_sensing', label=" AS ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Active Sensing\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFE:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFE:03d}\n"
-                                 f"Binary:\t\t{0xFE:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 dpg.add_button(tag='mon_reset', label="RST ")
-                with dpg.tooltip(dpg.last_item()):
-                    dpg.add_text("Reset\n"
-                                 "\n"
-                                 f"Hexadecimal:\t{' ':5}{0xFF:01X}\n"
-                                 f"Decimal:\t\t{' ':4}{0xFF:03d}\n"
-                                 f"Binary:\t\t{0xFF:08b}\n")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
-            with dpg.table_row():
+        ###
+        # Controllers
+        ###
+        with dpg.collapsing_header(label="Controllers", default_open=False):
+            dpg.add_child_window(tag='probe_controllers_container', height=200, border=False)
+
+        with dpg.table(tag='probe_controllers', parent='probe_controllers_container', header_row=False,
+                       policy=dpg.mvTable_SizingFixedFit):
+            dpg.add_table_column(label="Title")
+
+            for _i in range(17):
+                dpg.add_table_column()
+
+            rownum = 0
+            with dpg.table_row(tag=f'ctrls_{rownum}'):
                 dpg.add_text("Controllers")
-                # TODO: Control Changes (page 11)
-                for controller in range(120):
-                    if controller % 16:
-                        # TODO: change row
-                        pass
-                    dpg.add_text("")
-
-            with dpg.table_row():
-                dpg.add_text()
-                dpg.add_text("Channel Mode")
-                # TODO: Channel modes (page 20)
-                for mode in range(120, 128):
-                    dpg.add_text("")
-
-            with dpg.table_row():
-                dpg.add_text("System Exclusive")
-                # TODO: decode 1 or 3 byte IDs (page 34)
                 dpg.add_text("")
+
+            for controller in range(128):
+                dpg.add_button(tag=f'mon_cc_{controller}', label=f"{controller:3d}", parent=f'ctrls_{rownum}')
+                _add_tooltip_conv(midi.constants.CONTROLLER_NUMBERS[controller], controller)
+                newrownum = int((controller + 1) / 16)
+                if newrownum > rownum and newrownum != 8:
+                    rownum = newrownum
+                    dpg.add_table_row(tag=f'ctrls_{rownum}', parent='probe_controllers')
+                    dpg.add_text("", parent=f'ctrls_{rownum}')
+                    dpg.add_text("", parent=f'ctrls_{rownum}')
+            del rownum
+
+        ###
+        # System Exclusive
+        ###
+        with dpg.collapsing_header(label="System Exclusive", default_open=False):
+            dpg.add_child_window(tag='probe_sysex_container', height=20, border=False)
+
+        with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
+                       policy=dpg.mvTable_SizingFixedFit):
+            dpg.add_table_column(label="Title")
+
+            for _i in range(17):
+                dpg.add_table_column()
+
+            with dpg.table_row():
+                dpg.add_text("Not implemented yet")
+                # TODO: decode 1 or 3 byte IDs (page 34)
                 # TODO: decode sample dump standard (page 35)
                 # ACK, NAK, Wait, Cancel & EOF
                 # TODO: decode device inquiry (page 40)
@@ -400,11 +400,60 @@ def create() -> None:
                 # TODO: decode device control (page 57)
                 # TODO: decode MMC (page 58 + dedicated spec)
 
-            with dpg.table_row():
-                dpg.add_text("Running Status")
-                # FIXME: unimplemented upstream (page A-1)
+        ###
+        # Running Status
+        ###
+        with dpg.collapsing_header(label="Running Status", default_open=False):
+            dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
+            # FIXME: unimplemented upstream (page A-1)
+            dpg.add_text("Not implemented yet", parent='probe_running_status_container')
 
-        # Data table
+        ###
+        # Notes
+        ###
+        with dpg.collapsing_header(label="Notes", default_open=False):
+            dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
+
+        # TODO: Staff?
+        # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
+
+        # Keyboard
+        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120, border=False)
+
+        width = 12
+        height = 60
+        bxpos = width / 2
+        wxpos = 0
+
+        for index in midi.notes.MIDI_NOTES_ALPHA_EN:
+            name = midi.notes.MIDI_NOTES_ALPHA_EN[index]
+            xpos = wxpos
+            ypos = height
+            if "#" in midi.notes.MIDI_NOTES_ALPHA_EN[index]:
+                height = ypos
+                xpos = bxpos
+                ypos = 0
+            label = "\n".join(name)  # Vertical text
+
+            dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
+                           pos=(xpos, ypos))
+            _add_tooltip_conv(
+                f"Syllabic:{' ':9}\t{midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
+                f"Alphabetical (EN):\t{name}\n"
+                f"Alphabetical (DE):\t{midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
+                index, blen=7
+            )
+
+            if "#" not in name:
+                wxpos += width + 1
+            elif "D#" in name or "A#" in name:
+                bxpos += (width + 1) * 2
+            else:
+                bxpos += width + 1
+
+        ###
+        # Data history table
+        ###
         with dpg.collapsing_header(label="Data History", default_open=True):
             dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
@@ -474,7 +523,7 @@ def _init_details_table_data() -> None:
 
 def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     """
-    Decodes and present data received from the probe.
+    Decodes and presents data received from the probe.
 
     :param timestamp:
     :param source:
@@ -533,37 +582,49 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
                 dpg.add_text(dec_label)
 
         # Status
+        _mon_blink(data.type)
         stat_label = data.type
-        _mon_blink(stat_label)
         dpg.add_text(stat_label)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(stat_label)
 
         # Channel
         if hasattr(data, 'channel'):
-            chan_label = data.channel + 1
             _mon_blink('c')
             _mon_blink(data.channel)
+            chan_label = data.channel + 1  # Human-readable format
         else:
-            chan_label = "Global"
             _mon_blink('s')
+            chan_label = "Global"
         dpg.add_text(chan_label)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(chan_label)
 
         # Data 1 & 2
         data0 = ""
+        data0_dec: str | False = False
         data1 = ""
         if 'note' in data.type:
-            data0 = data.note  # TODO: decode to human readable
-            data1 = data.velocity
             if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
                 _mon_blink('note_off')
+            # Keyboard
+            if 'on' in data.type and not (
+                    dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
+            ):
+                _note_on(data.note)
+            else:
+                _note_off(data.note)
+            data0 = data.note
+            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN[data.note]  # TODO: add preference for syllabic / EN / DE
+            data1 = data.velocity
         elif 'polytouch' == data.type:
             data0 = data.note
+            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN[data.note]  # TODO: add preference for syllabic / EN / DE
             data1 = data.value
         elif 'control_change' == data.type:
-            data0 = data.control  # TODO: decode to human readable
+            _mon_blink(f'cc_{data.control}')
+            data0 = data.control
+            data0_dec = midi.constants.CONTROLLER_NUMBERS[data.control]
             data1 = data.value
         elif 'program_change' == data.type:
             data0 = data.program
@@ -572,7 +633,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         elif 'pitchwheel' == data.type:
             data0 = data.pitch
         elif 'sysex' == data.type:
-            data0 = data.data  # TODO: decode device ID
+            data0 = data.data  # TODO: decode device ID, Universal system exclusive messages…
         elif 'quarter_frame' == data.type:
             data0 = data.frame_type  # TODO: decode
             data1 = data.frame_value  # TODO: decode
@@ -580,9 +641,13 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             data0 = data.pos
         elif 'song_select' == data.type:
             data0 = data.song
-        dpg.add_text(data0)
-        with dpg.tooltip(dpg.last_item()):
+
+        if data0_dec:
+            dpg.add_text(data0_dec)
+        else:
             dpg.add_text(data0)
+        _add_tooltip_conv(data0_dec if data0_dec else data0, data0)
+
         dpg.add_text(data1)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(data1)
@@ -598,12 +663,20 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 def _mon_blink(indicator: int | str) -> None:
     now = time.time() - START_TIME
     delay = dpg.get_value('mon_blink_duration')
-    target = f"mon_{indicator}_active_until"
+    target = f'mon_{indicator}_active_until'
     until = now + delay
     dpg.set_value(target, until)
-    dpg.bind_item_theme(f"mon_{indicator}", '__red')
+    dpg.bind_item_theme(f'mon_{indicator}', '__red')
     # logger.log_debug(f"Current time:{time.time() - START_TIME}")
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
+
+
+def _note_on(number: int | str) -> None:
+    dpg.bind_item_theme(f'note_{number}', '__red')
+
+
+def _note_off(number: int | str) -> None:
+    dpg.bind_item_theme(f'note_{number}', None)
 
 
 def update_blink_status() -> None:
@@ -613,7 +686,7 @@ def update_blink_status() -> None:
     if dpg.get_value('mon_s_active_until') < now:
         dpg.bind_item_theme('mon_s', None)
     for channel in range(16):
-        if dpg.get_value(f"mon_{channel}_active_until") < now:
+        if dpg.get_value(f'mon_{channel}_active_until') < now:
             dpg.bind_item_theme(f"mon_{channel}", None)
     if dpg.get_value('mon_active_sensing_active_until') < now:
         dpg.bind_item_theme('mon_active_sensing', None)
@@ -651,5 +724,8 @@ def update_blink_status() -> None:
         dpg.bind_item_theme('mon_continue', None)
     if dpg.get_value('mon_stop_active_until') < now:
         dpg.bind_item_theme('mon_stop', None)
-    if dpg.get_value("mon_reset_active_until") < now:
+    if dpg.get_value('mon_reset_active_until') < now:
         dpg.bind_item_theme('mon_reset', None)
+    for controller in range(128):
+        if dpg.get_value(f'mon_cc_{controller}_active_until') < now:
+            dpg.bind_item_theme(f'mon_cc_{controller}', None)

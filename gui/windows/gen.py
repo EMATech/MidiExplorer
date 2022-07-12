@@ -8,12 +8,12 @@
 Generator window and management
 """
 
-import sys
 from typing import Any, Optional
 
-import mido
+import sys
 from dearpygui import dearpygui as dpg
 
+import mido
 from gui.logger import Logger
 
 
@@ -24,11 +24,11 @@ def create() -> None:
     with dpg.window(
             tag='gen_win',
             label="Generator",
-            width=960,
+            width=1005,
             height=110,
             no_close=True,
             collapsed=False,
-            pos=[960, 705]
+            pos=[900, 705]
     ):
         dpg.add_input_text(
             tag='generator_raw_message',
