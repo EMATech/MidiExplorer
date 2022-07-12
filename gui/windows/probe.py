@@ -12,6 +12,7 @@ import time
 from dearpygui import dearpygui as dpg
 
 import midi.constants
+import midi.mido2standard
 import midi.notes
 import mido
 from gui.config import DEBUG, START_TIME
@@ -29,15 +30,33 @@ probe_data_counter = 0
 previous_timestamp = START_TIME
 
 
-def _add_tooltip_conv(title: str, value: int, hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
+def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = None, hlen: int = 2, dlen: int = 3,
+                      blen: int = 8) -> None:
+    if values is not None:
+        hconv = ""
+        dconv = ""
+        bconv = ""
+        if type(values) is int:
+            value = values
+            hconv += f"{' ':{blen - hlen}}{value:0{hlen}X}"
+            dconv += f"{' ':{blen - dlen}}{value:0{dlen}d}"
+            bconv += f"{value:0{blen}b}"
+        else:
+            for value in values:
+                hconv += f"{' ':{blen - hlen}}{value:0{hlen}X} "
+                dconv += f"{' ':{blen - dlen}}{value:0{dlen}d} "
+                bconv += f"{value:0{blen}b} "
+
+    text = f"{title}\n"
+    if values is not None:
+        text += \
+            "\n" \
+            f"Hexadecimal:\t{hconv.rstrip()}\n" \
+            f"Decimal:{' ':4}\t{dconv.rstrip()}\n" \
+            f"Binary:{' ':5}\t{bconv.rstrip()}\n"
+
     with dpg.tooltip(dpg.last_item()):
-        dpg.add_text(
-            f"{title}\n"
-            "\n"
-            f"Hexadecimal:\t{' ':{blen - hlen}}{value:0{hlen}X}\n"
-            f"Decimal:{' ':4}\t{' ':{blen - dlen}}{value:0{dlen}d}\n"
-            f"Binary:{' ':5}\t{value:0{blen}b}\n"
-        )
+        dpg.add_text(f"{text}")
 
 
 def create() -> None:
@@ -542,6 +561,8 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     previous_data = probe_data_counter
     probe_data_counter += 1
 
+    # TODO: Flush data after a certain amount
+
     with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
                        before=f'probe_data_{previous_data}'):
 
@@ -557,12 +578,12 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             dpg.add_text(ts_label)
 
         # Delta (ms)
-        delta = "0.0"
-        if data.time:
+        delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
+        if data.time is not None:
             delta = data.time * US2MS
-            logger.log_debug("Using rtmidi time delta")
+            logger.log_debug("Timing: Using rtmidi time delta")
         elif previous_timestamp is not None:
-            logger.log_debug("Rtmidi time delta not available. Computing timestamp locally.")
+            logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
             delta = (timestamp - previous_timestamp) * US2MS
         previous_timestamp = timestamp
         delta_label = str(delta)
@@ -573,8 +594,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
         # Raw message
         raw_label = data.hex()
         dpg.add_text(raw_label)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(raw_label)
+        _add_tooltip_conv(raw_label, data.bin())
 
         # Decoded message
         if DEBUG:
@@ -585,27 +605,35 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 
         # Status
         _mon_blink(data.type)
-        stat_label = data.type
+        status_byte = midi.mido2standard.get_status_by_type(data.type)
+        stat_label = midi.constants.STATUS_BYTES[status_byte]
         dpg.add_text(stat_label)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(stat_label)
+        if hasattr(data, 'channel'):
+            status_nibble = int((status_byte - data.channel) / 16)
+            _add_tooltip_conv(stat_label, status_nibble, hlen=1, dlen=2, blen=4)
+        else:
+            _add_tooltip_conv(stat_label, status_byte)
 
         # Channel
+        chan_val = None
         if hasattr(data, 'channel'):
             _mon_blink('c')
             _mon_blink(data.channel)
             chan_label = data.channel + 1  # Human-readable format
+            chan_val = data.channel
         else:
             _mon_blink('s')
             chan_label = "Global"
         dpg.add_text(chan_label)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(chan_label)
+        _add_tooltip_conv(chan_label, chan_val, hlen=1, dlen=2, blen=4)
 
         # Data 1 & 2
+        data0_name: str | False = False
         data0 = ""
         data0_dec: str | False = False
+        data1_name: str | False = False
         data1 = ""
+        data1_dec: str | False = False
         if 'note' in data.type:
             if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
                 _mon_blink('note_off')
@@ -616,8 +644,10 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
                 _note_on(data.note)
             else:
                 _note_off(data.note)
+            data0_name = "Note"
             data0 = data.note
             data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN[data.note]  # TODO: add preference for syllabic / EN / DE
+            data1_name = "Velocity"
             data1 = data.velocity
         elif 'polytouch' == data.type:
             data0 = data.note
@@ -625,34 +655,49 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             data1 = data.value
         elif 'control_change' == data.type:
             _mon_blink(f'cc_{data.control}')
+            data0_name = "Controller"
             data0 = data.control
             data0_dec = midi.constants.CONTROLLER_NUMBERS[data.control]
+            data1_name = "Value"
             data1 = data.value
         elif 'program_change' == data.type:
+            data0_name = "Program"
             data0 = data.program
         elif 'aftertouch' == data.type:
+            data0_name = "Value"
             data0 = data.value
         elif 'pitchwheel' == data.type:
+            data0_name = "Pitch"
             data0 = data.pitch
         elif 'sysex' == data.type:
+            data0_name = "Data"
             data0 = data.data  # TODO: decode device ID, Universal system exclusive messages…
         elif 'quarter_frame' == data.type:
+            data0_name = "Frame type"
             data0 = data.frame_type  # TODO: decode
+            data1_name = "Frame value"
             data1 = data.frame_value  # TODO: decode
         elif 'songpos' == data.type:
+            data0_name = "Position Pointer"
             data0 = data.pos
         elif 'song_select' == data.type:
+            data0_name = "Song #"
             data0 = data.song
 
         if data0_dec:
-            dpg.add_text(data0_dec)
+            dpg.add_text(str(data0_dec))
         else:
-            dpg.add_text(data0)
-        _add_tooltip_conv(data0_dec if data0_dec else data0, data0)
+            dpg.add_text(str(data0))
+        prefix0 = ""
+        if data0_name:
+            prefix0 = data0_name + ": "
+        _add_tooltip_conv(prefix0 + str(data0_dec if data0_dec else data0), data0, blen=7)
 
-        dpg.add_text(data1)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(data1)
+        dpg.add_text(str(data1))
+        prefix1 = ""
+        if data1_name:
+            prefix1 = data1_name + ": "
+        _add_tooltip_conv(prefix1 + str(data1_dec if data1_dec else data1), data1, blen=7)
 
     # TODO: per message type color coding
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
