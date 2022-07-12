@@ -121,6 +121,7 @@ def create() -> None:
 
             dpg.add_text("Not implemented yet")
 
+            # FIXME: move to settings?
             dpg.add_input_int(tag='mode_basic_chan', label="Basic Channel",
                               default_value=midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
 
@@ -344,6 +345,50 @@ def create() -> None:
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
         ###
+        # Notes
+        ###
+        with dpg.collapsing_header(label="Notes", default_open=False):
+            dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
+
+            # TODO: Staff?
+            # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
+
+            # Keyboard
+        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120,
+                             border=False)
+
+        width = 12
+        height = 60
+        bxpos = width / 2
+        wxpos = 0
+
+        for index in midi.notes.MIDI_NOTES_ALPHA_EN:
+            name = midi.notes.MIDI_NOTES_ALPHA_EN[index]
+            xpos = wxpos
+            ypos = height
+            if "#" in midi.notes.MIDI_NOTES_ALPHA_EN[index]:
+                height = ypos
+                xpos = bxpos
+                ypos = 0
+            label = "\n".join(name)  # Vertical text
+
+            dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
+                           pos=(xpos, ypos))
+            _add_tooltip_conv(
+                f"Syllabic:{' ':9}\t{midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
+                f"Alphabetical (EN):\t{name}\n"
+                f"Alphabetical (DE):\t{midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
+                index, blen=7
+            )
+
+            if "#" not in name:
+                wxpos += width + 1
+            elif "D#" in name or "A#" in name:
+                bxpos += (width + 1) * 2
+            else:
+                bxpos += width + 1
+
+        ###
         # Controllers
         ###
         with dpg.collapsing_header(label="Controllers", default_open=False):
@@ -407,49 +452,6 @@ def create() -> None:
             dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
             # FIXME: unimplemented upstream (page A-1)
             dpg.add_text("Not implemented yet", parent='probe_running_status_container')
-
-        ###
-        # Notes
-        ###
-        with dpg.collapsing_header(label="Notes", default_open=False):
-            dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
-
-        # TODO: Staff?
-        # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
-
-        # Keyboard
-        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120, border=False)
-
-        width = 12
-        height = 60
-        bxpos = width / 2
-        wxpos = 0
-
-        for index in midi.notes.MIDI_NOTES_ALPHA_EN:
-            name = midi.notes.MIDI_NOTES_ALPHA_EN[index]
-            xpos = wxpos
-            ypos = height
-            if "#" in midi.notes.MIDI_NOTES_ALPHA_EN[index]:
-                height = ypos
-                xpos = bxpos
-                ypos = 0
-            label = "\n".join(name)  # Vertical text
-
-            dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
-                           pos=(xpos, ypos))
-            _add_tooltip_conv(
-                f"Syllabic:{' ':9}\t{midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
-                f"Alphabetical (EN):\t{name}\n"
-                f"Alphabetical (DE):\t{midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
-                index, blen=7
-            )
-
-            if "#" not in name:
-                wxpos += width + 1
-            elif "D#" in name or "A#" in name:
-                bxpos += (width + 1) * 2
-            else:
-                bxpos += width + 1
 
         ###
         # Data history table
