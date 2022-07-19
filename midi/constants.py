@@ -181,11 +181,11 @@ CONTROLLER_NUMBERS = {
     88: "Undefined",
     89: "Undefined",
     90: "Undefined",
-    91: "Effects 1 Depth",  # formerly External Effects Depth
-    92: "Effects 2 Depth",  # formerly Tremolo Depth
-    93: "Effects 3 Depth",  # formerly Chorus Depth
-    94: "Effects 4 Depth",  # formerly Celeste (Detune) Depth
-    95: "Effects 5 Depth",  # formerly Phaser Depth
+    91: "Effects 1 Depth",  # formerly and recommended default: External Effects Depth
+    92: "Effects 2 Depth",  # formerly and recommended default: Tremolo Depth
+    93: "Effects 3 Depth",  # formerly and recommended default: Chorus Depth
+    94: "Effects 4 Depth",  # formerly and recommended default: Celeste (Detune) Depth
+    95: "Effects 5 Depth",  # formerly and recommended default: Phaser Depth
     96: "Data increment",
     97: "Data decrement",
     98: "Non-Registered Parameter Number LSB",

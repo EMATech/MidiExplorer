@@ -5,7 +5,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Probe window and management
+Probe window and data management
+
+TODO: separate presentation from logic and processing
 """
 
 import time
@@ -61,11 +63,16 @@ def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = 
 
 def create() -> None:
     with dpg.value_registry():
+        ###
         # Preferences
+        ###
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
         # Per standard, consider note-on with velocity set to 0 as note-off
         dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
+
+        ###
         # Blink management
+        ###
         dpg.add_float_value(tag='mon_c_active_until', default_value=0)  # seconds
         dpg.add_float_value(tag='mon_s_active_until', default_value=0)  # seconds
         for channel in range(16):  # Monitoring status
@@ -286,22 +293,6 @@ def create() -> None:
             with dpg.table_row():
                 dpg.add_text("System Messages")
 
-                dpg.add_text("Exclusive")
-
-                # System exclusive messages
-                dpg.add_button(tag='mon_sysex', label="SOX ")
-                val = 0xF0
-                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
-
-                # FIXME: mido is missing EOX (TODO: send PR)
-                # TODO: display according to settings
-                dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                val = 0xF7
-                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
-
-            with dpg.table_row():
-                dpg.add_text()
-
                 dpg.add_text("Common")
 
                 # System common messages (page 27)
@@ -329,11 +320,11 @@ def create() -> None:
                 val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
-                # Moved to Exclusive System Messages for now
+                # FIXME: mido is missing EOX (TODO: send PR)
                 # TODO: display according to settings
-                # dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                # val += 1
-                # _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
+                val += 1
+                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text()
@@ -372,6 +363,22 @@ def create() -> None:
                 dpg.add_button(tag='mon_reset', label="RST ")
                 val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+
+            with dpg.table_row():
+                dpg.add_text()
+
+                dpg.add_text("Exclusive")
+
+                # System exclusive messages
+                dpg.add_button(tag='mon_sysex', label="SOX ")
+                val = 0xF0
+                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
+
+                # FIXME: mido is missing EOX (TODO: send PR)
+                # TODO: display according to settings
+                # dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
+                # val = 0xF7
+                # _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
         ###
         # Notes
@@ -418,6 +425,16 @@ def create() -> None:
                 bxpos += width + 1
 
         ###
+        # Running Status
+        ###
+        if DEBUG:
+            # TODO: implement
+            with dpg.collapsing_header(label="Running Status", default_open=False):
+                dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
+                # FIXME: unimplemented upstream (page A-1)
+                dpg.add_text("Not implemented yet", parent='probe_running_status_container')
+
+        ###
         # Controllers
         ###
         with dpg.collapsing_header(label="Controllers", default_open=True):
@@ -445,6 +462,41 @@ def create() -> None:
                     dpg.add_text("", parent=f'ctrls_{rownum}')
                     dpg.add_text("", parent=f'ctrls_{rownum}')
             del rownum
+
+        ###
+        # TODO: Per controller status?
+        ###
+
+        ###
+        # TODO: Program change status? (+ Bank Select?)
+        ###
+
+        ###
+        # TODO: Pitch bend change
+        ###
+
+        ###
+        # TODO: Aftertouch
+        ###
+
+        ###
+        # TODO: System common
+        ###
+        # MTC Quarter Frame
+        # Song Pos Pointer
+        # Song Select
+        # Tune Request
+        # EOX
+
+        ###
+        # TODO: System Realtime
+        ###
+        # Timing Clock
+        # Start
+        # Continue
+        # Stop
+        # Active Sensing
+        # System Reset
 
         ###
         # System Exclusive
@@ -475,16 +527,6 @@ def create() -> None:
                     # TODO: decode notation information (page 54)
                     # TODO: decode device control (page 57)
                     # TODO: decode MMC (page 58 + dedicated spec)
-
-        ###
-        # Running Status
-        ###
-        if DEBUG:
-            # TODO: implement
-            with dpg.collapsing_header(label="Running Status", default_open=False):
-                dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
-                # FIXME: unimplemented upstream (page A-1)
-                dpg.add_text("Not implemented yet", parent='probe_running_status_container')
 
         ###
         # Data history table

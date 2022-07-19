@@ -123,6 +123,12 @@ Features / TODO list
     - [ ] LCU
     - [ ] MCU
     - Others?
+  - [ ] Performance analyzer
+    - [ ] Round trip latency
+    - [ ] Jitter
+    - [ ] Bandwidth
+    - [ ] Correctness
+    - [ ] Stresser/Fuzzer
   - [ ] Hardware toolbox
 - [ ] Logging
   - [x] GUI

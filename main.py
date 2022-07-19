@@ -89,11 +89,10 @@ if __name__ == '__main__':
     dpg.create_viewport(title='MIDI Explorer', width=1920, height=1080)
 
     # Icons must be set before showing viewport (Can also be set when instantiating the viewport)
-    # TODO: icons
     dpg.set_viewport_small_icon('icons/midiexplorer.ico')
     dpg.set_viewport_large_icon('icons/midiexplorer.ico')
 
-    # TODO: theme
+    # TODO: Custom theme?
 
     dpg.setup_dearpygui()
     dpg.show_viewport()
@@ -103,6 +102,8 @@ if __name__ == '__main__':
     # MAIN LOOP
     ###
     while dpg.is_dearpygui_running():  # Replaces dpg.start_dearpygui()
+        # TODO: Use a generic event handler with subscribe pattern instead?
+
         if dpg.get_value('input_mode') == 'Polling':
             with lock:
                 gui.windows.conn.poll_processing()
