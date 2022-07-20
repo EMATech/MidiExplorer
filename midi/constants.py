@@ -369,8 +369,72 @@ REAL_TIME_MIDI_TIME_CODE_SUB_ID_2 = {  # 0x01
     0x02: "User Bits",
 }
 REAL_TIME_SHOW_CONTROL_SUB_ID_2 = {  # 0x02
-    0x00: "MSC Extensions",
-    0X01: "MSC Commands",  # FIXME: extract from MSC spec
+    # Extracted from MSC specification
+    0x00: "(Reserved)",
+
+    0x01: "Lighting (General Category)",
+    0x02: "Moving Lights",
+    0x03: "Color Changers",
+    0x04: "Strobes",
+    0x05: "Lasers",
+    0x06: "Chasers",
+
+    0x10: "Sound (General Category)",
+    0x11: "Music",
+    0x12: "CD Players",
+    0x13: "EPROM Playback",
+    0x14: "Audio Tape Machines",
+    0x15: "Intecoms",
+    0x16: "Amplifiers",
+    0x17: "Audio Effects Devices",
+    0x18: "Equalizers",
+
+    0x20: "Machinery (General Category)",
+    0x21: "Rigging",
+    0x22: "Flys",
+    0x23: "Lifts",
+    0x24: "Turntables",
+    0x25: "Trusses",
+    0x26: "Robots",
+    0x27: "Animation",
+    0x28: "Floats",
+    0x29: "Breakaways",
+    0x2A: "Barges",
+
+    0x30: "Video (General Category)",
+    0x31: "Video Tape Machines",
+    0x32: "Video Cassette Machines",
+    0x33: "Video Disc Players",
+    0x34: "Video Switchers",
+    0x35: "Video Effects",
+    0x36: "Video Character Generators",
+    0x37: "Video Still Stores",
+    0x38: "Video Monitors",
+
+    0x40: "Projection (General Category)",
+    0x41: "Film Projectors",
+    0x42: "Slide Projectors",
+    0x43: "Video Projectors",
+    0x44: "Dissolvers",
+    0x45: "Shutter Controls",
+
+    0x50: "Process Control (General Category)",
+    0x51: "Hydraulic Oil",
+    0x52: "H2O",
+    0x53: "CO2",
+    0x54: "Compressed Air",
+    0x55: "Natural Gas",
+    0x56: "Fog",
+    0x57: "Smoke",
+    0x58: "Cracked Haze",
+
+    0x60: "Pyro (General Category)",
+    0x61: "Fireworks",
+    0x62: "Explosions",
+    0x63: "Flame",
+    0x64: "Smoke pots",
+
+    0x7F: "All-types",
 }
 REAL_TIME_NOTATION_INFORMATION_SUB_ID_2 = {  # 0x03
     0x01: "Bar Number",
@@ -399,10 +463,128 @@ REAL_TIME_MTC_CUEING = {  # 0x05
     0x0E: "Event Name in additional info.",
 }
 REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS = {  # 0x06
-    0x00: "MMC Commands",  # FIXME: extract from MMC spec
+    # Extracted from the MMC specification
+    0x00: "(Reserved)",
+    0x01: "STOP",
+    0x02: "PLAY",
+    0x03: "DEFERRED PLAY",
+    0x04: "FAST FORWARD",
+    0x05: "REWIND",
+    0x06: "RECORD STROBE",
+    0x07: "RECORD EXIT",
+    0x08: "RECORD PAUSE",
+    0x09: "PAUSE",
+    0x0A: "EJECT",
+    0x0B: "CHASE",
+    0x0C: "COMMAND ERROR RESET",
+    0x0D: "MMC RESET",
+
+    0x40: "WRITE",
+    0x41: "MASKED WRITE",
+    0x42: "READ",
+    0x43: "UPDATE",
+    0x44: "LOCATE",
+    0x45: "VARIABLE PLAY",
+    0x46: "SEARCH",
+    0x47: "SHUTTLE",
+    0x48: "STEP",
+    0x49: "ASSIGN SYSTEM MASTER",
+    0x4A: "GENERATOR COMMAND",
+    0x4B: "MIDI TIME CODE COMMAND",
+    0x4C: "MOVE",
+    0x4D: "ADD",
+    0x4E: "SUBTRACT",
+    0x4F: "DROP FRAME ADJUST",
+    0x50: "PROCEDURE",
+    0x51: "EVENT",
+    0x52: "GROUP",
+    0x53: "COMMAND SEGMENT",
+    0x54: "DEFERRED VARIABLE PLAY",
+    0x55: "RECORD STROBE VARIABLE",
+
+    0x7C: "WAIT",
+
+    0x7F: "RESUME",
 }
 REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES = {  # 0x07
-    0x00: "MMC Responses",  # FIXME: extract from MMC spec
+    # Extracted from the MMC specification
+    0x00: "(Reserved)",
+    0x01: "SELECTED TIME CODE",
+    0x02: "SELECTED MASTER CODE",
+    0x03: "REQUESTED OFFSET",
+    0x04: "ACTUAL OFFSET",
+    0x05: "LOCK DEVIATION",
+    0x06: "GENERATOR TIME CODE",
+    0x07: "MIDI TIME CODE INPUT",
+    0x08: "GP0 / LOCATE POINT",
+    0x09: "GP1",
+    0x0A: "GP2",
+    0x0B: "GP3",
+    0x0C: "GP4",
+    0x0D: "GP5",
+    0x0E: "GP6",
+    0x0F: "GP7",
+
+    0x20: "(Reserved)",
+    0x21: "Short SELECTED TIME CODE",
+    0x22: "Short SELECTED MASTER CODE",
+    0x23: "Short REQUESTED OFFSET",
+    0x24: "Short ACTUAL OFFSET",
+    0x25: "Short LOCK DEVIATION",
+    0x26: "Short GENERATOR TIME CODE",
+    0x27: "Short MIDI TIME CODE INPUT",
+    0x28: "Short GP0 / LOCATE POINT",
+    0x29: "Short GP1",
+    0x2A: "Short GP2",
+    0x2B: "Short GP3",
+    0x2C: "Short GP4",
+    0x2D: "Short GP5",
+    0x2E: "Short GP6",
+    0x2F: "Short GP7",
+
+    0x40: "SIGNATURE",
+    0x41: "UPDATE RATE",
+    0x42: "RESPONSE ERROR",
+    0x43: "COMMAND ERROR",
+    0x44: "COMMAND ERROR LEVEL",
+    0x45: "TIME STANDARD",
+    0x46: "SELECTED TIME CODE SOURCE",
+    0x47: "SELECTED TIME CODE USERBITS",
+    0x48: "MOTION CONTROL TALLY",
+    0x49: "VELOCITY TALLY",
+    0x4A: "STOP MODE",
+    0x4B: "FAST MODE",
+    0x4C: "RECORD MODE",
+    0x4D: "RECORD STATUS",
+    0x4E: "TRACK RECORD STATUS",
+    0x4F: "TRACK RECORD READY",
+    0x50: "GLOBAL MONITOR",
+    0x51: "RECORD MONITOR",
+    0x52: "TRACK SYNC MONITOR",
+    0x53: "TRACK INPUT MONITOR",
+    0x54: "STEP LENGTH",
+    0x55: "PLAY SPEED REFERENCE",
+    0x56: "FIXED SPEED",
+    0x57: "LIFTER DEFEAT",
+    0x58: "CONTROL DISABLE",
+    0x59: "RESOLVED PLAY MODE",
+    0x5A: "CHASE MODE",
+    0x5B: "GENERATOR COMMAND TALLY",
+    0x5C: "GENERATOR SET UP",
+    0x5D: "GENERATOR USERBITS",
+    0x5E: "MIDI TIME CODE COMMAND TALLY",
+    0x5F: "MID TIME CODE SET UP",
+
+    0x60: "PROCEDURE RESPONSE",
+    0x61: "EVENT RESPONSE",
+    0x62: "TRACK MUTE",
+    0x63: "VITC INSERT ENABLE",
+    0x64: "RESPONSE SEGMENT",
+    0x65: "FAILURE",
+
+    0x7C: "WAIT",
+
+    0x7F: "RESUME",
 }
 REAL_TIME_MIDI_TUNING_STANDARD = {  # 0x08
     0x02: "Note Change",
@@ -1040,6 +1222,7 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 
 # TODO: Generator?
+# See existing templates
 
 ###
 # SMF/DLS bundle to RMID file
@@ -1083,7 +1266,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # TODO!
 
 ###
-#  SCALABLE POLYPHONY MIDI SPECIFICATION
+# SCALABLE POLYPHONY MIDI SPECIFICATION
 # v1.0b
 #
 # Reference: RP-034, RP-035
