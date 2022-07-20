@@ -178,7 +178,9 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             ###
             # System Exclusive decoding
             ###
-
+            syx_id_type: str = ""
+            syx_id_group: str = ""
+            syx_id_region: None | str = None
             syx_id: None | int | Tuple = None
             syx_id_label: str = ""
             syx_device_id: None | int = None
@@ -186,27 +188,38 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             syx_sub_id1_label: str = ""
             syx_sub_id2: None | int = None
             syx_sub_id2_label: str = ""
-            sys_payload: None | int | Tuple = None
+            syx_payload: None | int | Tuple = None
 
             # decode 1 or 3 byte IDs (page 34)
 
             # Extract ID
             syx_id = data0[0]  # 1-byte ID or first byte of 3-byte ID
-            sys_id_len = 1
+            syx_id_len = 1
+            # Decode group
+            syx_id_group = midi.constants.SYSTEM_EXCLUSIVE_ID_GROUPS[syx_id]
             if syx_id == 0:
                 # 3-byte ID
-                sys_id_len = 3
+                syx_id_len = 3
                 syx_id = data0[0:3]
+                syx_region_idx = 1
             logger.log_debug(f"[SysEx] ID: {syx_id}")
+
+            # Decode region
+            if syx_id_len == 1:
+                syx_id_region = midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id)
+            elif syx_id_len == 3:
+                syx_id_region = midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id[1])
+            else:
+                raise ValueError("SysEx IDs are either 1 or 3 bytes long")
 
             # Decode ID
             default_syx_label = "Undefined"
-            if sys_id_len == 1:
-                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_MANUFACTURER_ID.get(
+            if syx_id_len == 1:
+                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_ID.get(
                     syx_id, default_syx_label)
-            if sys_id_len == 3:
+            if syx_id_len == 3:
                 # TODO: optimise?
-                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_MANUFACTURER_ID.get(
+                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_ID.get(
                     syx_id[0], default_syx_label)
                 if syx_id_label != default_syx_label:
                     syx_id_label = syx_id_label.get(syx_id[1], default_syx_label)
@@ -215,7 +228,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             logger.log_debug(f"[SysEx] Manufacturer or ID name: {syx_id_label}")
 
             # Extract device ID
-            next_byte = sys_id_len
+            next_byte = syx_id_len
             syx_device_id = data0[next_byte]
             logger.log_debug(f"[SysEx] Device ID: {syx_device_id}")
 
@@ -268,7 +281,13 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             syx_payload = data0[next_byte:]
             logger.log_debug(f"[SysEx] Payload: {syx_payload}")
 
+            if syx_id_region:
+                syx_id_type = f"{syx_id_region} {syx_id_group} ID"
+            else:
+                syx_id_type = f"{syx_id_group} ID"
+
             # Populate values used by the GUI
+            dpg.set_value('syx_id_type', syx_id_type)
             dpg.set_value('syx_id', syx_id)
             dpg.set_value('syx_id_label', syx_id_label)
             dpg.set_value('syx_device_id', syx_device_id)
@@ -337,7 +356,7 @@ def _note_off(number: int | str) -> None:
     dpg.bind_item_theme(f'note_{number}', None)
 
 
-def _display_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """
     Displays the EOX monitor in the appropriate category according to settings
     :param sender: argument is used by DPG to inform the callback
@@ -437,6 +456,7 @@ def create() -> None:
         ###
         # SysEx decoding
         ###
+        dpg.add_string_value(tag='syx_id_type')
         dpg.add_string_value(tag='syx_id')
         dpg.add_string_value(tag='syx_id_label')
         dpg.add_string_value(tag='syx_device_id')
@@ -484,7 +504,7 @@ def create() -> None:
                         items=eox_categories,
                         default_value=eox_categories[0],
                         source='eox_category',
-                        callback=_display_eox_category,
+                        callback=_update_eox_category,
                         user_data=eox_categories
                     )
 
@@ -722,7 +742,8 @@ def create() -> None:
                 dpg.add_button(tag='mon_end_of_exclusive_syx', label="EOX ")
                 val = 0xF7
                 _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
-                _display_eox_category(sender=None, app_data=None, user_data=eox_categories)
+
+            _update_eox_category(sender=None, app_data=None, user_data=eox_categories)
 
         ###
         # Notes
@@ -860,7 +881,7 @@ def create() -> None:
                 dpg.add_table_column()
 
             with dpg.table_row():
-                dpg.add_text("ID")
+                dpg.add_text(source='syx_id_type')
                 dpg.add_text(source='syx_id')
                 dpg.add_text(source='syx_id_label')
             with dpg.table_row():

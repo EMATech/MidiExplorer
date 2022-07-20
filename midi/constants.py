@@ -423,7 +423,7 @@ REAL_TIME_SUB_ID_2_FROM_1 = {
 # - https://www.midi.org/specifications-old/item/manufacturer-id-numbers
 # - http://www.amei.or.jp/report/report6.html (JAPANESE)
 # - http://www.amei.or.jp/report/System_ID_e.html (ENGLISH)
-SYSTEM_EXCLUSIVE_MANUFACTURER_ID = {
+SYSTEM_EXCLUSIVE_ID = {
     0x00: {  # 3-byte IDs
         # American Group (00-1F)
         0x00: {
@@ -736,6 +736,23 @@ SYSTEM_EXCLUSIVE_MANUFACTURER_ID = {
     0x7F: "Realtime"
 }
 
+# ID groups
+SYSTEM_EXCLUSIVE_ID_GROUPS = {}
+for syx_id in range(0, 125):
+    SYSTEM_EXCLUSIVE_ID_GROUPS.update({syx_id: "Manufacturer"})
+SYSTEM_EXCLUSIVE_ID_GROUPS.update({125: "Reserved"})
+for syx_id in range(126, 128):
+    SYSTEM_EXCLUSIVE_ID_GROUPS.update({syx_id: "Universal"})
+
+# ID Regions
+SYSTEM_EXCLUSIVE_ID_REGIONS = {}
+for syx_id in range(0x00, 0x1F + 1):
+    SYSTEM_EXCLUSIVE_ID_REGIONS.update({syx_id: "American"})
+for syx_id in range(0x20, 0x3F + 1):
+    SYSTEM_EXCLUSIVE_ID_REGIONS.update({syx_id: "European"})
+for syx_id in range(0x40, 0x5F + 1):
+    SYSTEM_EXCLUSIVE_ID_REGIONS.update({syx_id: "Japanese"})
+
 # Page T-14
 ADDITIONAL_SPECIFICATIONS = {
     "MIDI Time Code",
@@ -746,7 +763,7 @@ ADDITIONAL_SPECIFICATIONS = {
 }
 
 ###
-# Recommended practices (RP)
+# Recommended Practices (RP)
 #           &
 # Confirmation of Approval (CA)
 #
