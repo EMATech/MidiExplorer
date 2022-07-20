@@ -343,6 +343,14 @@ GENERAL_MIDI_SUB_ID_2 = {  # 0x09
     0x01: "General MIDI System On",
     0x02: "General MIDI System Off",
 }
+NON_REAL_TIME_SUB_ID_2_FROM_1 = {
+    0x04: MIDI_TIME_CODE_SUB_ID_2,
+    0x05: SAMPLE_DUMP_EXTENSIONS_SUB_ID_2,
+    0x06: GENERAL_INFORMATION_SUB_ID_2,
+    0x07: FILE_DUMP_SUB_ID_2,
+    0X08: MIDI_TUNING_STANDARD_SUB_ID_2,
+    0X09: GENERAL_MIDI_SUB_ID_2
+}
 
 # Page T-10
 DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1 = {  # 0x7F
@@ -356,28 +364,23 @@ DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1 = {  # 0x7F
     0x07: "MIDI Machine Control Responses",  # SUB-ID #2
     0x08: "MIDI Tuning Standard",  # SUB-ID #2
 }
-
 REAL_TIME_MIDI_TIME_CODE_SUB_ID_2 = {  # 0x01
     0x01: "Full Message",
     0x02: "User Bits",
 }
-
 REAL_TIME_SHOW_CONTROL_SUB_ID_2 = {  # 0x02
     0x00: "MSC Extensions",
     0X01: "MSC Commands",  # FIXME: extract from MSC spec
 }
-
 REAL_TIME_NOTATION_INFORMATION_SUB_ID_2 = {  # 0x03
     0x01: "Bar Number",
     0x02: "Time Signature (Immediate)",
     0x03: "Time Signature (Delayed)",
 }
-
 REAL_TIME_DEVICE_CONTROL = {  # 0x04
     0x01: "Master Volume",
     0x02: "Master Balance",
 }
-
 REAL_TIME_MTC_CUEING = {  # 0x05
     0x00: "Special",
     0x01: "Punch In Points",
@@ -395,17 +398,24 @@ REAL_TIME_MTC_CUEING = {  # 0x05
     0x0D: "(Reserved)",
     0x0E: "Event Name in additional info.",
 }
-
 REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS = {  # 0x06
     0x00: "MMC Commands",  # FIXME: extract from MMC spec
 }
-
 REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES = {  # 0x07
     0x00: "MMC Responses",  # FIXME: extract from MMC spec
 }
-
 REAL_TIME_MIDI_TUNING_STANDARD = {  # 0x08
     0x02: "Note Change",
+}
+REAL_TIME_SUB_ID_2_FROM_1 = {
+    0x01: REAL_TIME_MIDI_TIME_CODE_SUB_ID_2,
+    0x02: REAL_TIME_SHOW_CONTROL_SUB_ID_2,
+    0x03: REAL_TIME_NOTATION_INFORMATION_SUB_ID_2,
+    0x04: REAL_TIME_DEVICE_CONTROL,
+    0x05: REAL_TIME_MTC_CUEING,
+    0x06: REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS,
+    0x07: REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES,
+    0x08: REAL_TIME_MIDI_TUNING_STANDARD
 }
 
 # Page T-11
@@ -417,6 +427,8 @@ SYSTEM_EXCLUSIVE_MANUFACTURER_ID = {
     0x00: {  # 3-byte IDs
         # American Group (00-1F)
         0x00: {
+            0x00: "Not to be used!",
+
             0x01: "Time Warner Interactive",
 
             0x07: "Digital Music Corp.",

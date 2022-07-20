@@ -9,7 +9,9 @@ Probe window and data management
 
 TODO: separate presentation from logic and processing
 """
+from typing import Any, Optional, Tuple
 
+import sys
 import time
 from dearpygui import dearpygui as dpg
 
@@ -30,6 +32,336 @@ US2MS = 1000
 ###
 probe_data_counter = 0
 previous_timestamp = START_TIME
+
+
+def _init_details_table_data() -> None:
+    # Initial data for reverse scrolling
+    with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
+        pass
+
+
+def _clear_probe_data_table() -> None:
+    dpg.delete_item('probe_data_table', children_only=True, slot=1)
+    _init_details_table_data()
+
+
+def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
+    """
+    Decodes and presents data received from the probe.
+
+    :param timestamp:
+    :param source:
+    :param data:
+    :return:
+    """
+    global probe_data_counter, previous_timestamp
+
+    logger = Logger()
+
+    logger.log_debug(f"Adding data from {source} to probe at {timestamp}: {data!r}")
+
+    # TODO: insert new data at the top of the table
+    previous_data = probe_data_counter
+    probe_data_counter += 1
+
+    # TODO: Flush data after a certain amount
+
+    with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
+                       before=f'probe_data_{previous_data}'):
+
+        # Source
+        dpg.add_selectable(label=source, span_columns=True)
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(source)
+
+        # Timestamp (ms)
+        ts = (timestamp - START_TIME) * US2MS
+        dpg.add_text(f"{ts:n}")
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(f"{ts}")
+
+        # Delta (ms)
+        delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
+        if data.time is not None:
+            delta = data.time * US2MS
+            logger.log_debug("Timing: Using rtmidi time delta")
+        elif previous_timestamp is not None:
+            logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
+            delta = (timestamp - previous_timestamp) * US2MS
+        previous_timestamp = timestamp
+        dpg.add_text(f"{delta:n}")
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(f"{delta}")
+
+        # Raw message
+        raw_label = data.hex()
+        dpg.add_text(raw_label)
+        _add_tooltip_conv(raw_label, data.bin())
+
+        # Decoded message
+        if DEBUG:
+            dec_label = repr(data)
+            dpg.add_text(dec_label)
+            with dpg.tooltip(dpg.last_item()):
+                dpg.add_text(dec_label)
+
+        # Status
+        _mon_blink(data.type)
+        status_byte = midi.mido2standard.get_status_by_type(data.type)
+        stat_label = midi.constants.STATUS_BYTES[status_byte]
+        dpg.add_text(stat_label)
+        if hasattr(data, 'channel'):
+            status_nibble = int((status_byte - data.channel) / 16)
+            _add_tooltip_conv(stat_label, status_nibble, hlen=1, dlen=2, blen=4)
+        else:
+            _add_tooltip_conv(stat_label, status_byte)
+
+        # Channel
+        chan_val = None
+        if hasattr(data, 'channel'):
+            _mon_blink('c')
+            _mon_blink(data.channel)
+            chan_label = data.channel + 1  # Human-readable format
+            chan_val = data.channel
+        else:
+            _mon_blink('s')
+            chan_label = "Global"
+        dpg.add_text(chan_label)
+        _add_tooltip_conv(chan_label, chan_val, hlen=1, dlen=2, blen=4)
+
+        # Data 1 & 2
+        data0_name: str | False = False
+        data0: int | tuple | None = None
+        data0_dec: str | False = False
+        data1_name: str | False = False
+        data1: int | None = None
+        data1_dec: str | False = False
+        if 'note' in data.type:
+            if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
+                _mon_blink('note_off')
+            # Keyboard
+            if 'on' in data.type and not (
+                    dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
+            ):
+                _note_on(data.note)
+            else:
+                _note_off(data.note)
+            data0_name = "Note"
+            data0: int = data.note
+            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)  # TODO: add preference for syllabic / EN / DE
+            data1_name = "Velocity"
+            data1: int = data.velocity
+        elif 'polytouch' == data.type:
+            data0: int = data.note
+            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)  # TODO: add preference for syllabic / EN / DE
+            data1: int = data.value
+        elif 'control_change' == data.type:
+            _mon_blink(f'cc_{data.control}')
+            data0_name = "Controller"
+            data0: int = data.control
+            data0_dec = midi.constants.CONTROLLER_NUMBERS.get(data.control)
+            data1_name = "Value"
+            data1: int = data.value
+        elif 'program_change' == data.type:
+            data0_name = "Program"
+            data0: int = data.program
+        elif 'aftertouch' == data.type:
+            data0_name = "Value"
+            data0: int = data.value
+        elif 'pitchwheel' == data.type:
+            data0_name = "Pitch"
+            data0: int = data.pitch
+        elif 'sysex' == data.type:
+            data0_name = "Data"
+            data0: tuple = data.data
+
+            ###
+            # System Exclusive decoding
+            ###
+
+            syx_id: None | int | Tuple = None
+            syx_id_label: str = ""
+            syx_device_id: None | int = None
+            syx_sub_id1: None | int = None
+            syx_sub_id1_label: str = ""
+            syx_sub_id2: None | int = None
+            syx_sub_id2_label: str = ""
+            sys_payload: None | int | Tuple = None
+
+            # decode 1 or 3 byte IDs (page 34)
+
+            # Extract ID
+            syx_id = data0[0]  # 1-byte ID or first byte of 3-byte ID
+            sys_id_len = 1
+            if syx_id == 0:
+                # 3-byte ID
+                sys_id_len = 3
+                syx_id = data0[0:3]
+            logger.log_debug(f"[SysEx] ID: {syx_id}")
+
+            # Decode ID
+            default_syx_label = "Undefined"
+            if sys_id_len == 1:
+                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_MANUFACTURER_ID.get(
+                    syx_id, default_syx_label)
+            if sys_id_len == 3:
+                # TODO: optimise?
+                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_MANUFACTURER_ID.get(
+                    syx_id[0], default_syx_label)
+                if syx_id_label != default_syx_label:
+                    syx_id_label = syx_id_label.get(syx_id[1], default_syx_label)
+                if syx_id_label != default_syx_label:
+                    syx_id_label = syx_id_label.get(syx_id[2], default_syx_label)
+            logger.log_debug(f"[SysEx] Manufacturer or ID name: {syx_id_label}")
+
+            # Extract device ID
+            next_byte = sys_id_len
+            syx_device_id = data0[next_byte]
+            logger.log_debug(f"[SysEx] Device ID: {syx_device_id}")
+
+            # Defined Universal System Exclusive Messages
+            #     Non-Real Time
+            if syx_id == 0x7E:
+                next_byte += 1
+                syx_sub_id1 = data[next_byte]
+                logger.log_debug(f"[SysEx] Sub-ID#1: {syx_sub_id1} ")
+                syx_sub_id1_label = midi.constants.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
+                    syx_sub_id1, default_syx_label)
+                logger.log_debug(f"[SysEx] Sub-ID#1 name: {syx_sub_id1_label}")
+                if syx_sub_id1 in midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1:
+                    next_byte += 1
+                    syx_sub_id2 = data0[next_byte]
+                    logger.log_debug(f"[SysEx] Sub-ID#2: {syx_sub_id2} ")
+                    syx_sub_id2_label = midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
+                        syx_sub_id2, default_syx_label)
+                    logger.log_debug(f"[SysEx] Sub-ID#2 name: {syx_sub_id2_label}")
+            #     Real Time
+            if syx_id == 0x7F:
+                next_byte += 1
+                syx_sub_id1 = data0[next_byte]
+                logger.log_debug(f"[SysEx] Sub-ID#1: {syx_sub_id1} ")
+                syx_sub_id1_label = midi.constants.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
+                    syx_sub_id1, default_syx_label)
+                logger.log_debug(f"[SysEx] Sub-ID#1 name: {syx_sub_id1_label}")
+                if syx_sub_id1 in midi.constants.REAL_TIME_SUB_ID_2_FROM_1:
+                    next_byte += 1
+                    syx_sub_id2 = data0[next_byte]
+                    logger.log_debug(f"[SysEx] Sub-ID#2: {syx_sub_id2} ")
+                    syx_sub_id2_label = midi.constants.REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
+                        syx_sub_id2, default_syx_label)
+                    logger.log_debug(f"[SysEx] Sub-ID#2 name: {syx_sub_id2_label}")
+
+            # TODO: decode sample dump standard (page 35)
+            # ACK, NAK, Wait, Cancel & EOF
+            # TODO: decode device inquiry (page 40)
+            # TODO: decode file dump (page 41)
+            # TODO: decode midi tuning (page 47)
+            # TODO: decode general midi system messages (page 52)
+            # TODO: decode MTC full message, user bits and real time cueing (page 53 + dedicated spec)
+            # TODO: decode midi show control (page 53 + dedicated spec)
+            # TODO: decode notation information (page 54)
+            # TODO: decode device control (page 57)
+            # TODO: decode MMC (page 58 + dedicated spec)
+
+            # Undecoded payload
+            next_byte += 1
+            syx_payload = data0[next_byte:]
+            logger.log_debug(f"[SysEx] Payload: {syx_payload}")
+
+            # Populate values used by the GUI
+            dpg.set_value('syx_id', syx_id)
+            dpg.set_value('syx_id_label', syx_id_label)
+            dpg.set_value('syx_device_id', syx_device_id)
+            dpg.set_value('syx_sub_id1', syx_sub_id1)
+            dpg.set_value('syx_sub_id1_label', syx_sub_id1_label)
+            dpg.set_value('syx_sub_id2', syx_sub_id2)
+            dpg.set_value('syx_sub_id2_label', syx_sub_id2_label)
+            dpg.set_value('syx_payload', syx_payload)
+
+        elif 'quarter_frame' == data.type:
+            data0_name = "Frame type"
+            data0 = data.frame_type  # TODO: decode
+            data1_name = "Frame value"
+            data1 = data.frame_value  # TODO: decode
+        elif 'songpos' == data.type:
+            data0_name = "Position Pointer"
+            data0 = data.pos
+        elif 'song_select' == data.type:
+            data0_name = "Song #"
+            data0 = data.song
+
+        if data0_dec:
+            dpg.add_text(str(data0_dec))
+        else:
+            dpg.add_text(str(data0))
+        prefix0 = ""
+        if data0_name:
+            prefix0 = data0_name + ": "
+        _add_tooltip_conv(prefix0 + str(data0_dec if data0_dec else data0), data0, blen=7)
+
+        dpg.add_text(str(data1))
+        prefix1 = ""
+        if data1_name:
+            prefix1 = data1_name + ": "
+        _add_tooltip_conv(prefix1 + str(data1_dec if data1_dec else data1), data1, blen=7)
+
+    # TODO: per message type color coding
+    # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
+
+    # Autoscroll
+    if dpg.get_value('probe_data_table_autoscroll'):
+        dpg.set_y_scroll('act_det', -1.0)
+
+
+def _mon_blink(indicator: int | str) -> None:
+    now = time.time() - START_TIME
+    delay = dpg.get_value('mon_blink_duration')
+    target = f'mon_{indicator}_active_until'
+    until = now + delay
+    dpg.set_value(target, until)
+    theme = '__red'
+    if indicator != 'end_of_exclusive':
+        dpg.bind_item_theme(f'mon_{indicator}', theme)
+    else:
+        dpg.bind_item_theme(f'mon_{indicator}_common', theme)
+        dpg.bind_item_theme(f'mon_{indicator}_syx', theme)
+    # logger.log_debug(f"Current time:{time.time() - START_TIME}")
+    # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
+
+
+def _note_on(number: int | str) -> None:
+    dpg.bind_item_theme(f'note_{number}', '__red')
+
+
+def _note_off(number: int | str) -> None:
+    dpg.bind_item_theme(f'note_{number}', None)
+
+
+def _display_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """
+    Displays the EOX monitor in the appropriate category according to settings
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+    :return:
+    """
+    logger = Logger()
+
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
+
+    if dpg.get_value('eox_category') == user_data[0]:
+        dpg.hide_item('mon_end_of_exclusive_syx')
+        dpg.show_item('mon_end_of_exclusive_common')
+    else:
+        dpg.hide_item('mon_end_of_exclusive_common')
+        dpg.show_item('mon_end_of_exclusive_syx')
 
 
 def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = None, hlen: int = 2, dlen: int = 3,
@@ -69,7 +401,11 @@ def create() -> None:
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
         # Per standard, consider note-on with velocity set to 0 as note-off
         dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
-
+        eox_categories = (
+            "System Common Message (default, MIDI specification compliant)",
+            "System Exclusive Message"
+        )
+        dpg.add_string_value(tag='eox_category', default_value=eox_categories[0])
         ###
         # Blink management
         ###
@@ -98,6 +434,17 @@ def create() -> None:
         dpg.add_float_value(tag='mon_reset_active_until', default_value=0)  # seconds
         for controller in range(128):
             dpg.add_float_value(tag=f'mon_cc_{controller}_active_until', default_value=0)  # seconds
+        ###
+        # SysEx decoding
+        ###
+        dpg.add_string_value(tag='syx_id')
+        dpg.add_string_value(tag='syx_id_label')
+        dpg.add_string_value(tag='syx_device_id')
+        dpg.add_string_value(tag='syx_sub_id1')
+        dpg.add_string_value(tag='syx_sub_id1_label')
+        dpg.add_string_value(tag='syx_sub_id2')
+        dpg.add_string_value(tag='syx_sub_id2_label')
+        dpg.add_string_value(tag='syx_payload')
 
     ###
     # DEAR PYGUI THEME for red buttons
@@ -131,17 +478,15 @@ def create() -> None:
                 )
                 dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
                                  source='zero_velocity_note_on_is_note_off')
-                if DEBUG:
-                    # TODO: implement
-                    with dpg.group(horizontal=True):
-                        dpg.add_text("EOX is a:")
-                        dpg.add_radio_button(
-                            items=(
-                                "System Common Message (default, MIDI specification compliant)",
-                                "System Exclusive Message"
-                            ),
-                            source='eox_system_message'
-                        )
+                with dpg.group(horizontal=True):
+                    dpg.add_text("EOX is a:")
+                    dpg.add_radio_button(
+                        items=eox_categories,
+                        default_value=eox_categories[0],
+                        source='eox_category',
+                        callback=_display_eox_category,
+                        user_data=eox_categories
+                    )
 
         ###
         # Mode
@@ -321,8 +666,7 @@ def create() -> None:
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
-                # TODO: display according to settings
-                dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
+                dpg.add_button(tag='mon_end_of_exclusive_common', label="EOX ")
                 val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
@@ -375,10 +719,10 @@ def create() -> None:
                 _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
-                # TODO: display according to settings
-                # dpg.add_button(tag='mon_end_of_exclusive', label="EOX ")
-                # val = 0xF7
-                # _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
+                dpg.add_button(tag='mon_end_of_exclusive_syx', label="EOX ")
+                val = 0xF7
+                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
+                _display_eox_category(sender=None, app_data=None, user_data=eox_categories)
 
         ###
         # Notes
@@ -468,6 +812,10 @@ def create() -> None:
         ###
 
         ###
+        # TODO: Registered parameter decoding?
+        ###
+
+        ###
         # TODO: Program change status? (+ Bank Select?)
         ###
 
@@ -501,32 +849,36 @@ def create() -> None:
         ###
         # System Exclusive
         ###
-        if DEBUG:
-            # TODO: implement
-            with dpg.collapsing_header(label="System Exclusive", default_open=False):
-                dpg.add_child_window(tag='probe_sysex_container', height=20, border=False)
+        with dpg.collapsing_header(label="System Exclusive", default_open=True):
+            dpg.add_child_window(tag='probe_sysex_container', height=130, border=False)
 
-            with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
-                           policy=dpg.mvTable_SizingFixedFit):
-                dpg.add_table_column(label="Title")
+        with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
+                       policy=dpg.mvTable_SizingFixedFit):
+            dpg.add_table_column(label="Title")
 
-                for _i in range(17):
-                    dpg.add_table_column()
+            for _i in range(2):
+                dpg.add_table_column()
 
-                with dpg.table_row():
-                    dpg.add_text("Not implemented yet")
-                    # TODO: decode 1 or 3 byte IDs (page 34)
-                    # TODO: decode sample dump standard (page 35)
-                    # ACK, NAK, Wait, Cancel & EOF
-                    # TODO: decode device inquiry (page 40)
-                    # TODO: decode file dump (page 41)
-                    # TODO: decode midi tuning (page 47)
-                    # TODO: decode general midi system messages (page 52)
-                    # TODO: decode MTC full message, user bits and real time cueing (page 53 + dedicated spec)
-                    # TODO: decode midi show control (page 53 + dedicated spec)
-                    # TODO: decode notation information (page 54)
-                    # TODO: decode device control (page 57)
-                    # TODO: decode MMC (page 58 + dedicated spec)
+            with dpg.table_row():
+                dpg.add_text("ID")
+                dpg.add_text(source='syx_id')
+                dpg.add_text(source='syx_id_label')
+            with dpg.table_row():
+                dpg.add_text("Device ID")
+                dpg.add_text(source='syx_device_id')
+                dpg.add_text()
+            with dpg.table_row():
+                dpg.add_text("Sub-ID#1")
+                dpg.add_text(source='syx_sub_id1')
+                dpg.add_text(source='syx_sub_id1_label')
+            with dpg.table_row():
+                dpg.add_text("Sub-ID#2")
+                dpg.add_text(source='syx_sub_id2')
+                dpg.add_text(source='syx_sub_id2_label')
+            with dpg.table_row():
+                dpg.add_text("Undecoded payload")
+                dpg.add_text(source='syx_payload')
+                dpg.add_text()
 
         ###
         # Data history table
@@ -587,200 +939,6 @@ def create() -> None:
             _init_details_table_data()
 
 
-def _clear_probe_data_table() -> None:
-    dpg.delete_item('probe_data_table', children_only=True, slot=1)
-    _init_details_table_data()
-
-
-def _init_details_table_data() -> None:
-    # Initial data for reverse scrolling
-    with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
-        pass
-
-
-def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
-    """
-    Decodes and presents data received from the probe.
-
-    :param timestamp:
-    :param source:
-    :param data:
-    :return:
-    """
-    global probe_data_counter, previous_timestamp
-
-    logger = Logger()
-
-    logger.log_debug(f"Adding data from {source} to probe at {timestamp}: {data!r}")
-
-    # TODO: insert new data at the top of the table
-    previous_data = probe_data_counter
-    probe_data_counter += 1
-
-    # TODO: Flush data after a certain amount
-
-    with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
-                       before=f'probe_data_{previous_data}'):
-
-        # Source
-        dpg.add_selectable(label=source, span_columns=True)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(source)
-
-        # Timestamp (ms)
-        ts = (timestamp - START_TIME) * US2MS
-        dpg.add_text(f"{ts:n}")
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(f"{ts}")
-
-        # Delta (ms)
-        delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
-        if data.time is not None:
-            delta = data.time * US2MS
-            logger.log_debug("Timing: Using rtmidi time delta")
-        elif previous_timestamp is not None:
-            logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
-            delta = (timestamp - previous_timestamp) * US2MS
-        previous_timestamp = timestamp
-        dpg.add_text(f"{delta:n}")
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(f"{delta}")
-
-        # Raw message
-        raw_label = data.hex()
-        dpg.add_text(raw_label)
-        _add_tooltip_conv(raw_label, data.bin())
-
-        # Decoded message
-        if DEBUG:
-            dec_label = repr(data)
-            dpg.add_text(dec_label)
-            with dpg.tooltip(dpg.last_item()):
-                dpg.add_text(dec_label)
-
-        # Status
-        _mon_blink(data.type)
-        status_byte = midi.mido2standard.get_status_by_type(data.type)
-        stat_label = midi.constants.STATUS_BYTES[status_byte]
-        dpg.add_text(stat_label)
-        if hasattr(data, 'channel'):
-            status_nibble = int((status_byte - data.channel) / 16)
-            _add_tooltip_conv(stat_label, status_nibble, hlen=1, dlen=2, blen=4)
-        else:
-            _add_tooltip_conv(stat_label, status_byte)
-
-        # Channel
-        chan_val = None
-        if hasattr(data, 'channel'):
-            _mon_blink('c')
-            _mon_blink(data.channel)
-            chan_label = data.channel + 1  # Human-readable format
-            chan_val = data.channel
-        else:
-            _mon_blink('s')
-            chan_label = "Global"
-        dpg.add_text(chan_label)
-        _add_tooltip_conv(chan_label, chan_val, hlen=1, dlen=2, blen=4)
-
-        # Data 1 & 2
-        data0_name: str | False = False
-        data0 = ""
-        data0_dec: str | False = False
-        data1_name: str | False = False
-        data1 = ""
-        data1_dec: str | False = False
-        if 'note' in data.type:
-            if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
-                _mon_blink('note_off')
-            # Keyboard
-            if 'on' in data.type and not (
-                    dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
-            ):
-                _note_on(data.note)
-            else:
-                _note_off(data.note)
-            data0_name = "Note"
-            data0 = data.note
-            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN[data.note]  # TODO: add preference for syllabic / EN / DE
-            data1_name = "Velocity"
-            data1 = data.velocity
-        elif 'polytouch' == data.type:
-            data0 = data.note
-            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN[data.note]  # TODO: add preference for syllabic / EN / DE
-            data1 = data.value
-        elif 'control_change' == data.type:
-            _mon_blink(f'cc_{data.control}')
-            data0_name = "Controller"
-            data0 = data.control
-            data0_dec = midi.constants.CONTROLLER_NUMBERS[data.control]
-            data1_name = "Value"
-            data1 = data.value
-        elif 'program_change' == data.type:
-            data0_name = "Program"
-            data0 = data.program
-        elif 'aftertouch' == data.type:
-            data0_name = "Value"
-            data0 = data.value
-        elif 'pitchwheel' == data.type:
-            data0_name = "Pitch"
-            data0 = data.pitch
-        elif 'sysex' == data.type:
-            data0_name = "Data"
-            data0 = data.data  # TODO: decode device ID, Universal system exclusive messages…
-        elif 'quarter_frame' == data.type:
-            data0_name = "Frame type"
-            data0 = data.frame_type  # TODO: decode
-            data1_name = "Frame value"
-            data1 = data.frame_value  # TODO: decode
-        elif 'songpos' == data.type:
-            data0_name = "Position Pointer"
-            data0 = data.pos
-        elif 'song_select' == data.type:
-            data0_name = "Song #"
-            data0 = data.song
-
-        if data0_dec:
-            dpg.add_text(str(data0_dec))
-        else:
-            dpg.add_text(str(data0))
-        prefix0 = ""
-        if data0_name:
-            prefix0 = data0_name + ": "
-        _add_tooltip_conv(prefix0 + str(data0_dec if data0_dec else data0), data0, blen=7)
-
-        dpg.add_text(str(data1))
-        prefix1 = ""
-        if data1_name:
-            prefix1 = data1_name + ": "
-        _add_tooltip_conv(prefix1 + str(data1_dec if data1_dec else data1), data1, blen=7)
-
-    # TODO: per message type color coding
-    # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
-
-    # Autoscroll
-    if dpg.get_value('probe_data_table_autoscroll'):
-        dpg.set_y_scroll('act_det', -1.0)
-
-
-def _mon_blink(indicator: int | str) -> None:
-    now = time.time() - START_TIME
-    delay = dpg.get_value('mon_blink_duration')
-    target = f'mon_{indicator}_active_until'
-    until = now + delay
-    dpg.set_value(target, until)
-    dpg.bind_item_theme(f'mon_{indicator}', '__red')
-    # logger.log_debug(f"Current time:{time.time() - START_TIME}")
-    # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
-
-
-def _note_on(number: int | str) -> None:
-    dpg.bind_item_theme(f'note_{number}', '__red')
-
-
-def _note_off(number: int | str) -> None:
-    dpg.bind_item_theme(f'note_{number}', None)
-
-
 def update_blink_status() -> None:
     now = time.time() - START_TIME
     if dpg.get_value('mon_c_active_until') < now:
@@ -817,7 +975,8 @@ def update_blink_status() -> None:
     if dpg.get_value('mon_tune_request_active_until') < now:
         dpg.bind_item_theme('mon_tune_request', None)
     if dpg.get_value('mon_end_of_exclusive_active_until') < now:
-        dpg.bind_item_theme('mon_end_of_exclusive', None)
+        dpg.bind_item_theme('mon_end_of_exclusive_common', None)
+        dpg.bind_item_theme('mon_end_of_exclusive_syx', None)
     if dpg.get_value('mon_clock_active_until') < now:
         dpg.bind_item_theme('mon_clock', None)
     if dpg.get_value('mon_start_active_until') < now:

@@ -1,4 +1,4 @@
 dearpygui==1.6.2
 dearpygui-ext==0.9.5
-mido==1.2.11  # FIXME: 1.2.11a1 with EOX, running status and delta time support
-python-rtmidi  # mido backend. FIXME: build native backends for better granularity
+mido==1.2.11  # FIXME: currently using custom 1.2.11a1 with EOX, running status and delta time support
+python-rtmidi  # mido default backend
