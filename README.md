@@ -15,7 +15,8 @@ Language is currently Python to help with rapid prototyping and fast iteration. 
 Status
 ------
 
-Proof of concept.
+Basic features implemented.
+Testers welcome ;)
 
 Alpha coming soon!
 
@@ -23,6 +24,9 @@ Alpha coming soon!
 Features / TODO list
 --------------------
 
+- [ ] Documentation
+  - [ ] Developer
+  - [ ] User
 - [ ] Platform support
   - [ ] **(WIP)** Microsoft Windows
     - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)
@@ -31,11 +35,11 @@ Features / TODO list
       - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
   - [ ] Apple Mac OS X
   - [ ] GNU/Linux
-- [ ] MIDI protocol
+- [ ] **(WIP)** MIDI protocols
   - [x] v1.0
     - using a modified mido
   - [ ] v2.0
-- [ ] Interactive GUI
+- [ ] **(WIP)** Interactive GUI
   - [x] Icons
   - [x] About window
   - [x] Fonts
@@ -47,13 +51,13 @@ Features / TODO list
   - [x] Probe data window
   - [ ] Generator data window
   - [x] Log window
-  - [ ] Actions
+  - [ ] **(WIP)** Actions
     - [x] Toggle fullscreen (F11)
     - [x] Toggle log (F12)
     - [ ] Save state (Buggy at the moment)
-- [ ] I/O management
+- [ ] **(WIP)** I/O management
   - [ ] Select backend?
-  - [ ] List MIDI I/O
+  - [ ] **(WIP)** List MIDI I/O
     - [x] USB / IEEE-1394 (OS level)
     - [ ] Bluetooth Low Energy (BLE-MIDI)
       - Requires WinRt for Microsoft Windows
@@ -63,20 +67,20 @@ Features / TODO list
     - [x] Polling
     - [x] Callback
   - [ ] Sort by ID/Name
-  - [ ] Connections
+  - [ ] **(WIP)** Connections
     - [x] Port to probe
     - [x] Probe to port
     - [x] Port to port
     - [ ] Port to any module
     - [ ] Any module to port
     - [ ] Module to module
-  - [ ] Refresh
+  - [ ] **(WIP)** Refresh
     - [X] Manual
     - [ ] Auto with reconnect
   - [ ] Virtual ports
     - [ ] Add/Remove
   - [ ] Save state
-- [ ] Modules (Plugins?)
+- [ ] **(WIP)** Modules (Plugins?)
   - [ ] Instances management (Add/Remove)
   - [x] Virtual Debug Probe
     - [x] Activity monitor
@@ -88,8 +92,19 @@ Features / TODO list
         - [x] System
       - [x] Channel
       - [x] Controllers
-      - [ ] SysEx
-      - [ ] Notes
+      - [ ] **(WIP)** SysEx
+        - [x] Basic decoding
+        - [ ] Sample dump standard
+        - [ ] Device inquiry
+        - [ ] File dump
+        - [ ] MIDI tuning
+        - [ ] General MIDI system messages
+        - [ ] MIDI Time Code (MTC)
+        - [ ] MIDI Show Control (MSC)
+        - [ ] Notation information
+        - [ ] Device Control
+        - [ ] MIDI Machine Control (MMC)
+      - [ ] **(WIP)** Notes
         - [x] Keyboard
         - [ ] Staff
     - [x] Read raw input
@@ -130,7 +145,7 @@ Features / TODO list
     - [ ] Correctness
     - [ ] Stresser/Fuzzer
   - [ ] Hardware toolbox
-- [ ] Logging
+- [ ] **(WIP)** Logging
   - [x] GUI
   - [ ] To file
     - [ ] Overwrite
