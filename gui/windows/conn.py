@@ -7,7 +7,8 @@
 """
 Connections window and management
 """
-
+import platform
+from collections import OrderedDict
 from typing import Optional, Any
 
 import sys
@@ -213,6 +214,8 @@ def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
 
 
 def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
+    if platform.system() == "Darwin":
+        names = list(OrderedDict.fromkeys(names))  # Remove dupes
     ports = []
     for name in names:
         ports.append(MidiInPort(name))
@@ -220,6 +223,8 @@ def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
 
 
 def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
+    if platform.system() == "Darwin":
+        names = list(OrderedDict.fromkeys(names))  # Remove dupes
     ports = []
     for name in names:
         ports.append(MidiOutPort(name))
@@ -268,7 +273,8 @@ def refresh_midi_ports() -> None:
                 user_data=midi_in,
         ):
             with dpg.group(horizontal=True):
-                dpg.add_text(midi_in.num)
+                if midi_in.num is not None:
+                    dpg.add_text(midi_in.num)
                 dpg.add_text(midi_in.label)
                 # with dpg.popup(dpg.last_item()):
                 #    dpg.add_button(label=f"Hide {midi_in.label} input")  # TODO
@@ -299,7 +305,8 @@ def refresh_midi_ports() -> None:
                 user_data=midi_out,
         ):
             with dpg.group(horizontal=True):
-                dpg.add_text(midi_out.num)
+                if midi_out.num is not None:
+                    dpg.add_text(midi_out.num)
                 dpg.add_text(midi_out.label)
                 # with dpg.popup(dpg.last_item()):
                 #    dpg.add_button(label=f"Hide {midi_out.label} output")  # TODO
@@ -314,7 +321,9 @@ def _get_pin_text(pin: int | str) -> None:
     if text is None:
         # Extract from I/O
         mvgroup = dpg.get_item_children(pin, slot=dpg_slot.MOST)[0]
-        mvtext_index = 1
+        mvtext_index = 0
+        if platform.system() == "Windows":
+            mvtext_index = 1
         mvtext = dpg.get_item_children(mvgroup, slot=dpg_slot.MOST)[mvtext_index]
         text = dpg.get_value(mvtext)
     return text

@@ -9,6 +9,7 @@ MIDI ports helpers
 """
 
 import multiprocessing
+import platform
 import threading
 from abc import ABC
 
@@ -36,11 +37,15 @@ class MidiPort(ABC):
 
     @property
     def num(self):
-        return self.name.split()[-1]
+        if platform.system() == "Windows":
+            return self.name.split()[-1]
 
     @property
     def label(self):
-        return self.name[0:-len(self.num) - 1]
+        if platform.system() == "Windows":
+            return self.name[0:-len(self.num) - 1]
+        else:
+            return self.name
 
     def close(self):
         self.port.close()

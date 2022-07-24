@@ -33,7 +33,7 @@ Features / TODO list
       - via mido's RtMidi backend
     - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
       - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
-  - [ ] Apple Mac OS X
+  - [ ] **(WIP)** Apple Mac OS X
   - [ ] GNU/Linux
 - [ ] **(WIP)** MIDI protocols
   - [x] v1.0
