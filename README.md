@@ -34,10 +34,19 @@ Features / TODO list
     - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
       - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
   - [ ] **(WIP)** Apple Mac OS X
+    - [x] Core MIDI
+      - via mido's RtMidi backend
+    - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
   - [ ] **(WIP)** GNU/Linux
+    - [ ] **(WIP)** ALSA
+      - [x] [Sequencer API](https://www.alsa-project.org/alsa-doc/alsa-lib/seq.html)
+        - via mido's RtMidi backend
+      - [ ] [RawMidi API](https://www.alsa-project.org/alsa-doc/alsa-lib/rawmidi.html)
+      - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
+    - [ ] OSS?
 - [ ] **(WIP)** MIDI protocols
   - [x] v1.0
-    - using a modified mido
+    - using a [modified mido](https://github.com/mido/mido/pull/370)
   - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
   - [x] Icons

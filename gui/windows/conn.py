@@ -213,9 +213,23 @@ def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
     return node1_label, pin1_label, node2_label, pin2_label
 
 
+def _dedupe_port_names(names: list[str]) -> list[str]:
+    """
+    Removes duplicates in a port names list
+
+    Needed in Mac OS X because every port is listed twice for some reason
+    and in Linux because the Through port is also listed twice.
+
+    TODO: test more. May have adverse effects in the presence of multiple identical yet distinct devices.
+    """
+    system = platform.system()
+    if system == 'Darwin' or system == 'Linux':
+        names = list(OrderedDict.fromkeys(names))
+    return names
+
+
 def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
-    if platform.system() == "Darwin" or platform.system() == "Linux":
-        names = list(OrderedDict.fromkeys(names))  # Remove dupes
+    names = _dedupe_port_names(names)
     ports = []
     for name in names:
         ports.append(MidiInPort(name))
@@ -223,8 +237,7 @@ def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
 
 
 def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
-    if platform.system() == "Darwin" or platform.system() == "Linux":
-        names = list(OrderedDict.fromkeys(names))  # Remove dupes
+    names = _dedupe_port_names(names)
     ports = []
     for name in names:
         ports.append(MidiOutPort(name))

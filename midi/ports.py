@@ -12,6 +12,7 @@ import multiprocessing
 import platform
 import threading
 from abc import ABC
+from functools import cached_property
 
 import time
 
@@ -24,9 +25,9 @@ queue = multiprocessing.SimpleQueue()
 class MidiPort(ABC):
     """
     Abstract Base Class for MIDI ports management around Mido.
-
-    FIXME: is this cross-platform compatible?
     """
+    _system = platform.system()
+
     port: mido.ports.BasePort
 
     def __init__(self, name: str):
@@ -35,16 +36,33 @@ class MidiPort(ABC):
     def __repr__(self):
         return self.name
 
-    @property
+    @cached_property
     def num(self):
-        if platform.system() == "Windows" or platform.system() == "Linux":
+        """
+        Numerical ID of the port
+
+        Platform dependant:
+        - Microsoft Windows (MME): single integer number
+        - Linux (ALSA): "x:y" pair of integer numbers
+        - Mac OS X (Core MIDI): seem to not have any ID exposed (at least by RtMidi)
+        """
+        if self._system == 'Windows' or self._system == 'Linux':
             return self.name.split()[-1]
 
-    @property
+    @cached_property
     def label(self):
-        if platform.system() == "Windows":
+        """
+        Human-readable name of the port
+
+        Platform dependant:
+        - Microsoft Windows (MME): requires removing the ID and preceding space from the string end
+        - Linux (ALSA): requires removing the interface name and semicolon delimiter from the beginning of the string
+          and the ID and preceding space from the string end
+        - Mac OS X (Core MIDI): no processing since they don't seem to use any ID or strange formatting
+        """
+        if self._system == 'Windows':
             return self.name[0:-len(self.num) - 1]
-        elif platform.system() == "Linux":
+        elif self._system == 'Linux':
             return self.name[self.name.index(':') + 1:-len(self.num) - 1]
         else:
             return self.name

@@ -456,7 +456,7 @@ def create() -> None:
         ###
         # SysEx decoding
         ###
-        dpg.add_string_value(tag='syx_id_type')
+        dpg.add_string_value(tag='syx_id_type', default_value="ID")
         dpg.add_string_value(tag='syx_id')
         dpg.add_string_value(tag='syx_id_label')
         dpg.add_string_value(tag='syx_device_id')
