@@ -37,13 +37,15 @@ class MidiPort(ABC):
 
     @property
     def num(self):
-        if platform.system() == "Windows":
+        if platform.system() == "Windows" or platform.system() == "Linux":
             return self.name.split()[-1]
 
     @property
     def label(self):
         if platform.system() == "Windows":
             return self.name[0:-len(self.num) - 1]
+        elif platform.system() == "Linux":
+            return self.name[self.name.index(':') + 1:-len(self.num) - 1]
         else:
             return self.name
 

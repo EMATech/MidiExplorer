@@ -34,7 +34,7 @@ Features / TODO list
     - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
       - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
   - [ ] **(WIP)** Apple Mac OS X
-  - [ ] GNU/Linux
+  - [ ] **(WIP)** GNU/Linux
 - [ ] **(WIP)** MIDI protocols
   - [x] v1.0
     - using a modified mido

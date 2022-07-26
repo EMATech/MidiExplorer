@@ -214,7 +214,7 @@ def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
 
 
 def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
-    if platform.system() == "Darwin":
+    if platform.system() == "Darwin" or platform.system() == "Linux":
         names = list(OrderedDict.fromkeys(names))  # Remove dupes
     ports = []
     for name in names:
@@ -223,7 +223,7 @@ def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
 
 
 def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
-    if platform.system() == "Darwin":
+    if platform.system() == "Darwin" or platform.system() == "Linux":
         names = list(OrderedDict.fromkeys(names))  # Remove dupes
     ports = []
     for name in names:
