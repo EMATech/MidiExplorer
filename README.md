@@ -1,7 +1,7 @@
-![Logo](icons/midiexplorer.svg) MIDI Explorer
-=============================================
+![MIDI Explorer Logo](icons/midiexplorer.svg) MIDI Explorer
+===========================================================
 
-Yet another MIDI monitoring, debugging and manipulating tool.
+Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
 ![GUI](_screenshots/GUIimprovedprobedecoding.png)
 
@@ -24,9 +24,6 @@ Alpha coming soon!
 Features / TODO list
 --------------------
 
-- [ ] Documentation
-  - [ ] Developer
-  - [ ] User
 - [ ] Platform support
   - [ ] **(WIP)** Microsoft Windows
     - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)
@@ -44,6 +41,25 @@ Features / TODO list
       - [ ] [RawMidi API](https://www.alsa-project.org/alsa-doc/alsa-lib/rawmidi.html)
       - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
     - [ ] OSS?
+- [ ] Documentation
+  - [ ] Developers
+    - [X] Comments
+    - [ ] **(WIP)** Docstrings ([PEP257](https://peps.python.org/pep-0257))
+    - [ ] **(WIP)** Type Hinting ([PEP484](https://peps.python.org/pep-0484))
+  - [ ] Users
+    - [ ] [Sphinx](https://www.sphinx-doc.org)
+      - [ ] [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
+      - [ ] [Read The Docs](https://readthedocs.org)
+- [ ] Linting
+  - [ ] Code style checks? ([PEP8](https://peps.python.org/pep-0008) pycodestyle)
+  - [ ] Docstrings? (darglint)
+  - [ ] Typechecking? (mypy)
+- [ ] Unit tests? (pytest)
+  - [ ] Coverage
+- [ ] [Packaging](https://packaging.python.org)
+  - [ ] [PyPi](https://pypi.org)
+  - [ ] [PyInstaller](https://pyinstaller.org)
+- [ ] Continuous Integration? (GitHub Actions workflow)
 - [ ] **(WIP)** MIDI protocols
   - [x] v1.0
     - using a [modified mido](https://github.com/mido/mido/pull/370)
@@ -160,6 +176,15 @@ Features / TODO list
     - [ ] Overwrite
     - [ ] Append
 
+Prior art
+---------
+
+- [MIDI-OX](http://www.midiox.com/) (Win)
+- [Snoize MIDI Monitor](https://www.snoize.com/midimonitor/) (Mac)
+- [Midi View](https://hautetechnique.com/midi/midiview/) (Win/Mac)
+- [OBD Software Midi Monitor 2002](http://obds.free.fr/midimon/) (Win)
+- [Morson PocketMIDI](https://www.morson.jp/pocketmidi-webpage/) (Win/Mac/iOS)
+- [Drumstick MIDI Monitor aka KMidiMon](https://kmidimon.sourceforge.io) (Linux)
 
 Legal notice
 ------------
