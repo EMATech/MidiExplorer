@@ -11,10 +11,10 @@ Main window and menu.
 from dearpygui import dearpygui as dpg
 from dearpygui.demo import show_demo
 
-import gui.config
-import gui.logger
-import gui.windows.log
-from gui.config import DEBUG
+import midiexplorer.gui.config
+import midiexplorer.gui.logger
+import midiexplorer.gui.windows.log
+from midiexplorer.gui.config import DEBUG
 
 
 def create() -> None:
@@ -31,19 +31,20 @@ def create() -> None:
             no_close=True,
             collapsed=False,
     ):
-        gui.config.create_selectors()
+        midiexplorer.gui.config.create_selectors()
 
         with dpg.menu_bar():
             if DEBUG:  # FIXME: Currently unstable
                 with dpg.menu(label="Configuration"):
-                    dpg.add_menu_item(label="Load", callback=gui.config.load)
-                    dpg.add_menu_item(label="Save", callback=gui.config.save)
-                    dpg.add_menu_item(label="Save as", callback=gui.config.saveas)
-                    dpg.add_menu_item(label="Reset", callback=gui.config.clear)
+                    dpg.add_menu_item(label="Load", callback=midiexplorer.gui.config.load)
+                    dpg.add_menu_item(label="Save", callback=midiexplorer.gui.config.save)
+                    dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.config.saveas)
+                    dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.config.clear)
+                    dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.config.clear)
 
             with dpg.menu(label="Display"):
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
-                dpg.add_menu_item(label="Toggle Log (F12)", callback=gui.windows.log.toggle)
+                dpg.add_menu_item(label="Toggle Log (F12)", callback=midiexplorer.gui.windows.log.toggle)
 
             with dpg.menu(label="Help"):
                 if DEBUG:
@@ -59,5 +60,5 @@ def create() -> None:
                         dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
                         dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
                         dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
-                dpg.add_menu_item(label="About", callback=gui.windows.about.toggle)
+                dpg.add_menu_item(label="About", callback=midiexplorer.gui.windows.about.toggle)
                 # TODO: Add documentation

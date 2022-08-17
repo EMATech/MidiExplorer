@@ -13,7 +13,7 @@ For reference only.
 import sys
 from typing import Any, Optional
 
-from gui.logger import Logger
+from midiexplorer.gui.logger import Logger
 
 
 def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:

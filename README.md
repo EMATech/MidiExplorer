@@ -37,14 +37,29 @@ Alpha coming soon!
 Installation
 ------------
 
+Install Python 3.10 first from [python.org](https://www.python.org/downloads/windows/).
+
+Install PipX:
+
+### Microsoft Windows
+
 ```console
-pip install --user midiexplorer
+py -m pip install --user pipx
+py -m pipx ensurepath
 ```
 
-### Run
+Close and reopen your terminal.
+
+### Mac OS X / Linux
 
 ```console
-python -m midiexplorer
+python3 -m pip install --user pipx
+```
+
+### Common
+
+```console
+pipx install midiexplorer
 ```
 
 Features / TODO list

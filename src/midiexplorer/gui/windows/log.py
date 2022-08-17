@@ -13,8 +13,8 @@ from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
 
-from gui.config import DEBUG
-from gui.logger import Logger
+from midiexplorer.gui.config import DEBUG
+from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:

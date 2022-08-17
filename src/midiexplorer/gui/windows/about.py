@@ -7,6 +7,7 @@
 """
 About window layout and content.
 """
+import pathlib
 import platform
 import sys
 from typing import Any, Optional
@@ -14,8 +15,8 @@ from typing import Any, Optional
 import mido
 from dearpygui import dearpygui as dpg
 
-import __about__
-from gui.logger import Logger
+import midiexplorer.__about__
+from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:
@@ -40,7 +41,9 @@ def create() -> None:
         # ----
         # Logo
         # ----
-        width, height, channels, data = dpg.load_image(f'icons/midiexplorer_{logo_size}.png')
+        module_root = pathlib.Path(midiexplorer.__file__).parent
+        print(module_root)
+        width, height, channels, data = dpg.load_image(f'{module_root}/icons/midiexplorer_{logo_size}.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='logo')
         with dpg.drawlist(width=width, height=height):
@@ -50,7 +53,7 @@ def create() -> None:
         # Title
         # -----
         dpg.add_text("MIDI Explorer", color=title_color)
-        dpg.add_text(f"Version {__about__.__version__}.")
+        dpg.add_text(f"Version {midiexplorer.__about__.__version__}.")
         dpg.add_text("Yet another MIDI monitor, analyzer, debugger and manipulation tool.")
 
         # ------
@@ -63,7 +66,7 @@ def create() -> None:
         # License
         # -------
         dpg.add_text("License", color=title_color)
-        width, height, channels, data = dpg.load_image('icons/gplv3-or-later-sm.png')
+        width, height, channels, data = dpg.load_image(f'{module_root}/icons/gplv3-or-later-sm.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='gpl_logo')
         with dpg.drawlist(width=width, height=height):

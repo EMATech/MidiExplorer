@@ -93,6 +93,9 @@ dynamic = ['version']
 Homepage = 'https://github.com/ematech/midiexplorer'
 Issues = 'https://github.com/ematech/midiexplorer/issues'
 
+[project.gui-scripts]
+midiexplorer = "midiexplorer.__main__:main"
+
 [tool.hatch.version]
 path = 'src/midiexplorer/__about__.py'
 
@@ -134,3 +137,6 @@ exclude = [
     '/_screenshots',
     '/docs',
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/midiexplorer"]

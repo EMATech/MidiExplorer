@@ -18,11 +18,11 @@ from typing import Optional, Any
 import mido
 from dearpygui import dearpygui as dpg
 
-import constants.dpg_slot as dpg_slot
-from gui.config import DEBUG
-from gui.logger import Logger
-from gui.windows.probe import _add_probe_data
-from midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
+import midiexplorer.constants.dpg_slot as dpg_slot
+from midiexplorer.gui.config import DEBUG
+from midiexplorer.gui.logger import Logger
+from midiexplorer.gui.windows.probe import _add_probe_data
+from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
 
 
 def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
@@ -360,7 +360,7 @@ def refresh_midi_ports() -> None:
     # Input ports node and pins
     for midi_in in midi_inputs:
         with dpg.node_attribute(
-                tag=midi_in.name,
+                label=midi_in.name,
                 parent='inputs_node',
                 attribute_type=dpg.mvNode_Attr_Output,
                 shape=dpg.mvNode_PinShape_Triangle,

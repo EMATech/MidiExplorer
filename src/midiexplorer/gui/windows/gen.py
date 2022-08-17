@@ -14,7 +14,7 @@ from typing import Any, Optional
 import mido
 from dearpygui import dearpygui as dpg
 
-from gui.logger import Logger
+from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:

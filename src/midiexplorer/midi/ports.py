@@ -148,7 +148,7 @@ class MidiInPort(MidiPort):
         # Get the system timestamp ASAP
         timestamp = time.time()
 
-        from gui.logger import Logger
+        from midiexplorer.gui.logger import Logger
         logger = Logger()
         logger.log_debug(f"Callback data: {midi_message} from {self.label} to {self.dest}")
 

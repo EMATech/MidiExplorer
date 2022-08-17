@@ -18,12 +18,12 @@ from typing import Any, Optional, Tuple
 import mido
 from dearpygui import dearpygui as dpg
 
-import midi.constants
-import midi.mido2standard
-import midi.notes
-from gui.config import DEBUG, START_TIME
-from gui.logger import Logger
-from midi.constants import NOTE_OFF_VELOCITY
+import midiexplorer.midi.constants
+import midiexplorer.midi.mido2standard
+import midiexplorer.midi.notes
+from midiexplorer.gui.config import DEBUG, START_TIME
+from midiexplorer.gui.logger import Logger
+from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
 
 US2MS = 1000  # microseconds to milliseconds ratio
 
@@ -130,8 +130,8 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 
         # Status
         _mon_blink(data.type)
-        status_byte = midi.mido2standard.get_status_by_type(data.type)
-        stat_label = midi.constants.STATUS_BYTES[status_byte]
+        status_byte = midiexplorer.midi.mido2standard.get_status_by_type(data.type)
+        stat_label = midiexplorer.midi.constants.STATUS_BYTES[status_byte]
         dpg.add_text(stat_label)
         if hasattr(data, 'channel'):
             status_nibble = int((status_byte - data.channel) / 16)
@@ -171,18 +171,20 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
                 _note_off(data.note)
             data0_name = "Note"
             data0: int = data.note
-            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)  # TODO: add preference for syllabic / EN / DE
+            data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(
+                data.note)  # TODO: add preference for syllabic / EN / DE
             data1_name = "Velocity"
             data1: int = data.velocity
         elif 'polytouch' == data.type:
             data0: int = data.note
-            data0_dec = midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)  # TODO: add preference for syllabic / EN / DE
+            data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(
+                data.note)  # TODO: add preference for syllabic / EN / DE
             data1: int = data.value
         elif 'control_change' == data.type:
             _mon_blink(f'cc_{data.control}')
             data0_name = "Controller"
             data0: int = data.control
-            data0_dec = midi.constants.CONTROLLER_NUMBERS.get(data.control)
+            data0_dec = midiexplorer.midi.constants.CONTROLLER_NUMBERS.get(data.control)
             data1_name = "Value"
             data1: int = data.value
         elif 'program_change' == data.type:
@@ -219,7 +221,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             syx_id = data0[0]  # 1-byte ID or first byte of 3-byte ID
             syx_id_len = 1
             # Decode group
-            syx_id_group = midi.constants.SYSTEM_EXCLUSIVE_ID_GROUPS[syx_id]
+            syx_id_group = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_GROUPS[syx_id]
             if syx_id == 0:
                 # 3-byte ID
                 syx_id_len = 3
@@ -229,20 +231,20 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 
             # Decode region
             if syx_id_len == 1:
-                syx_id_region = midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id)
+                syx_id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id)
             elif syx_id_len == 3:
-                syx_id_region = midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id[1])
+                syx_id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id[1])
             else:
                 raise ValueError("SysEx IDs are either 1 or 3 bytes long")
 
             # Decode ID
             default_syx_label = "Undefined"
             if syx_id_len == 1:
-                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_ID.get(
+                syx_id_label = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(
                     syx_id, default_syx_label)
             if syx_id_len == 3:
                 # TODO: optimise?
-                syx_id_label = midi.constants.SYSTEM_EXCLUSIVE_ID.get(
+                syx_id_label = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(
                     syx_id[0], default_syx_label)
                 if syx_id_label != default_syx_label:
                     syx_id_label = syx_id_label.get(syx_id[1], default_syx_label)
@@ -261,14 +263,15 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
                 next_byte += 1
                 syx_sub_id1 = data[next_byte]
                 logger.log_debug(f"[SysEx] Sub-ID#1: {syx_sub_id1} ")
-                syx_sub_id1_label = midi.constants.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
+                syx_sub_id1_label = midiexplorer.midi.constants. \
+                    DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
                     syx_sub_id1, default_syx_label)
                 logger.log_debug(f"[SysEx] Sub-ID#1 name: {syx_sub_id1_label}")
-                if syx_sub_id1 in midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1:
+                if syx_sub_id1 in midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1:
                     next_byte += 1
                     syx_sub_id2 = data0[next_byte]
                     logger.log_debug(f"[SysEx] Sub-ID#2: {syx_sub_id2} ")
-                    syx_sub_id2_label = midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
+                    syx_sub_id2_label = midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
                         syx_sub_id2, default_syx_label)
                     logger.log_debug(f"[SysEx] Sub-ID#2 name: {syx_sub_id2_label}")
             #     Real Time
@@ -276,14 +279,15 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
                 next_byte += 1
                 syx_sub_id1 = data0[next_byte]
                 logger.log_debug(f"[SysEx] Sub-ID#1: {syx_sub_id1} ")
-                syx_sub_id1_label = midi.constants.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
+                syx_sub_id1_label = midiexplorer.midi.constants. \
+                    DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
                     syx_sub_id1, default_syx_label)
                 logger.log_debug(f"[SysEx] Sub-ID#1 name: {syx_sub_id1_label}")
-                if syx_sub_id1 in midi.constants.REAL_TIME_SUB_ID_2_FROM_1:
+                if syx_sub_id1 in midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1:
                     next_byte += 1
                     syx_sub_id2 = data0[next_byte]
                     logger.log_debug(f"[SysEx] Sub-ID#2: {syx_sub_id2} ")
-                    syx_sub_id2_label = midi.constants.REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
+                    syx_sub_id2_label = midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1.get(syx_sub_id1).get(
                         syx_sub_id2, default_syx_label)
                     logger.log_debug(f"[SysEx] Sub-ID#2 name: {syx_sub_id2_label}")
 
@@ -362,6 +366,9 @@ def _mon_blink(indicator: int | str) -> None:
     :param indicator: Name of the indicator to blink
     :return:
     """
+    # logger = midiexplorer.gui.logger.Logger()
+    # logger.log_debug(f"blink {indicator}")
+
     now = time.time() - START_TIME
     delay = dpg.get_value('mon_blink_duration')
     target = f'mon_{indicator}_active_until'
@@ -475,6 +482,7 @@ def _get_supported_indicators() -> list:
         'mon_end_of_exclusive',
         'mon_clock',
         'mon_start',
+        'mon_continue',
         'mon_stop',
         'mon_active_sensing',
         'mon_reset'
@@ -600,7 +608,7 @@ def create() -> None:
 
                 # FIXME: move to settings?
                 dpg.add_input_int(tag='mode_basic_chan', label="Basic Channel",
-                                  default_value=midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
+                                  default_value=midiexplorer.midi.constants.POWER_UP_DEFAULT['basic_channel'] + 1)
 
                 dpg.add_radio_button(
                     tag='modes',
@@ -610,7 +618,7 @@ def create() -> None:
                         "3",  # Omni Off - Poly
                         "4",  # Omni Off - Mono
                     ],
-                    default_value=midi.constants.POWER_UP_DEFAULT['mode'],
+                    default_value=midiexplorer.midi.constants.POWER_UP_DEFAULT['mode'],
                     horizontal=True, enabled=False,
                 )
 
@@ -670,31 +678,31 @@ def create() -> None:
                 # Channel voice messages (page 9)
                 val = 8
                 dpg.add_button(tag='mon_note_off', label="N OF")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_note_on', label="N ON")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_polytouch', label="PKPR")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_control_change', label=" CC ")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_program_change', label=" PC ")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_aftertouch', label="CHPR")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
                 val += 1
                 dpg.add_button(tag='mon_pitchwheel', label="PBCH")
-                _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
+                _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
             if DEBUG:
                 # TODO: Channel mode messages (page 20) (CC 120-127)
@@ -706,35 +714,35 @@ def create() -> None:
 
                     val = 120
                     dpg.add_button(tag='mon_all_sound_off', label="ASOF")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_reset_all_controllers', label="RAC ")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_local_control', label=" LC ")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_all_notes_off', label="ANOF")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_omni_off', label="O OF")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_omni_on', label="O ON")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_mono_on', label="M ON")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
                     val += 1
                     dpg.add_button(tag='mon_poly_on', label="P ON")
-                    _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
+                    _add_tooltip_conv(midiexplorer.midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text("System Messages")
@@ -744,34 +752,34 @@ def create() -> None:
                 val = 0xF1
                 # System common messages (page 27)
                 dpg.add_button(tag='mon_quarter_frame', label=" QF ")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_songpos', label="SGPS")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_song_select', label="SGSL")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # FIXME: unsupported by mido
                 val += 1
                 dpg.add_button(tag='mon_undef1', label="UND ")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # FIXME: unsupported by mido
                 val += 1
                 dpg.add_button(tag='mon_undef2', label="UND ")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_tune_request', label=" TR ")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
                 val += 1
                 dpg.add_button(tag='mon_end_of_exclusive_common', label="EOX ")
-                _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text()
@@ -781,37 +789,37 @@ def create() -> None:
                 # System real time messages (page 30)
                 val = 0xF8
                 dpg.add_button(tag='mon_clock', label="CLK ")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 # FIXME: unsupported by mido
                 val += 1
                 dpg.add_button(tag='mon_undef3', label="UND ")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_start', label="STRT")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_continue', label="CTNU")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_stop', label="STOP")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 # FIXME: unsupported by mido
                 val += 1
                 dpg.add_button(tag='mon_undef4', label="UND ")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_active_sensing', label=" AS ")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
                 val += 1
                 dpg.add_button(tag='mon_reset', label="RST ")
-                _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
             with dpg.table_row():
                 dpg.add_text()
@@ -821,12 +829,12 @@ def create() -> None:
                 # System exclusive messages
                 val = 0xF0
                 dpg.add_button(tag='mon_sysex', label="SOX ")
-                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
                 val = 0xF7
                 dpg.add_button(tag='mon_end_of_exclusive_syx', label="EOX ")
-                _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
+                _add_tooltip_conv(midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
             _update_eox_category(sender=None, app_data=None, user_data=eox_categories)
 
@@ -852,8 +860,8 @@ def create() -> None:
         wxpos = 0  # White key X position
 
         # TODO: add preference for default notes notation?
-        for index in midi.notes.MIDI_NOTES_ALPHA_EN:
-            name = midi.notes.MIDI_NOTES_ALPHA_EN[index]
+        for index in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN:
+            name = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN[index]
 
             # Compute actual key position
             xpos = wxpos
@@ -868,9 +876,9 @@ def create() -> None:
             dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
                            pos=(xpos, ypos))
             _add_tooltip_conv(
-                f"Syllabic:{' ':9}\t{midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
+                f"Syllabic:{' ':9}\t{midiexplorer.midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
                 f"Alphabetical (EN):\t{name}\n"
-                f"Alphabetical (DE):\t{midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
+                f"Alphabetical (DE):\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
                 index, blen=7
             )
 
@@ -913,7 +921,7 @@ def create() -> None:
             # TODO: add preference to separate reserved CC120-127
             for controller in range(128):
                 dpg.add_button(tag=f'mon_cc_{controller}', label=f"{controller:3d}", parent=f'ctrls_{rownum}')
-                _add_tooltip_conv(midi.constants.CONTROLLER_NUMBERS[controller], controller)
+                _add_tooltip_conv(midiexplorer.midi.constants.CONTROLLER_NUMBERS[controller], controller)
                 newrownum = int((controller + 1) / 16)
                 if newrownum > rownum and newrownum != 8:
                     rownum = newrownum

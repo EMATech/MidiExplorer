@@ -8,21 +8,21 @@
 MIDI Explorer main program.
 """
 
-import os.path
+import pathlib
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
-import constants.dpg_mvlogger
-import gui.logger
-import gui.windows.about
-import gui.windows.conn
-import gui.windows.gen
-import gui.windows.log
-import gui.windows.main
-import gui.windows.probe
-import midi
-from gui.config import DEBUG, INIT_FILENAME, START_TIME
-from midi.ports import midi_in_queue
+import midiexplorer.constants.dpg_mvlogger as dpg_mvlogger
+import midiexplorer.gui.logger
+import midiexplorer.gui.windows.about
+import midiexplorer.gui.windows.conn
+import midiexplorer.gui.windows.gen
+import midiexplorer.gui.windows.log
+import midiexplorer.gui.windows.main
+import midiexplorer.gui.windows.probe
+import midiexplorer.midi
+from midiexplorer.gui.config import DEBUG, INIT_FILENAME, START_TIME
+from midiexplorer.midi.ports import midi_in_queue
 
 
 def main():
@@ -35,12 +35,12 @@ def main():
     # Logging system
     # Initialized ASAP
     # ----------------
-    gui.windows.log.create()
-    logger = gui.logger.Logger('log_win')
+    midiexplorer.gui.windows.log.create()
+    logger = midiexplorer.gui.logger.Logger('log_win')
     if DEBUG:
-        logger.log_level = constants.dpg_mvlogger.TRACE
+        logger.log_level = dpg_mvlogger.TRACE
     else:
-        logger.log_level = constants.dpg_mvlogger.INFO
+        logger.log_level = dpg_mvlogger.INFO
     logger.log_debug(f"Application started at {START_TIME}")
 
     # ----------------
@@ -48,7 +48,7 @@ def main():
     # Initialized ASAP
     # ----------------
     try:
-        midi.init()
+        midiexplorer.midi.init()
     except ValueError:
         # TODO: error popup?
         pass
@@ -56,19 +56,19 @@ def main():
     # -------
     # Windows
     # -------
-    gui.windows.about.create()
-    gui.windows.main.create()
-    gui.windows.conn.create()
-    gui.windows.probe.create()
+    midiexplorer.gui.windows.about.create()
+    midiexplorer.gui.windows.main.create()
+    midiexplorer.gui.windows.conn.create()
+    midiexplorer.gui.windows.probe.create()
     if DEBUG:
-        gui.windows.gen.create()
+        midiexplorer.gui.windows.gen.create()
 
     # ---------------------
     # Initial configuration
     # ---------------------
     if not DEBUG:
         # FIXME: not stable
-        if os.path.exists(INIT_FILENAME):
+        if pathlib.Path(INIT_FILENAME).exists():
             dpg.configure_app(init_file=INIT_FILENAME)
 
     # ------------------
@@ -77,7 +77,7 @@ def main():
     with dpg.handler_registry():
         # FIXME: this doesn't seem to work in Mac OS X and Linux. Report upstream?
         dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)  # Fullscreen on F11
-        dpg.add_key_press_handler(key=123, callback=gui.windows.log.toggle)  # Log on F12
+        dpg.add_key_press_handler(key=123, callback=midiexplorer.gui.windows.log.toggle)  # Log on F12
 
     # -----
     # Theme
@@ -89,16 +89,17 @@ def main():
     # Icons
     # -----
     # Icons must be set before showing viewport (Can also be set when instantiating the viewport)
-    small_icon = 'icons/midiexplorer.ico'
-    large_icon = 'icons/midiexplorer.ico'
+    module_root = pathlib.Path(midiexplorer.__file__).parent
+    small_icon = f'{module_root}/icons/midiexplorer.ico'
+    large_icon = f'{module_root}icons/midiexplorer.ico'
 
     # -----
     # Fonts
     # -----
     # https://dearpygui.readthedocs.io/en/latest/documentation/fonts.html
     with dpg.font_registry():
-        dpg.add_font('fonts/Roboto-Regular.ttf', 14, tag='default_font')
-        dpg.add_font('fonts/RobotoMono-Regular.ttf', 14, tag='mono_font')
+        dpg.add_font(f'{module_root}/fonts/Roboto-Regular.ttf', 14, tag='default_font')
+        dpg.add_font(f'{module_root}/fonts/RobotoMono-Regular.ttf', 14, tag='mono_font')
 
     dpg.bind_font('default_font')
 
@@ -141,14 +142,14 @@ def main():
 
         # Retrieve MIDI inputs data if not using a callback
         if dpg.get_value('input_mode') == 'Polling':
-            gui.windows.conn.poll_processing()
+            midiexplorer.gui.windows.conn.poll_processing()
 
         # Process MIDI inputs data
         while not midi_in_queue.empty():
-            gui.windows.conn.handle_received_data(*midi_in_queue.get())
+            midiexplorer.gui.windows.conn.handle_received_data(*midi_in_queue.get())
 
         # Update probe visual cues
-        gui.windows.probe.update_mon_blink_status()
+        midiexplorer.gui.windows.probe.update_mon_blink_status()
 
         # Render DPG frame
         dpg.render_dearpygui_frame()
