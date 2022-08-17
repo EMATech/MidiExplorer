@@ -1,4 +1,4 @@
-![MIDI Explorer Logo](midiexplorer/icons/midiexplorer.svg) MIDI Explorer
+![MIDI Explorer Logo](src/midiexplorer/icons/midiexplorer.svg) MIDI Explorer
 ===========================================================
 
 [![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
@@ -70,8 +70,8 @@ Features / TODO list
 - [ ] Documentation
     - [ ] Developers
         - [X] Comments
-        - [ ] **(WIP)** Docstrings ([PEP257](https://peps.python.org/pep-0257))
-        - [ ] **(WIP)** Type Hinting ([PEP484](https://peps.python.org/pep-0484))
+        - [x] Docstrings ([PEP257](https://peps.python.org/pep-0257))
+        - [x] Type Hinting ([PEP484](https://peps.python.org/pep-0484))
     - [ ] Users
         - [ ] [Sphinx](https://www.sphinx-doc.org)
             - [ ] [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
@@ -83,7 +83,8 @@ Features / TODO list
 - [ ] Unit tests? (pytest)
     - [ ] Coverage
 - [ ] [Packaging](https://packaging.python.org)
-    - [ ] [PyPi](https://pypi.org)
+    - [ ] **(WIP)** [PyPi](https://pypi.org)
+        - [x] Using [Hatch](https://hatch.pypa.io)
     - [ ] [PyInstaller](https://pyinstaller.org)
 - [ ] Continuous Integration? (GitHub Actions workflow)
 - [ ] **(WIP)** MIDI protocols
@@ -217,7 +218,7 @@ Legal notice
 
 ### License
 
-![GPLv3](midiexplorer/icons/gplv3-or-later.png)
+![GPLv3](src/midiexplorer/icons/gplv3-or-later.png)
 
 Author: ©2021-2022 Raphaël Doursenaud.
 

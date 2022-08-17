@@ -94,7 +94,7 @@ Homepage = 'https://github.com/ematech/midiexplorer'
 Issues = 'https://github.com/ematech/midiexplorer/issues'
 
 [tool.hatch.version]
-path = 'midiexplorer/__about__.py'
+path = 'src/midiexplorer/__about__.py'
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -117,7 +117,7 @@ dependencies = [
 branch = true
 parallel = true
 omit = [
-    'midiexplorer/__about__.py',
+    'src/midiexplorer/__about__.py',
 ]
 
 [tool.coverage.report]
