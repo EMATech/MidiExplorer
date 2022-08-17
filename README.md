@@ -1,5 +1,8 @@
-![MIDI Explorer Logo](src/midiexplorer/icons/midiexplorer.svg) MIDI Explorer
+![MIDI Explorer Logo](midiexplorer/icons/midiexplorer.svg) MIDI Explorer
 ===========================================================
+
+[![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
 
 Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
@@ -11,6 +14,16 @@ process.
 
 Language is currently Python to help with rapid prototyping and fast iteration. It may change at any time as I see fit.
 
+**Table of Contents**
+
+- [Status](#status)
+- [Installation](#installation)
+- [Features / TODO list](#features--todo-list)
+- [Prior art](#prior-art)
+- [Legal notice](#legal-notice)
+    - [License](#license)
+    - [Dependencies & License Acknowledgment](#dependencies--license-acknowledgment)
+    - [Trademarks](#trademarks)
 
 Status
 ------
@@ -21,160 +34,173 @@ Testers welcome ;)
 Alpha coming soon!
 
 
+Installation
+------------
+
+```console
+pip install --user midiexplorer
+```
+
+### Run
+
+```console
+python -m midiexplorer
+```
+
 Features / TODO list
 --------------------
 
 - [ ] Platform support
-  - [ ] **(WIP)** Microsoft Windows
-    - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)
-      - via mido's RtMidi backend
-    - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
-      - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
-  - [ ] **(WIP)** Apple Mac OS X
-    - [x] Core MIDI
-      - via mido's RtMidi backend
-    - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
-  - [ ] **(WIP)** GNU/Linux
-    - [ ] **(WIP)** ALSA
-      - [x] [Sequencer API](https://www.alsa-project.org/alsa-doc/alsa-lib/seq.html)
-        - via mido's RtMidi backend
-      - [ ] [RawMidi API](https://www.alsa-project.org/alsa-doc/alsa-lib/rawmidi.html)
-      - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
-    - [ ] OSS?
+    - [ ] **(WIP)** Microsoft Windows
+        - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)
+            - via mido's RtMidi backend
+        - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)
+            - [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
+    - [ ] **(WIP)** Apple Mac OS X
+        - [x] Core MIDI
+            - via mido's RtMidi backend
+        - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
+    - [ ] **(WIP)** GNU/Linux
+        - [ ] **(WIP)** ALSA
+            - [x] [Sequencer API](https://www.alsa-project.org/alsa-doc/alsa-lib/seq.html)
+                - via mido's RtMidi backend
+            - [ ] [RawMidi API](https://www.alsa-project.org/alsa-doc/alsa-lib/rawmidi.html)
+            - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html) (Should work but untested ATM)
+        - [ ] OSS?
 - [ ] Documentation
-  - [ ] Developers
-    - [X] Comments
-    - [ ] **(WIP)** Docstrings ([PEP257](https://peps.python.org/pep-0257))
-    - [ ] **(WIP)** Type Hinting ([PEP484](https://peps.python.org/pep-0484))
-  - [ ] Users
-    - [ ] [Sphinx](https://www.sphinx-doc.org)
-      - [ ] [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
-      - [ ] [Read The Docs](https://readthedocs.org)
+    - [ ] Developers
+        - [X] Comments
+        - [ ] **(WIP)** Docstrings ([PEP257](https://peps.python.org/pep-0257))
+        - [ ] **(WIP)** Type Hinting ([PEP484](https://peps.python.org/pep-0484))
+    - [ ] Users
+        - [ ] [Sphinx](https://www.sphinx-doc.org)
+            - [ ] [autodoc](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)
+            - [ ] [Read The Docs](https://readthedocs.org)
 - [ ] Linting
-  - [ ] Code style checks? ([PEP8](https://peps.python.org/pep-0008) pycodestyle)
-  - [ ] Docstrings? (darglint)
-  - [ ] Typechecking? (mypy)
+    - [ ] Code style checks? ([PEP8](https://peps.python.org/pep-0008) pycodestyle)
+    - [ ] Docstrings? (darglint)
+    - [ ] Typechecking? (mypy)
 - [ ] Unit tests? (pytest)
-  - [ ] Coverage
+    - [ ] Coverage
 - [ ] [Packaging](https://packaging.python.org)
-  - [ ] [PyPi](https://pypi.org)
-  - [ ] [PyInstaller](https://pyinstaller.org)
+    - [ ] [PyPi](https://pypi.org)
+    - [ ] [PyInstaller](https://pyinstaller.org)
 - [ ] Continuous Integration? (GitHub Actions workflow)
 - [ ] **(WIP)** MIDI protocols
-  - [x] v1.0
-    - using a [modified mido](https://github.com/mido/mido/pull/370)
-  - [ ] v2.0
+    - [x] v1.0
+        - using a [modified mido](https://github.com/mido/mido/pull/370)
+    - [ ] v2.0
 - [ ] **(WIP)** Interactive GUI
-  - [x] Icons
-  - [x] About window
-  - [x] Fonts
-  - [ ] Custom theme
-  - [X] Node editor window
-    - [X] Inputs
-    - [X] Outputs
-    - [x] Modules
-  - [x] Probe data window
-  - [ ] Generator data window
-  - [x] Log window
-  - [ ] **(WIP)** Actions
-    - [x] Toggle fullscreen (F11)
-    - [x] Toggle log (F12)
-    - [ ] Save state (Buggy at the moment)
+    - [x] Icons
+    - [x] About window
+    - [x] Fonts
+    - [ ] Custom theme
+    - [X] Node editor window
+        - [X] Inputs
+        - [X] Outputs
+        - [x] Modules
+    - [x] Probe data window
+    - [ ] Generator data window
+    - [x] Log window
+    - [ ] **(WIP)** Actions
+        - [x] Toggle fullscreen (F11)
+        - [x] Toggle log (F12)
+        - [ ] Save state (Buggy at the moment)
 - [ ] **(WIP)** I/O management
-  - [ ] Select backend?
-  - [ ] **(WIP)** List MIDI I/O
-    - [x] USB / IEEE-1394 (OS level)
-    - [ ] Bluetooth Low Energy (BLE-MIDI)
-      - Requires WinRt for Microsoft Windows
-    - [ ] RTP-MIDI / IETF RFC 6295
-    - [ ] Virtual
-  - [x] Input reading modes
-    - [x] Polling
-    - [x] Callback
-  - [ ] Sort by ID/Name
-  - [ ] **(WIP)** Connections
-    - [x] Port to probe
-    - [x] Probe to port
-    - [x] Port to port
-    - [ ] Port to any module
-    - [ ] Any module to port
-    - [ ] Module to module
-  - [ ] **(WIP)** Refresh
-    - [X] Manual
-    - [ ] Auto with reconnect
-  - [ ] Virtual ports
-    - [ ] Add/Remove
-  - [ ] Save state
+    - [ ] Select backend?
+    - [ ] **(WIP)** List MIDI I/O
+        - [x] USB / IEEE-1394 (OS level)
+        - [ ] Bluetooth Low Energy (BLE-MIDI)
+            - Requires WinRt for Microsoft Windows
+        - [ ] RTP-MIDI / IETF RFC 6295
+        - [ ] Virtual
+    - [x] Input reading modes
+        - [x] Polling
+        - [x] Callback
+    - [ ] Sort by ID/Name
+    - [ ] **(WIP)** Connections
+        - [x] Port to probe
+        - [x] Probe to port
+        - [x] Port to port
+        - [ ] Port to any module
+        - [ ] Any module to port
+        - [ ] Module to module
+    - [ ] **(WIP)** Refresh
+        - [X] Manual
+        - [ ] Auto with reconnect
+    - [ ] Virtual ports
+        - [ ] Add/Remove
+    - [ ] Save state
 - [ ] **(WIP)** Modules (Plugins?)
-  - [ ] Instances management (Add/Remove)
-  - [x] Virtual Debug Probe
-    - [x] Activity monitor
-      - [x] Settings
-        - [x] Persistence
-        - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
-      - [x] Message type
-        - [x] Channel
-        - [x] System
-      - [x] Channel
-      - [x] Controllers
-      - [ ] **(WIP)** SysEx
-        - [x] Basic decoding
-        - [ ] Sample dump standard
-        - [ ] Device inquiry
-        - [ ] File dump
-        - [ ] MIDI tuning
-        - [ ] General MIDI system messages
-        - [ ] MIDI Time Code (MTC)
-        - [ ] MIDI Show Control (MSC)
-        - [ ] Notation information
-        - [ ] Device Control
-        - [ ] MIDI Machine Control (MMC)
-      - [ ] **(WIP)** Notes
-        - [x] Keyboard
-        - [ ] Staff
-    - [x] Read raw input
-    - [x] Table decode input
-    - [x] Timing
-      - [x] Hardware
-        - retrieved using a modified mido RtMidi backend
-      - [x] System
-    - [x] Thru support
-    - [ ] Color code
-      - [ ] Per source
-      - [ ] Per channel
-      - [ ] Per message type
-  - [ ] Splitter
-  - [ ] Merger
-  - [ ] Generator
-    - [ ] Generate raw output
-    - [ ] Buffer/Clipboard any message (raw or decoded) to output
-  - [ ] Translator/Filter
-  - [ ] Standard MIDI File (SMF)
-    - [ ] Analyzer
-    - [ ] Player
-    - [ ] Recorder
-  - [ ] Protocol analyzers/decoders
-    - [ ] HUI
-    - [ ] LCU
-    - [ ] MCU
-    - Others?
-  - [ ] Trigger/Response (Protocol emulator)
-    - [ ] HUI
-    - [ ] LCU
-    - [ ] MCU
-    - Others?
-  - [ ] Performance analyzer
-    - [ ] Round trip latency
-    - [ ] Jitter
-    - [ ] Bandwidth
-    - [ ] Correctness
-    - [ ] Stresser/Fuzzer
-  - [ ] Hardware toolbox
+    - [ ] Instances management (Add/Remove)
+    - [x] Virtual Debug Probe
+        - [x] Activity monitor
+            - [x] Settings
+                - [x] Persistence
+                - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
+            - [x] Message type
+                - [x] Channel
+                - [x] System
+            - [x] Channel
+            - [x] Controllers
+            - [ ] **(WIP)** SysEx
+                - [x] Basic decoding
+                - [ ] Sample dump standard
+                - [ ] Device inquiry
+                - [ ] File dump
+                - [ ] MIDI tuning
+                - [ ] General MIDI system messages
+                - [ ] MIDI Time Code (MTC)
+                - [ ] MIDI Show Control (MSC)
+                - [ ] Notation information
+                - [ ] Device Control
+                - [ ] MIDI Machine Control (MMC)
+            - [ ] **(WIP)** Notes
+                - [x] Keyboard
+                - [ ] Staff
+        - [x] Read raw input
+        - [x] Table decode input
+        - [x] Timing
+            - [x] Hardware
+                - retrieved using a modified mido RtMidi backend
+            - [x] System
+        - [x] Thru support
+        - [ ] Color code
+            - [ ] Per source
+            - [ ] Per channel
+            - [ ] Per message type
+    - [ ] Splitter
+    - [ ] Merger
+    - [ ] Generator
+        - [ ] Generate raw output
+        - [ ] Buffer/Clipboard any message (raw or decoded) to output
+    - [ ] Translator/Filter
+    - [ ] Standard MIDI File (SMF)
+        - [ ] Analyzer
+        - [ ] Player
+        - [ ] Recorder
+    - [ ] Protocol analyzers/decoders
+        - [ ] HUI
+        - [ ] LCU
+        - [ ] MCU
+        - Others?
+    - [ ] Trigger/Response (Protocol emulator)
+        - [ ] HUI
+        - [ ] LCU
+        - [ ] MCU
+        - Others?
+    - [ ] Performance analyzer
+        - [ ] Round trip latency
+        - [ ] Jitter
+        - [ ] Bandwidth
+        - [ ] Correctness
+        - [ ] Stresser/Fuzzer
+    - [ ] Hardware toolbox
 - [ ] **(WIP)** Logging
-  - [x] GUI
-  - [ ] To file
-    - [ ] Overwrite
-    - [ ] Append
+    - [x] GUI
+    - [ ] To file
+        - [ ] Overwrite
+        - [ ] Append
 
 Prior art
 ---------
@@ -191,7 +217,7 @@ Legal notice
 
 ### License
 
-![GPLv3](src/midiexplorer/icons/gplv3-or-later.png)
+![GPLv3](midiexplorer/icons/gplv3-or-later.png)
 
 Author: ©2021-2022 Raphaël Doursenaud.
 

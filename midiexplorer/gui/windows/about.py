@@ -14,6 +14,7 @@ from typing import Any, Optional
 import mido
 from dearpygui import dearpygui as dpg
 
+import __about__
 from gui.logger import Logger
 
 
@@ -32,7 +33,6 @@ def create() -> None:
             autosize=True,
             show=False,
     ):
-        midiexplorer_version = "DEV"  # TODO: Generate from setup
         logo_size = 128
         title_color = (0, 255, 255)  # Cyan
         text_indent = 50
@@ -50,7 +50,7 @@ def create() -> None:
         # Title
         # -----
         dpg.add_text("MIDI Explorer", color=title_color)
-        dpg.add_text(f"Version {midiexplorer_version}.")
+        dpg.add_text(f"Version {__about__.__version__}.")
         dpg.add_text("Yet another MIDI monitor, analyzer, debugger and manipulation tool.")
 
         # ------

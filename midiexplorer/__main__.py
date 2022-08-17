@@ -24,7 +24,11 @@ import midi
 from gui.config import DEBUG, INIT_FILENAME, START_TIME
 from midi.ports import midi_in_queue
 
-if __name__ == '__main__':
+
+def main():
+    """
+    Main midiexplorer function.
+    """
     dpg.create_context()
 
     # ----------------
@@ -150,3 +154,7 @@ if __name__ == '__main__':
         dpg.render_dearpygui_frame()
 
     dpg.destroy_context()
+
+
+if __name__ == '__main__':
+    main()
