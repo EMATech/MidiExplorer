@@ -91,9 +91,7 @@ def _dedupe_port_names(names: list[str]) -> list[str]:
 
     TODO: test more. May have adverse effects in the presence of multiple identical yet distinct devices.
     """
-    system = platform.system()
-    if system == 'Darwin' or system == 'Linux':
-        names = list(OrderedDict.fromkeys(names))
+    names = list(OrderedDict.fromkeys(names))
     return names
 
 
