@@ -1,4 +1,4 @@
-![MIDI Explorer Logo](src/midiexplorer/icons/midiexplorer.svg) MIDI Explorer
+![MIDI Explorer Logo](data/assets/midiexplorer_logo.svg) MIDI Explorer
 ===========================================================
 
 [![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
@@ -6,7 +6,7 @@
 
 Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
-![GUI](_screenshots/GUIimprovedprobedecoding.png)
+![GUI](data/screenshots/GUIimprovedprobedecoding.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
@@ -218,7 +218,7 @@ Legal notice
 
 ### License
 
-![GPLv3](src/midiexplorer/icons/gplv3-or-later.png)
+![GPLv3](data/assets/sources/gplv3-or-later.svg)
 
 Author: ©2021-2022 Raphaël Doursenaud.
 
