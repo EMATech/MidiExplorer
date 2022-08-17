@@ -1,4 +1,4 @@
-![MIDI Explorer Logo](icons/midiexplorer.svg) MIDI Explorer
+![MIDI Explorer Logo](src/midiexplorer/icons/midiexplorer.svg) MIDI Explorer
 ===========================================================
 
 Yet another MIDI monitor, analyzer, debugger and manipulation tool.
@@ -191,7 +191,7 @@ Legal notice
 
 ### License
 
-![GPLv3](icons/gplv3-or-later.png)
+![GPLv3](src/midiexplorer/icons/gplv3-or-later.png)
 
 Author: ©2021-2022 Raphaël Doursenaud.
 
