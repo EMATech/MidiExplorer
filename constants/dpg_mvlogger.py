@@ -5,10 +5,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-DearPyGui Slots type.
+DearPyGui mvLogger levels.
 """
 
-SPECIAL = 0
-MOST = 1
-DRAW = 2
-DRAG_PAYLOAD = 3
+TRACE = 0
+DEBUG = 1
+INFO = 2
+WARNING = 3
+ERROR = 4
+CRITICAL = 5

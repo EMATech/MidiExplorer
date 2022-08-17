@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Main window
+Main window and menu.
 """
 
 from dearpygui import dearpygui as dpg
@@ -18,6 +18,11 @@ from gui.config import DEBUG
 
 
 def create() -> None:
+    """
+    Creates the main application window.
+
+    Including the menu bar, associated items and file selector dialogs.
+    """
     with dpg.window(
             tag='main_win',
             label="MIDI Explorer",
@@ -29,11 +34,12 @@ def create() -> None:
         gui.config.create_selectors()
 
         with dpg.menu_bar():
-            with dpg.menu(label="Configuration"):
-                dpg.add_menu_item(label="Load", callback=gui.config.load)
-                dpg.add_menu_item(label="Save", callback=gui.config.save)
-                dpg.add_menu_item(label="Save as", callback=gui.config.saveas)
-                dpg.add_menu_item(label="Reset", callback=gui.config.clear)
+            if DEBUG:  # FIXME: Currently unstable
+                with dpg.menu(label="Configuration"):
+                    dpg.add_menu_item(label="Load", callback=gui.config.load)
+                    dpg.add_menu_item(label="Save", callback=gui.config.save)
+                    dpg.add_menu_item(label="Save as", callback=gui.config.saveas)
+                    dpg.add_menu_item(label="Reset", callback=gui.config.clear)
 
             with dpg.menu(label="Display"):
                 dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
@@ -54,3 +60,4 @@ def create() -> None:
                         dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
                         dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
                 dpg.add_menu_item(label="About", callback=gui.windows.about.toggle)
+                # TODO: Add documentation

@@ -5,21 +5,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-MIDI ports helpers
+MIDI ports helpers.
 """
 
 import multiprocessing
 import platform
 import threading
+import time
 from abc import ABC
 from functools import cached_property
 
-import time
-
 import mido
 
-lock = threading.Lock()
-queue = multiprocessing.SimpleQueue()
+# TODO: MIDI Input Queue Singleton?
+midi_in_lock = threading.Lock()
+midi_in_queue = multiprocessing.SimpleQueue()
 
 
 class MidiPort(ABC):
@@ -130,7 +130,7 @@ class MidiInPort(MidiPort):
 
         This is the recommended mode for the best performance.
         """
-        with lock:
+        with midi_in_lock:
             self.port.callback = self.receive_callback
 
     def polling(self):
@@ -152,5 +152,5 @@ class MidiInPort(MidiPort):
         logger = Logger()
         logger.log_debug(f"Callback data: {midi_message} from {self.label} to {self.dest}")
 
-        with lock:
-            queue.put((timestamp, self.label, self.dest, midi_message))
+        with midi_in_lock:
+            midi_in_queue.put((timestamp, self.label, self.dest, midi_message))

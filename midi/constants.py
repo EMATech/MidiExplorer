@@ -5,16 +5,16 @@
 # SPDX-License-Identifier: Unlicense
 
 """
-MIDI related constants
+MIDI related constants.
 
 Derived from official MIDI specifications available at:
-- MIDI Association: https://midi.org
-- MIDI Standard Committee (MSC): http://amei.or.jp/midistandardcommittee
+- MIDI Association (MMA) [US]: https://midi.org
+- MIDI Standard Committee (MSC) [JP]: http://amei.or.jp/midistandardcommittee
 """
 
 MIDI_VERSION = {
     1: "1.0",
-    2: "2.0"
+    2: "2.0"  # TODO
 }
 
 ###
@@ -280,7 +280,7 @@ STATUS_BYTES = {}
 CHANNEL_VOICE_BYTES = {}
 for status_nibble in CHANNEL_VOICE_MESSAGES:
     for channel in range(16):
-        status_byte = status_nibble * 16 + channel
+        status_byte = (status_nibble << 4) + channel
         CHANNEL_VOICE_BYTES.update({status_byte: CHANNEL_VOICE_MESSAGES[status_nibble]})
 STATUS_BYTES.update(CHANNEL_VOICE_BYTES)
 STATUS_BYTES.update(SYSTEM_COMMON_MESSAGES)
@@ -1330,7 +1330,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-049
 ###
 
-# FIXME: Unavailable at MMA. Fount at AMEI MSC.
+# FIXME: Unavailable at MMA. Found at AMEI MSC.
 
 ###
 # MIDI VISUAL CONTROL (MVC)
@@ -1347,7 +1347,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-051
 ###
 
-# FIXME: Unavailable at MMA. Fount at AMEI MSC.
+# FIXME: Unavailable at MMA. Found at AMEI MSC.
 
 ###
 # MIDI 1.0 Electrical Specification Update

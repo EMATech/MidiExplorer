@@ -5,7 +5,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Sample DearPyGUI callback
+Sample DearPyGUI callback.
+
+For reference only.
 """
 
 import sys
@@ -16,7 +18,8 @@ from gui.logger import Logger
 
 def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """
-    Generic Dear PyGui callback for debug purposes
+    Generic Dear PyGui callback for debug purposes.
+
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
                    or 0 if trigger by the application.

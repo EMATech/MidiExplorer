@@ -191,6 +191,8 @@ Legal notice
 
 ### License
 
+![GPLv3](icons/gplv3-or-later.png)
+
 Author: ©2021-2022 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).

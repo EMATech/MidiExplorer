@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-MIDI helpers
+MIDI helpers.
 """
 
 import mido  # https://mido.readthedocs.io/en/latest/
@@ -14,13 +14,26 @@ from gui.logger import Logger
 
 
 def init() -> None:
+    """
+    Initializes MIDO with the RtMidi backend.
+
+    This doesn't open any input or output yet.
+    """
     logger = Logger()
 
+    # RtMidi is required for the features we need (callback and delta timestamps)
     mido.set_backend('mido.backends.rtmidi')
 
+    # -------------------------
+    # MIDO and backend versions
+    # -------------------------
     logger.log_debug(f"Using MIDO:")
     logger.log_debug(f"\t - version: {mido.__version__}")
     logger.log_debug(f"\t - backend: {mido.backend.name}")
+
+    # -------------------------
+    # Native API used by RtMidi
+    # -------------------------
     if mido.backend.name == 'mido.backends.rtmidi':
         api_names = mido.backend.module.get_api_names()
         api_names_count = len(api_names)
@@ -33,4 +46,6 @@ def init() -> None:
             for name in api_names:
                 logger.log_debug(f"\t\t - {name}")
     else:
-        logger.log_warning("Wrong MIDI backend or no backend loaded!")
+        err_msg = "Wrong MIDI backend or no backend loaded!"
+        logger.log_warning(err_msg)
+        raise ValueError(err_msg)

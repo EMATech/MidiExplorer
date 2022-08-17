@@ -5,25 +5,27 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Probe window and data management
+Probe window and data management.
 
-TODO: separate presentation from logic and processing
+TODO: separate presentation from processing logic
+TODO: factorize into smaller pieces
 """
-from typing import Any, Optional, Tuple
-
+import functools
 import sys
 import time
+from typing import Any, Optional, Tuple
+
+import mido
 from dearpygui import dearpygui as dpg
 
 import midi.constants
 import midi.mido2standard
 import midi.notes
-import mido
 from gui.config import DEBUG, START_TIME
 from gui.logger import Logger
 from midi.constants import NOTE_OFF_VELOCITY
 
-US2MS = 1000
+US2MS = 1000  # microseconds to milliseconds ratio
 
 ###
 # GLOBAL VARIABLES
@@ -35,12 +37,33 @@ previous_timestamp = START_TIME
 
 
 def _init_details_table_data() -> None:
-    # Initial data for reverse scrolling
+    """
+    Initial table data for reverse scrolling.
+    """
     with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
         pass
 
 
-def _clear_probe_data_table() -> None:
+def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """
+    Clears the data table.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+    :return:
+    """
+    logger = Logger()
+
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
+
     dpg.delete_item('probe_data_table', children_only=True, slot=1)
     _init_details_table_data()
 
@@ -49,9 +72,9 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     """
     Decodes and presents data received from the probe.
 
-    :param timestamp:
-    :param source:
-    :param data:
+    :param timestamp: System timestamp
+    :param source: Input name
+    :param data: MIDI data
     :return:
     """
     global probe_data_counter, previous_timestamp
@@ -64,7 +87,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
     previous_data = probe_data_counter
     probe_data_counter += 1
 
-    # TODO: Flush data after a certain amount
+    # TODO: Flush data after a certain amount to avoid memory leak issues
 
     with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
                        before=f'probe_data_{previous_data}'):
@@ -333,12 +356,19 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 
 
 def _mon_blink(indicator: int | str) -> None:
+    """
+    Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
+
+    :param indicator: Name of the indicator to blink
+    :return:
+    """
     now = time.time() - START_TIME
     delay = dpg.get_value('mon_blink_duration')
     target = f'mon_{indicator}_active_until'
     until = now + delay
     dpg.set_value(target, until)
-    theme = '__red'
+    theme = '__act'
+    # EOX special case since we have two alternate representations.
     if indicator != 'end_of_exclusive':
         dpg.bind_item_theme(f'mon_{indicator}', theme)
     else:
@@ -349,16 +379,29 @@ def _mon_blink(indicator: int | str) -> None:
 
 
 def _note_on(number: int | str) -> None:
-    dpg.bind_item_theme(f'note_{number}', '__red')
+    """
+    Illuminates the note.
+
+    :param number: MIDI note number
+    :return:
+    """
+    dpg.bind_item_theme(f'note_{number}', '__act')
 
 
 def _note_off(number: int | str) -> None:
+    """
+    Darken the note.
+
+    :param number:
+    :return:
+    """
     dpg.bind_item_theme(f'note_{number}', None)
 
 
 def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """
-    Displays the EOX monitor in the appropriate category according to settings
+    Displays the EOX monitor in the appropriate category according to settings.
+
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
                    or 0 if trigger by the application.
@@ -412,50 +455,78 @@ def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = 
         dpg.add_text(f"{text}")
 
 
+@functools.lru_cache()
+def _get_supported_indicators() -> list:
+    mon_indicators = [
+        'mon_c',
+        'mon_s',
+        'mon_note_off',
+        'mon_note_on',
+        'mon_polytouch',
+        'mon_control_change',
+        'mon_program_change',
+        'mon_aftertouch',
+        'mon_pitchwheel',
+        'mon_sysex',
+        'mon_quarter_frame',
+        'mon_songpos',
+        'mon_song_select',
+        'mon_tune_request',
+        'mon_end_of_exclusive',
+        'mon_clock',
+        'mon_start',
+        'mon_stop',
+        'mon_active_sensing',
+        'mon_reset'
+    ]
+    for channel in range(16):
+        mon_indicators.append(f'mon_{channel}')
+    for controller in range(128):
+        mon_indicators.append(f'mon_cc_{controller}')
+    if DEBUG:  # Experimental
+        mon_indicators.append([
+            'mon_undef1',
+            'mon_undef2',
+            'mon_undef3',
+            'mon_undef4',
+            'mon_all_sound_off',
+            'mon_reset_all_controllers',
+            'mon_local_control',
+            'mon_all_notes_off',
+            'mon_omni_off',
+            'mon_omni_on',
+            'mon_mono_on',
+            'mon_poly_on'
+        ])
+
+    return mon_indicators
+
+
 def create() -> None:
+    """
+    Creates the probe window.
+    """
     with dpg.value_registry():
-        ###
+        # ------------
         # Preferences
-        ###
+        # ------------
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
         # Per standard, consider note-on with velocity set to 0 as note-off
         dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
+        # TODO: add both?
         eox_categories = (
             "System Common Message (default, MIDI specification compliant)",
             "System Exclusive Message"
         )
         dpg.add_string_value(tag='eox_category', default_value=eox_categories[0])
-        ###
-        # Blink management
-        ###
-        dpg.add_float_value(tag='mon_c_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_s_active_until', default_value=0)  # seconds
-        for channel in range(16):  # Monitoring status
-            dpg.add_float_value(tag=f"mon_{channel}_active_until", default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_note_off_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_note_on_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_polytouch_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_control_change_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_program_change_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_aftertouch_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_pitchwheel_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_sysex_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_quarter_frame_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_songpos_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_song_select_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_tune_request_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_end_of_exclusive_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_clock_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_start_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_continue_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_stop_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_active_sensing_active_until', default_value=0)  # seconds
-        dpg.add_float_value(tag='mon_reset_active_until', default_value=0)  # seconds
-        for controller in range(128):
-            dpg.add_float_value(tag=f'mon_cc_{controller}_active_until', default_value=0)  # seconds
-        ###
+        # ----------------------------
+        # Indicators blink management
+        # ----------------------------
+        for indicator in _get_supported_indicators():
+            dpg.add_float_value(tag=f'{indicator}_active_until', default_value=0)  # seconds
+        # ---------------
         # SysEx decoding
-        ###
+        # ---------------
         dpg.add_string_value(tag='syx_id_type', default_value="ID")
         dpg.add_string_value(tag='syx_id')
         dpg.add_string_value(tag='syx_id_label')
@@ -466,17 +537,26 @@ def create() -> None:
         dpg.add_string_value(tag='syx_sub_id2_label')
         dpg.add_string_value(tag='syx_payload')
 
-    ###
-    # DEAR PYGUI THEME for red buttons
-    ###
-    with dpg.theme(tag='__red'):
+    # ---------------------------------------
+    # DEAR PYGUI THEME for activated buttons
+    # ---------------------------------------
+    with dpg.theme(tag='__act'):
         with dpg.theme_component(dpg.mvButton):
-            dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 0, 0))
+            # TODO: add preference
+            color = (255, 0, 0)  # red
+            dpg.add_theme_color(dpg.mvThemeCol_Button, color)
 
+    # ------------------
+    # Probe window size
+    # ------------------
+    # TODO: compute dynamically?
     probe_win_height = 1020
     if DEBUG:
         probe_win_height = 685
 
+    # -------------
+    # Probe window
+    # -------------
     with dpg.window(
             tag='probe_win',
             label="Probe",
@@ -508,9 +588,9 @@ def create() -> None:
                         user_data=eox_categories
                     )
 
-        ###
+        # -----
         # Mode
-        ###
+        #-----
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="MIDI Mode", default_open=False):
@@ -534,9 +614,9 @@ def create() -> None:
                     horizontal=True, enabled=False,
                 )
 
-        ###
+        # -------
         # Status
-        ###
+        #-------
         status_height = 154
         if DEBUG:
             status_height = 180
@@ -588,71 +668,72 @@ def create() -> None:
                 dpg.add_text("Voice")
 
                 # Channel voice messages (page 9)
-                dpg.add_button(tag='mon_note_off', label="N OF")
                 val = 8
+                dpg.add_button(tag='mon_note_off', label="N OF")
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
+                val += 1
                 dpg.add_button(tag='mon_note_on', label="N ON")
-                val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
+                val += 1
                 dpg.add_button(tag='mon_polytouch', label="PKPR")
-                val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
+                val += 1
                 dpg.add_button(tag='mon_control_change', label=" CC ")
-                val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
+                val += 1
                 dpg.add_button(tag='mon_program_change', label=" PC ")
-                val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
+                val += 1
                 dpg.add_button(tag='mon_aftertouch', label="CHPR")
-                val += 1
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
-                dpg.add_button(tag='mon_pitchwheel', label="PBCH")
                 val += 1
+                dpg.add_button(tag='mon_pitchwheel', label="PBCH")
                 _add_tooltip_conv(midi.constants.CHANNEL_VOICE_MESSAGES[val], val, hlen, dlen, blen)
 
             if DEBUG:
                 # TODO: Channel mode messages (page 20) (CC 120-127)
+                # TODO: add preference to separate reserved CC120-127
                 with dpg.table_row():
                     dpg.add_text()
 
                     dpg.add_text("Mode")
 
-                    dpg.add_button(tag='mon_all_sound_off', label="ASOF")
                     val = 120
+                    dpg.add_button(tag='mon_all_sound_off', label="ASOF")
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_reset_all_controllers', label="RAC ")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_local_control', label=" LC ")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_all_notes_off', label="ANOF")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_omni_off', label="O OF")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_omni_on', label="O ON")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
+                    val += 1
                     dpg.add_button(tag='mon_mono_on', label="M ON")
-                    val += 1
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
-                    dpg.add_button(tag='mon_poly_on', label="P ON")
                     val += 1
+                    dpg.add_button(tag='mon_poly_on', label="P ON")
                     _add_tooltip_conv(midi.constants.CHANNEL_MODE_MESSAGES[val], val)
 
             with dpg.table_row():
@@ -660,34 +741,36 @@ def create() -> None:
 
                 dpg.add_text("Common")
 
+                val = 0xF1
                 # System common messages (page 27)
                 dpg.add_button(tag='mon_quarter_frame', label=" QF ")
-                val = 0xF1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_songpos', label="SGPS")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_song_select', label="SGSL")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
-                dpg.add_button(tag='undef1', label="UND ")
+                # FIXME: unsupported by mido
                 val += 1
+                dpg.add_button(tag='mon_undef1', label="UND ")
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
-                dpg.add_button(tag='undef2', label="UND ")
+                # FIXME: unsupported by mido
                 val += 1
+                dpg.add_button(tag='mon_undef2', label="UND ")
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_tune_request', label=" TR ")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
-                dpg.add_button(tag='mon_end_of_exclusive_common', label="EOX ")
                 val += 1
+                dpg.add_button(tag='mon_end_of_exclusive_common', label="EOX ")
                 _add_tooltip_conv(midi.constants.SYSTEM_COMMON_MESSAGES[val], val)
 
             with dpg.table_row():
@@ -696,36 +779,38 @@ def create() -> None:
                 dpg.add_text("Real-Time")
 
                 # System real time messages (page 30)
-                dpg.add_button(tag='mon_clock', label="CLK ")
                 val = 0xF8
+                dpg.add_button(tag='mon_clock', label="CLK ")
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
-                dpg.add_button(tag='undef3', label="UND ")
+                # FIXME: unsupported by mido
                 val += 1
+                dpg.add_button(tag='mon_undef3', label="UND ")
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_start', label="STRT")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_continue', label="CTNU")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_stop', label="STOP")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
-                dpg.add_button(tag='undef4', label="UND ")
+                # FIXME: unsupported by mido
                 val += 1
+                dpg.add_button(tag='mon_undef4', label="UND ")
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
+                val += 1
                 dpg.add_button(tag='mon_active_sensing', label=" AS ")
-                val += 1
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
-                dpg.add_button(tag='mon_reset', label="RST ")
                 val += 1
+                dpg.add_button(tag='mon_reset', label="RST ")
                 _add_tooltip_conv(midi.constants.SYSTEM_REAL_TIME_MESSAGES[val], val)
 
             with dpg.table_row():
@@ -734,20 +819,20 @@ def create() -> None:
                 dpg.add_text("Exclusive")
 
                 # System exclusive messages
-                dpg.add_button(tag='mon_sysex', label="SOX ")
                 val = 0xF0
+                dpg.add_button(tag='mon_sysex', label="SOX ")
                 _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
                 # FIXME: mido is missing EOX (TODO: send PR)
-                dpg.add_button(tag='mon_end_of_exclusive_syx', label="EOX ")
                 val = 0xF7
+                dpg.add_button(tag='mon_end_of_exclusive_syx', label="EOX ")
                 _add_tooltip_conv(midi.constants.SYSTEM_EXCLUSIVE_MESSAGES[val], val)
 
             _update_eox_category(sender=None, app_data=None, user_data=eox_categories)
 
-        ###
+        # ------
         # Notes
-        ###
+        #------
         with dpg.collapsing_header(label="Notes", default_open=True):
             dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
 
@@ -758,19 +843,26 @@ def create() -> None:
         dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120,
                              border=False)
 
-        width = 12
-        height = 60
-        bxpos = width / 2
-        wxpos = 0
+        # TODO: add an intensity display for velocity?
 
+        width = 12  # Key width
+        height = 60  # Key height
+        margin = 1  # Margin between keys
+        bxpos = width / 2  # Black key X position
+        wxpos = 0  # White key X position
+
+        # TODO: add preference for default notes notation?
         for index in midi.notes.MIDI_NOTES_ALPHA_EN:
             name = midi.notes.MIDI_NOTES_ALPHA_EN[index]
+
+            # Compute actual key position
             xpos = wxpos
             ypos = height
-            if "#" in midi.notes.MIDI_NOTES_ALPHA_EN[index]:
+            if "#" in name:
                 height = ypos
                 xpos = bxpos
                 ypos = 0
+
             label = "\n".join(name)  # Vertical text
 
             dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
@@ -782,16 +874,17 @@ def create() -> None:
                 index, blen=7
             )
 
+            # Next key position computation
             if "#" not in name:
-                wxpos += width + 1
+                wxpos += width + margin
             elif "D#" in name or "A#" in name:
-                bxpos += (width + 1) * 2
+                bxpos += (width + margin) * 2
             else:
-                bxpos += width + 1
+                bxpos += width + margin
 
-        ###
+        # ---------------
         # Running Status
-        ###
+        #---------------
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="Running Status", default_open=False):
@@ -799,9 +892,9 @@ def create() -> None:
                 # FIXME: unimplemented upstream (page A-1)
                 dpg.add_text("Not implemented yet", parent='probe_running_status_container')
 
-        ###
+        # ------------
         # Controllers
-        ###
+        #------------
         with dpg.collapsing_header(label="Controllers", default_open=True):
             dpg.add_child_window(tag='probe_controllers_container', height=192, border=False)
 
@@ -817,6 +910,7 @@ def create() -> None:
                 dpg.add_text("Controllers")
                 dpg.add_text("")
 
+            # TODO: add preference to separate reserved CC120-127
             for controller in range(128):
                 dpg.add_button(tag=f'mon_cc_{controller}', label=f"{controller:3d}", parent=f'ctrls_{rownum}')
                 _add_tooltip_conv(midi.constants.CONTROLLER_NUMBERS[controller], controller)
@@ -829,29 +923,34 @@ def create() -> None:
             del rownum
 
         ###
-        # TODO: Per controller status?
+        # TODO: Per controller status
         ###
+        # Value timegraph
 
         ###
         # TODO: Registered parameter decoding?
         ###
+        # Value timegraph
 
         ###
         # TODO: Program change status? (+ Bank Select?)
         ###
+        # Value timegraph
 
         ###
         # TODO: Pitch bend change
         ###
+        # Value timegraph
 
         ###
         # TODO: Aftertouch
         ###
+        # Value timegraph
 
         ###
         # TODO: System common
         ###
-        # MTC Quarter Frame
+        # MTC Quarter Frame (Fully decode MTC status)
         # Song Pos Pointer
         # Song Select
         # Tune Request
@@ -860,16 +959,16 @@ def create() -> None:
         ###
         # TODO: System Realtime
         ###
-        # Timing Clock
+        # Timing Clock (Compute BPM)
         # Start
         # Continue
         # Stop
         # Active Sensing
         # System Reset
 
-        ###
+        # -----------------
         # System Exclusive
-        ###
+        #-----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=True):
             dpg.add_child_window(tag='probe_sysex_container', height=130, border=False)
 
@@ -901,9 +1000,9 @@ def create() -> None:
                 dpg.add_text(source='syx_payload')
                 dpg.add_text()
 
-        ###
+        # -------------------
         # Data history table
-        ###
+        #-------------------
         with dpg.collapsing_header(label="History", default_open=True):
             dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
@@ -937,7 +1036,7 @@ def create() -> None:
         # TODO: Allow sorting
         # TODO: Show/hide columns
         # TODO: timegraph?
-
+        # TODO: selecting an item shows it decoded values above
         dpg.add_child_window(parent='probe_table_container', tag='act_det', label="Details", height=340, border=False)
         with dpg.table(parent='act_det',
                        tag='probe_data_table',
@@ -960,54 +1059,18 @@ def create() -> None:
             _init_details_table_data()
 
 
-def update_blink_status() -> None:
+def update_mon_blink_status() -> None:
+    """
+    Handles monitor indicators blinking status update each frame.
+
+    Checks for the time it should stay illuminated and darkens it if expired.
+    """
     now = time.time() - START_TIME
-    if dpg.get_value('mon_c_active_until') < now:
-        dpg.bind_item_theme('mon_c', None)
-    if dpg.get_value('mon_s_active_until') < now:
-        dpg.bind_item_theme('mon_s', None)
-    for channel in range(16):
-        if dpg.get_value(f'mon_{channel}_active_until') < now:
-            dpg.bind_item_theme(f"mon_{channel}", None)
-    if dpg.get_value('mon_active_sensing_active_until') < now:
-        dpg.bind_item_theme('mon_active_sensing', None)
-    if dpg.get_value('mon_note_off_active_until') < now:
-        dpg.bind_item_theme('mon_note_off', None)
-    if dpg.get_value('mon_note_on_active_until') < now:
-        dpg.bind_item_theme('mon_note_on', None)
-    if dpg.get_value('mon_polytouch_active_until') < now:
-        dpg.bind_item_theme('mon_polytouch', None)
-    if dpg.get_value('mon_control_change_active_until') < now:
-        dpg.bind_item_theme('mon_control_change', None)
-    if dpg.get_value('mon_program_change_active_until') < now:
-        dpg.bind_item_theme('mon_program_change', None)
-    if dpg.get_value('mon_aftertouch_active_until') < now:
-        dpg.bind_item_theme('mon_aftertouch', None)
-    if dpg.get_value('mon_pitchwheel_active_until') < now:
-        dpg.bind_item_theme('mon_pitchwheel', None)
-    if dpg.get_value('mon_sysex_active_until') < now:
-        dpg.bind_item_theme('mon_sysex', None)
-    if dpg.get_value('mon_quarter_frame_active_until') < now:
-        dpg.bind_item_theme('mon_quarter_frame', None)
-    if dpg.get_value('mon_songpos_active_until') < now:
-        dpg.bind_item_theme('mon_songpos', None)
-    if dpg.get_value('mon_song_select_active_until') < now:
-        dpg.bind_item_theme('mon_song_select', None)
-    if dpg.get_value('mon_tune_request_active_until') < now:
-        dpg.bind_item_theme('mon_tune_request', None)
-    if dpg.get_value('mon_end_of_exclusive_active_until') < now:
-        dpg.bind_item_theme('mon_end_of_exclusive_common', None)
-        dpg.bind_item_theme('mon_end_of_exclusive_syx', None)
-    if dpg.get_value('mon_clock_active_until') < now:
-        dpg.bind_item_theme('mon_clock', None)
-    if dpg.get_value('mon_start_active_until') < now:
-        dpg.bind_item_theme('mon_start', None)
-    if dpg.get_value('mon_continue_active_until') < now:
-        dpg.bind_item_theme('mon_continue', None)
-    if dpg.get_value('mon_stop_active_until') < now:
-        dpg.bind_item_theme('mon_stop', None)
-    if dpg.get_value('mon_reset_active_until') < now:
-        dpg.bind_item_theme('mon_reset', None)
-    for controller in range(128):
-        if dpg.get_value(f'mon_cc_{controller}_active_until') < now:
-            dpg.bind_item_theme(f'mon_cc_{controller}', None)
+    for indicator in _get_supported_indicators():
+        if dpg.get_value(f'{indicator}_active_until') < now:
+            # EOX is a special case since we have two alternate representations.
+            if indicator != 'mon_end_of_exclusive':
+                dpg.bind_item_theme(f'{indicator}', None)
+            else:
+                dpg.bind_item_theme(f'{indicator}_common', None)
+                dpg.bind_item_theme(f'{indicator}_syx', None)

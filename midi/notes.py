@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Helper to convert MIDI notes to various human-readable formats
+Helper to convert MIDI notes to various human-readable formats.
 """
 
 NOTES_SYLLABIC = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"]

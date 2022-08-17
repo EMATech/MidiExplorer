@@ -5,18 +5,26 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Logger singleton
-
-Allows sharing it globally.
+GUI logging system.
 """
 
 from dearpygui_ext.logger import mvLogger
 
 
 class Logger:
+    """
+    Logger singleton.
+
+    Allows sharing it globally.
+    """
     __instance = None
 
-    def __new__(cls, parent=None):
+    def __new__(cls, parent: None | int | str = None):
+        """
+        Instantiates a new logger or retrieves the existing one.
+
+        :param parent: The window ID or tag to which the logger should be attached
+        """
         if parent is None and Logger.__instance is None:
             raise ValueError("Please provide a parent to initialize the Logger")
         if parent is not None:

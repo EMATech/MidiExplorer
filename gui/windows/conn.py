@@ -5,27 +5,161 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Connections window and management
+Connections window and management.
+
+TODO: separate presentation from processing logic
 """
 import platform
+import sys
+import time
 from collections import OrderedDict
 from typing import Optional, Any
 
-import sys
-import time
+import mido
 from dearpygui import dearpygui as dpg
 
 import constants.dpg_slot as dpg_slot
-import mido
 from gui.config import DEBUG
 from gui.logger import Logger
 from gui.windows.probe import _add_probe_data
-from midi.ports import MidiInPort, MidiOutPort, queue
+from midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
+
+
+def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
+    """
+    Opens a MIDI Input Port and set its callback if required.
+
+    :param in_port: MIDI Input Port
+    :param dest: Destination module or MIDI Output Port
+    """
+    logger = Logger()
+
+    logger.log_info(f"Opening MIDI input: {in_port}.")
+    in_port.open(dest)
+
+    if dpg.get_value('input_mode') == 'Callback':
+        in_port.callback()
+        logger.log_info(f"Attached MIDI receive callback to {in_port.name}!")
+
+
+def _link_nodes(pin1, pin2, sender):
+    """
+    Links two DPG nodes and updates visual cues.
+
+    :param pin1: Pin of the first node
+    :param pin2: Pin of the second node
+    :param sender: DPG sender element
+    """
+    logger = Logger()
+
+    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
+
+    dpg.add_node_link(pin1, pin2, parent=sender)
+
+    dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_TriangleFilled)
+    dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_TriangleFilled)
+
+    logger.log_info(f"Connected \"{node1_label}: {_get_pin_text(pin1)}\" to "
+                    f"\"{node2_label}: {_get_pin_text(pin2)}\".")
+
+
+def _extract_pin_node_labels(pin: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None]:
+    """
+    Extracts pin and parent node labels from pin object.
+    """
+    pin_label = dpg.get_item_label(pin)
+    node_label = dpg.get_item_label(dpg.get_item_parent(pin))
+    return node_label, pin_label
+
+
+def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
+                       pin2: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None, str | None, str | None]:
+    """
+    Extracts pins and nodes labels from two pin objects.
+    """
+    node1_label, pin1_label = _extract_pin_node_labels(pin1)
+    node2_label, pin2_label = _extract_pin_node_labels(pin2)
+    return node1_label, pin1_label, node2_label, pin2_label
+
+
+def _dedupe_port_names(names: list[str]) -> list[str]:
+    """
+    Removes duplicates in a port names list.
+
+    Needed in Mac OS X because every port is listed twice for some reason
+    and in Linux because the Through port is also listed twice.
+
+    TODO: test more. May have adverse effects in the presence of multiple identical yet distinct devices.
+    """
+    system = platform.system()
+    if system == 'Darwin' or system == 'Linux':
+        names = list(OrderedDict.fromkeys(names))
+    return names
+
+
+def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
+    """
+    Get a list of MIDI Input Port objects for a list of port names.
+
+    :param names: Input ports names
+    :return: MIDI Input Port objects list
+    """
+    names = _dedupe_port_names(names)
+    ports = []
+    for name in names:
+        ports.append(MidiInPort(name))
+    return ports
+
+
+def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
+    """
+    Get a list of MIDI Output Port objects for a list of port names.
+
+    :param names: Output ports names
+    :return: MIDI Output Port objects list
+    """
+    names = _dedupe_port_names(names)
+    ports = []
+    for name in names:
+        ports.append(MidiOutPort(name))
+    return ports
+
+
+def _get_pin_text(pin: int | str) -> str:
+    """
+    Get the main label of a pin.
+
+    :param pin: DPG node pin to get the label from
+    :return: Main label of the pin
+    """
+    text = dpg.get_value(dpg.get_item_children(pin, slot=dpg_slot.MOST)[0])
+    if text is None:
+        # Extract from I/O
+        mvgroup = dpg.get_item_children(pin, slot=dpg_slot.MOST)[0]
+        mvtext_index = 0
+        if platform.system() == "Windows":  # We have port indexe numbers
+            mvtext_index = 1
+        mvtext = dpg.get_item_children(mvgroup, slot=dpg_slot.MOST)[mvtext_index]
+        text = dpg.get_value(mvtext)
+    return text
 
 
 def link_node_callback(sender: int | str,
                        app_data: (dpg.mvNodeAttribute, dpg.mvNodeAttribute),
                        user_data: Optional[Any]) -> None:
+    """
+    Callback called when a link between two nodes is created.
+
+    Sets up the underlying data flow, updates DPG internal state and  visual cues.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+    :return:
+    """
     logger = Logger()
 
     # Debug
@@ -34,6 +168,7 @@ def link_node_callback(sender: int | str,
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
 
+    # Get the pins we are connecting to and related metadata
     pin1: dpg.mvNodeAttribute = app_data[0]
     pin2: dpg.mvNodeAttribute = app_data[1]
     node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
@@ -50,6 +185,7 @@ def link_node_callback(sender: int | str,
                 logger.log_warning("Only one connection per pin is allowed at the moment.")
                 return
 
+    # Retrieve associated MIDI ports if any
     pin1_user_data = dpg.get_item_user_data(pin1)
     pin2_user_data = dpg.get_item_user_data(pin2)
 
@@ -86,34 +222,22 @@ def link_node_callback(sender: int | str,
         _link_nodes(pin1, pin2, sender)
 
 
-def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
-    logger = Logger()
-
-    logger.log_info(f"Opening MIDI input: {in_port}.")
-    in_port.open(dest)
-
-    if dpg.get_value('input_mode') == 'Callback':
-        in_port.callback()
-        logger.log_info(f"Attached MIDI receive callback to {in_port.name}!")
-
-
-def _link_nodes(pin1, pin2, sender):
-    logger = Logger()
-
-    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
-
-    dpg.add_node_link(pin1, pin2, parent=sender)
-
-    dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_TriangleFilled)
-    dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_TriangleFilled)
-
-    logger.log_info(f"Connected \"{node1_label}: {_get_pin_text(pin1)}\" to "
-                    f"\"{node2_label}: {_get_pin_text(pin2)}\".")
-
-
 def delink_node_callback(sender: int | str,
                          app_data: dpg.mvNodeLink,
                          user_data: Optional[Any]) -> None:
+    """
+        Callback called when a link between two nodes is removed.
+
+        Shuts down the underlying data flow, update DPG internal state and visual cues.
+
+        :param sender: argument is used by DPG to inform the callback
+                       which item triggered the callback by sending the tag
+                       or 0 if trigger by the application.
+        :param app_data: argument is used DPG to send information to the callback
+                         i.e. the current value of most basic widgets.
+        :param user_data: argument is Optionally used to pass your own python data into the function.
+        :return:
+        """
     logger = Logger()
 
     # Debug
@@ -122,7 +246,7 @@ def delink_node_callback(sender: int | str,
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
 
-    # Get the pins that this link was connected to
+    # Retrieve the pins that this link was connected to
     conf = dpg.get_item_configuration(app_data)
     pin1: dpg.mvNodeAttribute = conf['attr_1']
     pin2: dpg.mvNodeAttribute = conf['attr_2']
@@ -130,7 +254,7 @@ def delink_node_callback(sender: int | str,
 
     logger.log_debug(f"Disconnection between pins: '{pin1}' & '{pin2}'.")
 
-    # Disconnection
+    # Retrieve associated MIDI ports if any
     pin1_user_data = dpg.get_item_user_data(pin1)
     pin2_user_data = dpg.get_item_user_data(pin2)
 
@@ -156,6 +280,7 @@ def delink_node_callback(sender: int | str,
     logger.log_debug(f"Deleting link {app_data!r}.")
     dpg.delete_item(app_data)
 
+    # Update visual cues
     dpg.configure_item(pin1, shape=dpg.mvNode_PinShape_Triangle)
     dpg.configure_item(pin2, shape=dpg.mvNode_PinShape_Triangle)
 
@@ -194,64 +319,19 @@ def input_mode_callback(sender: int | str, app_data: bool, user_data: Optional[A
     dpg.set_value('input_mode', app_data)
 
 
-def _extract_pin_node_labels(pin: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None]:
-    """
-    Extracts pin and parent node labels from pin object
-    """
-    pin_label = dpg.get_item_label(pin)
-    node_label = dpg.get_item_label(dpg.get_item_parent(pin))
-    return node_label, pin_label
-
-
-def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
-                       pin2: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None, str | None, str | None]:
-    """
-    Extracts pins and nodes labels from two pin objects
-    """
-    node1_label, pin1_label = _extract_pin_node_labels(pin1)
-    node2_label, pin2_label = _extract_pin_node_labels(pin2)
-    return node1_label, pin1_label, node2_label, pin2_label
-
-
-def _dedupe_port_names(names: list[str]) -> list[str]:
-    """
-    Removes duplicates in a port names list
-
-    Needed in Mac OS X because every port is listed twice for some reason
-    and in Linux because the Through port is also listed twice.
-
-    TODO: test more. May have adverse effects in the presence of multiple identical yet distinct devices.
-    """
-    system = platform.system()
-    if system == 'Darwin' or system == 'Linux':
-        names = list(OrderedDict.fromkeys(names))
-    return names
-
-
-def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
-    names = _dedupe_port_names(names)
-    ports = []
-    for name in names:
-        ports.append(MidiInPort(name))
-    return ports
-
-
-def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
-    names = _dedupe_port_names(names)
-    ports = []
-    for name in names:
-        ports.append(MidiOutPort(name))
-    return ports
-
-
 def refresh_midi_ports() -> None:
+    """
+    Refreshes the available MIDI ports.
+    """
     logger = Logger()
 
     dpg.configure_item('refresh_midi_modal', show=False)  # Close popup
 
+    # Retrieve MIDI Input Ports objects
     midi_inputs = _extract_input_ports_infos(mido.get_input_names())
     logger.log_debug(f"Available MIDI inputs: {midi_inputs}")
 
+    # Retrieve MIDI Output Ports objects
     midi_outputs = _extract_output_ports_infos(mido.get_output_names())
     logger.log_debug(f"Available MIDI outputs: {midi_outputs}")
 
@@ -262,7 +342,7 @@ def refresh_midi_ports() -> None:
     dpg.delete_item('inputs_node', children_only=True)
     dpg.delete_item('outputs_node', children_only=True)
 
-    # Input ports
+    # Input ports sorting
     if DEBUG:
         # TODO: implement
         with dpg.node_attribute(
@@ -277,6 +357,7 @@ def refresh_midi_ports() -> None:
                                      default_value="None")  # TODO:, callback=sort_inputs_callback)
                 # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
 
+    # Input ports node and pins
     for midi_in in midi_inputs:
         with dpg.node_attribute(
                 tag=midi_in.name,
@@ -293,10 +374,12 @@ def refresh_midi_ports() -> None:
                 #    dpg.add_button(label=f"Hide {midi_in.label} input")  # TODO
                 #    dpg.add_button(label=f"Remove {midi_in.label} input")  # TODO: for virtual ports only
 
-    with dpg.popup('inputs_node'):
-        dpg.add_button(label="Add virtual input")
+    # Add virtual input port
+    if DEBUG:
+        with dpg.popup('inputs_node'):
+            dpg.add_button(label="Add virtual input")
 
-    # Outputs ports
+    # Outputs ports sorting
     if DEBUG:
         # TODO: implement
         with dpg.node_attribute(parent='outputs_node',
@@ -309,6 +392,7 @@ def refresh_midi_ports() -> None:
                                      default_value="None")  # TODO:, callback=sort_outputs_callback)
                 # FIXME: do the sorting in the GUI to prevent disconnection of existing I/O?
 
+    # Output ports node and pins
     for midi_out in midi_outputs:
         with dpg.node_attribute(
                 label=midi_out.name,
@@ -325,27 +409,22 @@ def refresh_midi_ports() -> None:
                 #    dpg.add_button(label=f"Hide {midi_out.label} output")  # TODO
                 #    dpg.add_button(label=f"Remove {midi_out.label} output")  # TODO: for virtual ports only
 
-    with dpg.popup(parent='outputs_node'):
-        dpg.add_button(label="Add virtual output")
-
-
-def _get_pin_text(pin: int | str) -> None:
-    text = dpg.get_value(dpg.get_item_children(pin, slot=dpg_slot.MOST)[0])
-    if text is None:
-        # Extract from I/O
-        mvgroup = dpg.get_item_children(pin, slot=dpg_slot.MOST)[0]
-        mvtext_index = 0
-        if platform.system() == "Windows":
-            mvtext_index = 1
-        mvtext = dpg.get_item_children(mvgroup, slot=dpg_slot.MOST)[mvtext_index]
-        text = dpg.get_value(mvtext)
-    return text
+    # Add virtual output port
+    if DEBUG:
+        with dpg.popup(parent='outputs_node'):
+            dpg.add_button(label="Add virtual output")
 
 
 def create() -> None:
+    """
+    Creates the connections window.
+
+    Including its menus, associated items and node editor.
+    """
     with dpg.value_registry():
         dpg.add_string_value(tag='input_mode', default_value='Callback')
 
+    # FIXME: compute dynamically?
     conn_win_height = 1020
     if DEBUG:
         conn_win_height = 795
@@ -408,6 +487,7 @@ def create() -> None:
                 tag='connections_editor',
                 callback=link_node_callback,
                 delink_callback=delink_node_callback,
+                # TODO: handle delinking in a right-click popup on the link. Upstream?
         ):
             with dpg.node(
                     tag='inputs_node',
@@ -417,6 +497,7 @@ def create() -> None:
                 # Dynamically populated
                 pass
 
+            # TODO: allow an arbitrary number of probes
             with dpg.node(
                     tag='probe_node',
                     pos=[360, 25],
@@ -524,10 +605,12 @@ def create() -> None:
                 # Dynamically populated
                 pass
 
+        refresh_midi_ports()
+
 
 def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mido.Message) -> None:
     """
-    Handle received MIDI data and echoes "Soft Thru" messages.
+    Handles received MIDI data and echoes "Soft Thru" messages.
     """
     logger = Logger()
 
@@ -566,6 +649,8 @@ def poll_processing() -> None:
     That's why callback mode is to be preferred.
     For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
     """
+    # TODO: subscribe pattern for multi module handling?
+
     # inputs = []
     #
     # for pin in dpg.get_item_children('connections_editor', DPG_SLOT_MOST):
@@ -582,4 +667,5 @@ def poll_processing() -> None:
         # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
         for midi_message in probe_in_user_data.port.iter_pending():
             timestamp = time.time()
-            queue.put((timestamp, probe_in_user_data.label, probe_in_user_data.dest, midi_message))
+            with midi_in_lock:
+                midi_in_queue.put((timestamp, probe_in_user_data.label, probe_in_user_data.dest, midi_message))
