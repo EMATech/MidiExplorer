@@ -42,7 +42,6 @@ def create() -> None:
         # Logo
         # ----
         module_root = pathlib.Path(midiexplorer.__file__).parent
-        print(module_root)
         width, height, channels, data = dpg.load_image(f'{module_root}/icons/midiexplorer_{logo_size}.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='logo')
