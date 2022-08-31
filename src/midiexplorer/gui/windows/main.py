@@ -18,10 +18,10 @@ from midiexplorer.gui.config import DEBUG
 
 
 def create() -> None:
-    """
-    Creates the main application window.
+    """Creates the main application window.
 
     Including the menu bar, associated items and file selector dialogs.
+
     """
     with dpg.window(
             tag='main_win',
@@ -57,8 +57,8 @@ def create() -> None:
                         dpg.add_menu_item(label="Show Font Manager", callback=lambda: dpg.show_tool(dpg.mvTool_Font))
                         dpg.add_menu_item(label="Show Item Registry",
                                           callback=lambda: dpg.show_tool(dpg.mvTool_ItemRegistry))
-                        dpg.add_menu_item(label="Show ImGui Demo", callback=lambda: dpg.show_imgui_demo())
-                        dpg.add_menu_item(label="Show ImPlot Demo", callback=lambda: dpg.show_implot_demo())
-                        dpg.add_menu_item(label="Show Dear PyGui Demo", callback=lambda: show_demo())
+                        dpg.add_menu_item(label="Show ImGui Demo", callback=dpg.show_imgui_demo)
+                        dpg.add_menu_item(label="Show ImPlot Demo", callback=dpg.show_implot_demo)
+                        dpg.add_menu_item(label="Show Dear PyGui Demo", callback=show_demo)
                 dpg.add_menu_item(label="About", callback=midiexplorer.gui.windows.about.toggle)
                 # TODO: Add documentation

@@ -19,9 +19,38 @@ INIT_FILENAME = "midiexplorer.ini"
 DEBUG = False  # TODO: allow changing with CLI parameter to the main app
 
 
-def create_selectors():
+def _doload(_, app_data) -> None:
+    """Loads a configuration from selected file.
+
+    :param _: Sender is ignored
+    :param app_data: Selected file metadata
+
     """
-    Creates config file selector dialogs.
+    # FIXME: Does not work after creating the viewport!
+    dpg.configure_app(init_file=app_data['file_path_name'], load_init_file=True)
+
+
+def _dosaveas(_, app_data) -> None:
+    """Saves the current configuration in the selected file.
+
+    :param _: Sender is ignored
+    :param app_data: Selected file metadata
+
+    """
+    dpg.save_init_file(app_data['file_path_name'])
+
+
+def clear() -> None:
+    """Removes the default configuration.
+
+    """
+    if os.path.exists(INIT_FILENAME):
+        os.remove(INIT_FILENAME)
+
+
+def create_selectors() -> None:
+    """Creates config file selector dialogs.
+
     """
     with dpg.file_dialog(
             tag='load',
@@ -49,58 +78,22 @@ def create_selectors():
         dpg.add_file_extension('.ini')
 
 
-def load():
-    """
-    Shows the configuration file selector for loading.
+def load() -> None:
+    """Shows the configuration file selector for loading.
+
     """
     dpg.show_item('load')
 
 
-def _doload(_, app_data) -> None:
-    """
-    Loads a configuration from selected file.
-
-    :param _: Sender is ignored
-    :param app_data: Selected file metadata
-    :return:
-    """
-    # FIXME: Does not work after creating the viewport!
-    dpg.configure_app(init_file=app_data['file_path_name'], load_init_file=True)
-
-
 def save() -> None:
-    """
-    Saves the current configuration to the default file.
-    :return:
+    """Saves the current configuration to the default file.
+
     """
     dpg.save_init_file(INIT_FILENAME)
 
 
 def saveas() -> None:
-    """
-    Shows the configuration file selector for saving as.
+    """Shows the configuration file selector for saving as.
 
-    :return:
     """
     dpg.show_item('saveas')
-
-
-def _dosaveas(_, app_data):
-    """
-    Saves the current configuration in the selected file.
-
-    :param _: Sender is ignored
-    :param app_data: Selected file metadata
-    :return:
-    """
-    dpg.save_init_file(app_data['file_path_name'])
-
-
-def clear() -> None:
-    """
-    Removes the default configuration.
-
-    :return:
-    """
-    if os.path.exists(INIT_FILENAME):
-        os.remove(INIT_FILENAME)

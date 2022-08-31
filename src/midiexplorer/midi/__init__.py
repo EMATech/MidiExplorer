@@ -14,10 +14,10 @@ from midiexplorer.gui.logger import Logger
 
 
 def init() -> None:
-    """
-    Initializes MIDO with the RtMidi backend.
+    """Initializes MIDO with the RtMidi backend.
 
-    This doesn't open any input or output yet.
+    This doesn't open any input or output at this stage.
+
     """
     logger = Logger()
 

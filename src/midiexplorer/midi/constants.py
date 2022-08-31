@@ -278,10 +278,10 @@ SYSTEM_EXCLUSIVE_MESSAGES = {
 # All status bytes
 STATUS_BYTES = {}
 CHANNEL_VOICE_BYTES = {}
-for status_nibble in CHANNEL_VOICE_MESSAGES:
+for status_nibble, name in CHANNEL_VOICE_MESSAGES.items():
     for channel in range(16):
         status_byte = (status_nibble << 4) + channel
-        CHANNEL_VOICE_BYTES.update({status_byte: CHANNEL_VOICE_MESSAGES[status_nibble]})
+        CHANNEL_VOICE_BYTES.update({status_byte: name})
 STATUS_BYTES.update(CHANNEL_VOICE_BYTES)
 STATUS_BYTES.update(SYSTEM_COMMON_MESSAGES)
 STATUS_BYTES.update(SYSTEM_REAL_TIME_MESSAGES)

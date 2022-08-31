@@ -13,7 +13,7 @@ TODO: factorize into smaller pieces
 import functools
 import sys
 import time
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Callable
 
 import mido
 from dearpygui import dearpygui as dpg
@@ -37,16 +37,15 @@ previous_timestamp = START_TIME
 
 
 def _init_details_table_data() -> None:
-    """
-    Initial table data for reverse scrolling.
+    """Initial table data for reverse scrolling.
+
     """
     with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
         pass
 
 
 def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Clears the data table.
+    """Clears the data table.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -54,7 +53,7 @@ def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optiona
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
-    :return:
+
     """
     logger = Logger()
 
@@ -69,13 +68,12 @@ def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optiona
 
 
 def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
-    """
-    Decodes and presents data received from the probe.
+    """Decodes and presents data received from the probe.
 
     :param timestamp: System timestamp
     :param source: Input name
     :param data: MIDI data
-    :return:
+
     """
     global probe_data_counter, previous_timestamp
 
@@ -98,10 +96,10 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             dpg.add_text(source)
 
         # Timestamp (ms)
-        ts = (timestamp - START_TIME) * US2MS
-        dpg.add_text(f"{ts:n}")
+        time_stamp = (timestamp - START_TIME) * US2MS
+        dpg.add_text(f"{time_stamp:n}")
         with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(f"{ts}")
+            dpg.add_text(f"{time_stamp}")
 
         # Delta (ms)
         delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
@@ -233,7 +231,7 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             if syx_id_len == 1:
                 syx_id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id)
             elif syx_id_len == 3:
-                syx_id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id[1])
+                syx_id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(syx_id[syx_region_idx])
             else:
                 raise ValueError("SysEx IDs are either 1 or 3 bytes long")
 
@@ -336,20 +334,23 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
             data0_name = "Song #"
             data0 = data.song
 
+        # Helper function equivalent to str() but avoids displaying 'None'.
+        xstr: Callable[[Any], str] = lambda s: '' if s is None else str(s)
+
         if data0_dec:
             dpg.add_text(str(data0_dec))
         else:
-            dpg.add_text(str(data0))
+            dpg.add_text(xstr(data0))
         prefix0 = ""
         if data0_name:
             prefix0 = data0_name + ": "
-        _add_tooltip_conv(prefix0 + str(data0_dec if data0_dec else data0), data0, blen=7)
+        _add_tooltip_conv(prefix0 + xstr(data0_dec if data0_dec else data0), data0, blen=7)
 
-        dpg.add_text(str(data1))
+        dpg.add_text(xstr(data1))
         prefix1 = ""
         if data1_name:
             prefix1 = data1_name + ": "
-        _add_tooltip_conv(prefix1 + str(data1_dec if data1_dec else data1), data1, blen=7)
+        _add_tooltip_conv(prefix1 + xstr(data1_dec if data1_dec else data1), data1, blen=7)
 
     # TODO: per message type color coding
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
@@ -360,11 +361,10 @@ def _add_probe_data(timestamp: float, source: str, data: mido.Message) -> None:
 
 
 def _mon_blink(indicator: int | str) -> None:
-    """
-    Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
+    """Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
 
     :param indicator: Name of the indicator to blink
-    :return:
+
     """
     # logger = midiexplorer.gui.logger.Logger()
     # logger.log_debug(f"blink {indicator}")
@@ -386,28 +386,25 @@ def _mon_blink(indicator: int | str) -> None:
 
 
 def _note_on(number: int | str) -> None:
-    """
-    Illuminates the note.
+    """Illuminates the note.
 
-    :param number: MIDI note number
-    :return:
+    :param number: MIDI note number.
+
     """
     dpg.bind_item_theme(f'note_{number}', '__act')
 
 
 def _note_off(number: int | str) -> None:
-    """
-    Darken the note.
+    """Darken the note.
 
-    :param number:
-    :return:
+    :param number: MIDI note number.
+
     """
     dpg.bind_item_theme(f'note_{number}', None)
 
 
 def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Displays the EOX monitor in the appropriate category according to settings.
+    """Displays the EOX monitor in the appropriate category according to settings.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -415,7 +412,7 @@ def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[A
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
-    :return:
+
     """
     logger = Logger()
 
@@ -433,13 +430,22 @@ def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[A
         dpg.show_item('mon_end_of_exclusive_syx')
 
 
-def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = None, hlen: int = 2, dlen: int = 3,
-                      blen: int = 8) -> None:
+def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = None,
+                      hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
+    """Adds a tooltip with data converted to hexadecimal, decimal and binary.
+
+    :param title: Tooltip title.
+    :param values: Tooltip value(s)
+    :param hlen: Hexadecimal length
+    :param dlen: Decimal length
+    :param blen: Binary length
+
+    """
     if values is not None:
         hconv = ""
         dconv = ""
         bconv = ""
-        if type(values) is int:
+        if isinstance(values, int):
             value = values
             hconv += f"{' ':{blen - hlen}}{value:0{hlen}X}"
             dconv += f"{' ':{blen - dlen}}{value:0{dlen}d}"
@@ -464,6 +470,10 @@ def _add_tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = 
 
 @functools.lru_cache()
 def _get_supported_indicators() -> list:
+    """Cached list of supported indicators.
+
+    :return: list of indicators.
+    """
     mon_indicators = [
         'mon_c',
         'mon_s',
@@ -511,8 +521,8 @@ def _get_supported_indicators() -> list:
 
 
 def create() -> None:
-    """
-    Creates the probe window.
+    """Creates the probe window.
+
     """
     with dpg.value_registry():
         # ------------
@@ -598,7 +608,7 @@ def create() -> None:
 
         # -----
         # Mode
-        #-----
+        # -----
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="MIDI Mode", default_open=False):
@@ -624,7 +634,7 @@ def create() -> None:
 
         # -------
         # Status
-        #-------
+        # -------
         status_height = 154
         if DEBUG:
             status_height = 180
@@ -840,7 +850,7 @@ def create() -> None:
 
         # ------
         # Notes
-        #------
+        # ------
         with dpg.collapsing_header(label="Notes", default_open=True):
             dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
 
@@ -860,9 +870,7 @@ def create() -> None:
         wxpos = 0  # White key X position
 
         # TODO: add preference for default notes notation?
-        for index in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN:
-            name = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN[index]
-
+        for index, name in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.items():
             # Compute actual key position
             xpos = wxpos
             ypos = height
@@ -892,7 +900,7 @@ def create() -> None:
 
         # ---------------
         # Running Status
-        #---------------
+        # ---------------
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="Running Status", default_open=False):
@@ -902,7 +910,7 @@ def create() -> None:
 
         # ------------
         # Controllers
-        #------------
+        # ------------
         with dpg.collapsing_header(label="Controllers", default_open=True):
             dpg.add_child_window(tag='probe_controllers_container', height=192, border=False)
 
@@ -976,7 +984,7 @@ def create() -> None:
 
         # -----------------
         # System Exclusive
-        #-----------------
+        # -----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=True):
             dpg.add_child_window(tag='probe_sysex_container', height=130, border=False)
 
@@ -1010,7 +1018,7 @@ def create() -> None:
 
         # -------------------
         # Data history table
-        #-------------------
+        # -------------------
         with dpg.collapsing_header(label="History", default_open=True):
             dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
@@ -1068,10 +1076,10 @@ def create() -> None:
 
 
 def update_mon_blink_status() -> None:
-    """
-    Handles monitor indicators blinking status update each frame.
+    """Handles monitor indicators blinking status update each frame.
 
     Checks for the time it should stay illuminated and darkens it if expired.
+
     """
     now = time.time() - START_TIME
     for indicator in _get_supported_indicators():

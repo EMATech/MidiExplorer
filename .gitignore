@@ -6,6 +6,7 @@ midiexplorer.ini
 /.run/
 /dist/
 /RELEASE.md
+/STYLE.md
 /TODO.md
 !/midiexplorer.cmd
 !/midiexplorer.exe

@@ -18,8 +18,8 @@ from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:
-    """
-    Creates the generator window.
+    """Creates the generator window.
+
     """
     with dpg.value_registry():
         dpg.add_string_value(tag='generator_decoded_message', default_value='')
@@ -50,8 +50,7 @@ def create() -> None:
 
 
 def decode_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Callback to decode raw MIDI message input.
+    """Callback to decode raw MIDI message input.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -59,6 +58,7 @@ def decode_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) 
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
+
     """
     logger = Logger()
 
@@ -70,8 +70,8 @@ def decode_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) 
 
     try:
         decoded = repr(mido.Message.from_hex(app_data))
-    except (TypeError, ValueError) as e:
-        decoded = f"Warning: {e!s}"
+    except (TypeError, ValueError) as error:
+        decoded = f"Warning: {error!s}"
         pass
 
     logger.log_debug(f"Raw message {app_data} decoded to: {decoded}.")

@@ -12,7 +12,6 @@ import pathlib
 
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
-import midiexplorer.constants.dpg_mvlogger as dpg_mvlogger
 import midiexplorer.gui.logger
 import midiexplorer.gui.windows.about
 import midiexplorer.gui.windows.conn
@@ -21,16 +20,15 @@ import midiexplorer.gui.windows.log
 import midiexplorer.gui.windows.main
 import midiexplorer.gui.windows.probe
 import midiexplorer.midi
+from midiexplorer.constants import dpg_mvlogger
 from midiexplorer.gui.config import DEBUG, INIT_FILENAME, START_TIME
 from midiexplorer.midi.ports import midi_in_queue
 
 
-def main():
-    """
-    Main midiexplorer function.
-    """
-    dpg.create_context()
+def init() -> None:
+    """Initializes the GUI.
 
+    """
     # ----------------
     # Logging system
     # Initialized ASAP
@@ -133,6 +131,15 @@ def main():
     dpg.show_viewport()
     merge_primary_window = True
     dpg.set_primary_window('main_win', merge_primary_window)
+
+
+def main() -> None:
+    """Entry point and main loop.
+
+    """
+    dpg.create_context()
+
+    init()
 
     # ---------
     # MAIN LOOP

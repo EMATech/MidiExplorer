@@ -11,10 +11,10 @@ import mido.messages
 
 
 def get_status_by_type(msg_type: str) -> int:
-    """
-    Converts mido message type name to MIDI status number.
+    """Converts mido message type name to MIDI status number.
 
-    :param msg_type: mido message type
-    :return: MIDI status number
+    :param msg_type: mido message type.
+    :return: MIDI status number.
+
     """
     return mido.messages.SPEC_BY_TYPE[msg_type]['status_byte']

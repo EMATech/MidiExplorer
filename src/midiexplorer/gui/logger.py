@@ -7,23 +7,24 @@
 """
 GUI logging system.
 """
-
 from dearpygui_ext.logger import mvLogger
 
 
 class Logger:
-    """
-    Logger singleton.
+    """Logger singleton.
 
     Allows sharing it globally.
+
     """
     __instance = None
 
-    def __new__(cls, parent: None | int | str = None):
-        """
-        Instantiates a new logger or retrieves the existing one.
+    def __new__(cls, parent: None | int | str = None) -> mvLogger:
+        """Instantiates a new logger or retrieves the existing one.
 
-        :param parent: The window ID or tag to which the logger should be attached
+        :param parent: The window ID or tag to which the logger should be attached.
+        :return: A logger instance.
+        :raises: ValueError -- A parent is required to initialize the Logger.
+
         """
         if parent is None and Logger.__instance is None:
             raise ValueError("Please provide a parent to initialize the Logger")

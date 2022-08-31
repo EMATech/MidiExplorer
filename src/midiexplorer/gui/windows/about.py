@@ -20,8 +20,8 @@ from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:
-    """
-    Creates the about window.
+    """Creates the about window.
+
     """
     with dpg.window(
             tag='about_win',
@@ -42,7 +42,7 @@ def create() -> None:
         # Logo
         # ----
         module_root = pathlib.Path(midiexplorer.__file__).parent
-        width, height, channels, data = dpg.load_image(f'{module_root}/icons/midiexplorer_{logo_size}.png')
+        width, height, _, data = dpg.load_image(f'{module_root}/icons/midiexplorer_{logo_size}.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='logo')
         with dpg.drawlist(width=width, height=height):
@@ -65,7 +65,7 @@ def create() -> None:
         # License
         # -------
         dpg.add_text("License", color=title_color)
-        width, height, channels, data = dpg.load_image(f'{module_root}/icons/gplv3-or-later-sm.png')
+        width, height, _, data = dpg.load_image(f'{module_root}/icons/gplv3-or-later-sm.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='gpl_logo')
         with dpg.drawlist(width=width, height=height):
@@ -149,8 +149,7 @@ Other trademarks are property of their respective owners and used fairly for des
 
 
 def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Callback to toggle the about window visibility.
+    """Callback to toggle the about window visibility.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -158,6 +157,7 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
+
     """
     logger = Logger()
 

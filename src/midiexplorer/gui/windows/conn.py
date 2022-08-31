@@ -18,7 +18,7 @@ from typing import Optional, Any
 import mido
 from dearpygui import dearpygui as dpg
 
-import midiexplorer.constants.dpg_slot as dpg_slot
+from midiexplorer.constants import dpg_slot
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe import _add_probe_data
@@ -26,11 +26,11 @@ from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi
 
 
 def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
-    """
-    Opens a MIDI Input Port and set its callback if required.
+    """Opens a MIDI Input Port and set its callback if required.
 
     :param in_port: MIDI Input Port
     :param dest: Destination module or MIDI Output Port
+
     """
     logger = Logger()
 
@@ -43,16 +43,16 @@ def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
 
 
 def _link_nodes(pin1, pin2, sender):
-    """
-    Links two DPG nodes and updates visual cues.
+    """Links two DPG nodes and updates visual cues.
 
     :param pin1: Pin of the first node
     :param pin2: Pin of the second node
     :param sender: DPG sender element
+
     """
     logger = Logger()
 
-    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
+    node1_label, _, node2_label, _ = _pins_nodes_labels(pin1, pin2)
 
     dpg.add_node_link(pin1, pin2, parent=sender)
 
@@ -64,8 +64,11 @@ def _link_nodes(pin1, pin2, sender):
 
 
 def _extract_pin_node_labels(pin: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None]:
-    """
-    Extracts pin and parent node labels from pin object.
+    """Extracts pin and parent node labels from pin object.
+
+    :param pin: The pin from which to extract data.
+    :return: Node and pin labels
+
     """
     pin_label = dpg.get_item_label(pin)
     node_label = dpg.get_item_label(dpg.get_item_parent(pin))
@@ -74,8 +77,12 @@ def _extract_pin_node_labels(pin: dpg.mvNodeCol_Pin) -> tuple[str | None, str | 
 
 def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
                        pin2: dpg.mvNodeCol_Pin) -> tuple[str | None, str | None, str | None, str | None]:
-    """
-    Extracts pins and nodes labels from two pin objects.
+    """Extracts pins and nodes labels from two pin objects.
+
+    :param pin1: First pin.
+    :param pin2: Second pin.
+    :return: First and second Node and Pin labels.
+
     """
     node1_label, pin1_label = _extract_pin_node_labels(pin1)
     node2_label, pin2_label = _extract_pin_node_labels(pin2)
@@ -83,24 +90,27 @@ def _pins_nodes_labels(pin1: dpg.mvNodeCol_Pin,
 
 
 def _dedupe_port_names(names: list[str]) -> list[str]:
-    """
-    Removes duplicates in a port names list.
+    """Removes duplicates in a port names list.
 
     Needed in Mac OS X because every port is listed twice for some reason
     and in Linux because the Through port is also listed twice.
 
     TODO: test more. May have adverse effects in the presence of multiple identical yet distinct devices.
+
+    :param: names: List of port names to deduplicate.
+    :return: Deduplicated list of port names.
+
     """
     names = list(OrderedDict.fromkeys(names))
     return names
 
 
 def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
-    """
-    Get a list of MIDI Input Port objects for a list of port names.
+    """Get a list of MIDI Input Port objects for a list of port names.
 
     :param names: Input ports names
     :return: MIDI Input Port objects list
+
     """
     names = _dedupe_port_names(names)
     ports = []
@@ -110,11 +120,11 @@ def _extract_input_ports_infos(names: list[str]) -> list[MidiInPort] | None:
 
 
 def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
-    """
-    Get a list of MIDI Output Port objects for a list of port names.
+    """Get a list of MIDI Output Port objects for a list of port names.
 
     :param names: Output ports names
     :return: MIDI Output Port objects list
+
     """
     names = _dedupe_port_names(names)
     ports = []
@@ -124,11 +134,11 @@ def _extract_output_ports_infos(names: list[str]) -> list[MidiOutPort] | None:
 
 
 def _get_pin_text(pin: int | str) -> str:
-    """
-    Get the main label of a pin.
+    """Get the main label of a pin.
 
     :param pin: DPG node pin to get the label from
     :return: Main label of the pin
+
     """
     text = dpg.get_value(dpg.get_item_children(pin, slot=dpg_slot.MOST)[0])
     if text is None:
@@ -145,8 +155,7 @@ def _get_pin_text(pin: int | str) -> str:
 def link_node_callback(sender: int | str,
                        app_data: (dpg.mvNodeAttribute, dpg.mvNodeAttribute),
                        user_data: Optional[Any]) -> None:
-    """
-    Callback called when a link between two nodes is created.
+    """Callback called when a link between two nodes is created.
 
     Sets up the underlying data flow, updates DPG internal state and  visual cues.
 
@@ -156,7 +165,7 @@ def link_node_callback(sender: int | str,
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
-    :return:
+
     """
     logger = Logger()
 
@@ -169,7 +178,7 @@ def link_node_callback(sender: int | str,
     # Get the pins we are connecting to and related metadata
     pin1: dpg.mvNodeAttribute = app_data[0]
     pin2: dpg.mvNodeAttribute = app_data[1]
-    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
+    _, pin1_label, _, pin2_label = _pins_nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Connection between pins: '{pin1}' & '{pin2}'.")
 
@@ -193,18 +202,18 @@ def link_node_callback(sender: int | str,
     # Connection
     module_target = None
     module_pin = None
-    if (type(pin1_user_data) is MidiInPort) and (type(pin2_user_data) is MidiOutPort):
+    if isinstance(pin1_user_data, MidiInPort) and isinstance(pin2_user_data, MidiOutPort):
         # Handles port to port
         logger.log_info(f"Opening MIDI output: {pin2_user_data.name}.")
         pin2_user_data.open()
         _install_input_callback(pin1_user_data, pin2)
         _link_nodes(pin1, pin2, sender)
-    elif type(pin1_user_data) is MidiInPort:
+    elif isinstance(pin1_user_data, MidiInPort):
         # Handles port to module
         _install_input_callback(pin1_user_data, pin2)
         module_target = pin1_user_data
         module_pin = pin2
-    elif type(pin2_user_data) is MidiOutPort:
+    elif isinstance(pin2_user_data, MidiOutPort):
         # Handles module to port
         logger.log_info(f"Opening MIDI output: {pin2_user_data.name}.")
         pin2_user_data.open()
@@ -223,19 +232,18 @@ def link_node_callback(sender: int | str,
 def delink_node_callback(sender: int | str,
                          app_data: dpg.mvNodeLink,
                          user_data: Optional[Any]) -> None:
+    """Callback called when a link between two nodes is removed.
+
+    Shuts down the underlying data flow, update DPG internal state and visual cues.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
     """
-        Callback called when a link between two nodes is removed.
-
-        Shuts down the underlying data flow, update DPG internal state and visual cues.
-
-        :param sender: argument is used by DPG to inform the callback
-                       which item triggered the callback by sending the tag
-                       or 0 if trigger by the application.
-        :param app_data: argument is used DPG to send information to the callback
-                         i.e. the current value of most basic widgets.
-        :param user_data: argument is Optionally used to pass your own python data into the function.
-        :return:
-        """
     logger = Logger()
 
     # Debug
@@ -248,7 +256,7 @@ def delink_node_callback(sender: int | str,
     conf = dpg.get_item_configuration(app_data)
     pin1: dpg.mvNodeAttribute = conf['attr_1']
     pin2: dpg.mvNodeAttribute = conf['attr_2']
-    node1_label, pin1_label, node2_label, pin2_label = _pins_nodes_labels(pin1, pin2)
+    node1_label, _, node2_label, _ = _pins_nodes_labels(pin1, pin2)
 
     logger.log_debug(f"Disconnection between pins: '{pin1}' & '{pin2}'.")
 
@@ -257,19 +265,19 @@ def delink_node_callback(sender: int | str,
     pin2_user_data = dpg.get_item_user_data(pin2)
 
     logger.log_debug(f"Found user data: '{pin1_user_data}' & '{pin2_user_data}'.")
-    if (type(pin1_user_data) is MidiInPort) and (type(pin2_user_data) is MidiOutPort):
+    if isinstance(pin1_user_data, MidiInPort) and isinstance(pin2_user_data, MidiOutPort):
         # Handles port to port
         pin1_user_data: MidiInPort
         pin2_user_data: MidiOutPort
         logger.log_info(f"Detaching & closing MIDI port {pin1_user_data.label} from {pin2_user_data.label}.")
         pin1_user_data.close()
         pin2_user_data.close()
-    elif type(pin1_user_data) is MidiInPort:
+    elif isinstance(pin1_user_data, MidiInPort):
         pin1_user_data: MidiInPort
         logger.log_info(f"Detaching & closing MIDI port {pin1_user_data.label} from the probe In.")
         pin1_user_data.close()
         dpg.set_item_user_data(pin2, None)
-    elif type(pin2_user_data) is MidiOutPort:
+    elif isinstance(pin2_user_data, MidiOutPort):
         pin2_user_data: MidiOutPort
         logger.log_info(f"Detaching & closing MIDI port {pin2_user_data.label} from the probe Out.")
         dpg.set_item_user_data(pin1, None)
@@ -287,13 +295,12 @@ def delink_node_callback(sender: int | str,
 
 
 def input_mode_callback(sender: int | str, app_data: bool, user_data: Optional[Any]) -> None:
-    """
-    Sets/unsets the MIDI receive callback based off the widget checkbox's status
+    """Sets/unsets the MIDI receive callback based off the widget checkbox's status.
 
     :param sender: Polling checkbox widget
     :param app_data: Checkbox status
     :param user_data: Polling checkbox user data
-    :return: None
+
     """
     logger = Logger()
 
@@ -318,8 +325,8 @@ def input_mode_callback(sender: int | str, app_data: bool, user_data: Optional[A
 
 
 def refresh_midi_ports() -> None:
-    """
-    Refreshes the available MIDI ports.
+    """Refreshes the available MIDI ports.
+
     """
     logger = Logger()
 
@@ -414,10 +421,10 @@ def refresh_midi_ports() -> None:
 
 
 def create() -> None:
-    """
-    Creates the connections window.
+    """Creates the connections window.
 
     Including its menus, associated items and node editor.
+
     """
     with dpg.value_registry():
         dpg.add_string_value(tag='input_mode', default_value='Callback')
@@ -607,8 +614,13 @@ def create() -> None:
 
 
 def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mido.Message) -> None:
-    """
-    Handles received MIDI data and echoes "Soft Thru" messages.
+    """Handles received MIDI data and echoes "Soft Thru" messages.
+
+    :param timestamp: MIDI data timestamp.
+    :param source: Source MIDI port.
+    :param dest: Destination MIDI port or module.
+    :param midi_data: RAW MIDI message.
+
     """
     logger = Logger()
 
@@ -620,7 +632,7 @@ def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mi
     except SystemError:
         logger.log_warning(f"Port for item #{dest} not found!")
         pass
-    if type(port) is MidiOutPort:
+    if isinstance(port, MidiOutPort):
         logger.log_debug(f"Echoing MIDI data to midi output {port.label}")
         port.port.send(midi_data)
     if dest == 'probe_in':
@@ -637,8 +649,7 @@ def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mi
 
 
 def poll_processing() -> None:
-    """
-    MIDI data receive in "Polling" mode.
+    """MIDI data receive in "Polling" mode.
 
     Shorter MIDI message (1-byte) interval is 320us (10 symbols: 1 start bit, 8 data bits, 1 stop bit).
     In polling mode we are bound to the frame rendering time.
@@ -646,6 +657,7 @@ def poll_processing() -> None:
     This amounts to up to 53 MIDI bytes per frame (52.17)!
     That's why callback mode is to be preferred.
     For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
+
     """
     # TODO: subscribe pattern for multi module handling?
 

@@ -18,8 +18,8 @@ from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:
-    """
-    Creates the logging window.
+    """Creates the logging window.
+
     """
     # TODO: allow logging to file
     # TODO: append/overwrite
@@ -36,8 +36,7 @@ def create() -> None:
 
 
 def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Callback to toggle the logging window visibility.
+    """Callback to toggle the logging window visibility.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -45,6 +44,7 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
+
     """
     logger = Logger()
 

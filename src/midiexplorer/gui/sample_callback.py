@@ -17,8 +17,7 @@ from midiexplorer.gui.logger import Logger
 
 
 def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """
-    Generic Dear PyGui callback for debug purposes.
+    """Generic Dear PyGui callback for debug purposes.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
@@ -26,7 +25,7 @@ def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None
     :param app_data: argument is used DPG to send information to the callback
                      i.e. the current value of most basic widgets.
     :param user_data: argument is Optionally used to pass your own python data into the function.
-    :return:
+
     """
     logger = Logger()
 
