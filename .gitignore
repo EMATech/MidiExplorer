@@ -7,3 +7,5 @@ midiexplorer.ini
 /dist/
 /RELEASE.md
 /TODO.md
+!/midiexplorer.cmd
+!/midiexplorer.exe

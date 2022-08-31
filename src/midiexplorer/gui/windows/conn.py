@@ -627,7 +627,7 @@ def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mi
         probe_thru_user_data = dpg.get_item_user_data('probe_thru')
         if probe_thru_user_data:
             # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
-            logger.log_debug(f"Echoing MIDI data to probe thru")
+            logger.log_debug("Echoing MIDI data to probe thru")
             probe_thru_user_data.port.send(midi_data)
         _add_probe_data(
             timestamp=timestamp,

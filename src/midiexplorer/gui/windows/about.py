@@ -59,7 +59,7 @@ def create() -> None:
         # Author
         # ------
         dpg.add_text("Author", color=title_color)
-        dpg.add_text(f"Raphaël Doursenaud")
+        dpg.add_text("Raphaël Doursenaud")
 
         # -------
         # License

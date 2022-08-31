@@ -27,7 +27,7 @@ def init() -> None:
     # -------------------------
     # MIDO and backend versions
     # -------------------------
-    logger.log_debug(f"Using MIDO:")
+    logger.log_debug("Using MIDO:")
     logger.log_debug(f"\t - version: {mido.__version__}")
     logger.log_debug(f"\t - backend: {mido.backend.name}")
 
@@ -42,7 +42,7 @@ def init() -> None:
         elif api_names_count == 1:
             logger.log_debug(f"\t - RtMidi API: {api_names[0]}")
         else:
-            logger.log_debug(f"\t - RtMidi APIs:")
+            logger.log_debug("\t - RtMidi APIs:")
             for name in api_names:
                 logger.log_debug(f"\t\t - {name}")
     else:
