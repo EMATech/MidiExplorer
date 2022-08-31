@@ -159,6 +159,24 @@ Features / TODO list
                 - [x] System
             - [x] Channel
             - [x] Controllers
+            - [ ] **(WIP)** Notes
+                - [x] Keyboard
+                - [ ] Staff
+            - [ ] Patches
+                - [ ] GM (General MIDI)
+                    - [ ] Level 1 (1991)
+                    - [ ] Level 2 (1999)
+                    - [ ] Lite (2001)
+                - [ ] Proprietary
+                    - [ ] Roland
+                        - [ ] LA (Linear Arithmetic) (MT-32…) (1987)
+                        - [ ] GS (General Standard) (Sound Canvas…) (1991)
+                    - [ ] Yamaha
+                        - [ ] XG (E**X**tended **G**eneral MIDI)
+                            - [ ] Level 1 (1994)
+                            - [ ] Level 2 (1997)
+                            - [ ] Level 3 (1998)
+                            - [ ] Lite (2002)
             - [ ] **(WIP)** SysEx
                 - [x] Basic decoding
                 - [ ] Sample dump standard
@@ -171,9 +189,6 @@ Features / TODO list
                 - [ ] Notation information
                 - [ ] Device Control
                 - [ ] MIDI Machine Control (MMC)
-            - [ ] **(WIP)** Notes
-                - [x] Keyboard
-                - [ ] Staff
         - [x] Read raw input
         - [x] Table decode input
         - [x] Timing
