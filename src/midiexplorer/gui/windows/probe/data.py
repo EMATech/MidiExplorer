@@ -112,7 +112,7 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
 
         # Channel
         chan_label = "Global"
-        if chan_val:
+        if chan_val is not None:
             chan_label = chan_val + 1  # Human-readable format
         dpg.add_text(chan_label)
         conv_tooltip(chan_label, chan_val, hlen=1, dlen=2, blen=4)
