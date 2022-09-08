@@ -15,7 +15,7 @@ from dearpygui import dearpygui as dpg
 from midiexplorer.gui.config import START_TIME, DEBUG
 
 
-@functools.lru_cache()
+@functools.lru_cache()  # Only compute once
 def get_supported_indicators() -> list:
     """Cached list of supported indicators.
 
@@ -49,7 +49,7 @@ def get_supported_indicators() -> list:
     for controller in range(128):
         mon_indicators.append(f'mon_cc_{controller}')
     if DEBUG:  # Experimental
-        mon_indicators.append([
+        mon_indicators.extend([
             'mon_undef1',
             'mon_undef2',
             'mon_undef3',
@@ -118,10 +118,13 @@ def update_mon_status() -> None:
     """
     now = time.time() - START_TIME
     for indicator in get_supported_indicators():
-        if dpg.get_value(f'{indicator}_active_until') < now:
-            # EOX is a special case since we have two alternate representations.
-            if indicator != 'mon_end_of_exclusive':
-                dpg.bind_item_theme(f'{indicator}', None)
-            else:
-                dpg.bind_item_theme(f'{indicator}_common', None)
-                dpg.bind_item_theme(f'{indicator}_syx', None)
+        value = dpg.get_value(f'{indicator}_active_until')
+        if value:  # Prevent resetting theme when not needed.
+            if value < now:
+                # EOX is a special case since we have two alternate representations.
+                if indicator != 'mon_end_of_exclusive':
+                    dpg.bind_item_theme(f'{indicator}', None)
+                else:
+                    dpg.bind_item_theme(f'{indicator}_common', None)
+                    dpg.bind_item_theme(f'{indicator}_syx', None)
+                dpg.set_value(f'{indicator}_active_until', 0.0)
