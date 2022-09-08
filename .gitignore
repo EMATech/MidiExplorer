@@ -1,12 +1,14 @@
 .idea
 midiexplorer.ini
-/.pytest_cache/
+/.cache/
 /.coverage*
 /.github/
+/.pytest_cache/
 /.run/
 /dist/
+/midiexplorer.build/
 /RELEASE.md
 /STYLE.md
 /TODO.md
-!/midiexplorer.cmd
-!/midiexplorer.exe
+/midiexplorer.cmd
+/midiexplorer.exe
