@@ -19,6 +19,7 @@ import midiexplorer.gui.windows.gen
 import midiexplorer.gui.windows.log
 import midiexplorer.gui.windows.main
 import midiexplorer.gui.windows.probe
+import midiexplorer.gui.windows.probe.blink
 import midiexplorer.midi
 from midiexplorer.constants import dpg_mvlogger
 from midiexplorer.gui.config import DEBUG, INIT_FILENAME, START_TIME
@@ -156,7 +157,7 @@ def main() -> None:
             midiexplorer.gui.windows.conn.handle_received_data(*midi_in_queue.get())
 
         # Update probe visual cues
-        midiexplorer.gui.windows.probe.update_mon_blink_status()
+        midiexplorer.gui.windows.probe.blink.update_mon_status()
 
         # Render DPG frame
         dpg.render_dearpygui_frame()

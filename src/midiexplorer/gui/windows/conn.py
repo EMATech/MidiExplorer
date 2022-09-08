@@ -21,7 +21,7 @@ from dearpygui import dearpygui as dpg
 from midiexplorer.constants import dpg_slot
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
-from midiexplorer.gui.windows.probe import _add_probe_data
+from midiexplorer.gui.windows.probe.data import add
 from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
 
 
@@ -641,7 +641,7 @@ def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mi
             # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
             logger.log_debug("Echoing MIDI data to probe thru")
             probe_thru_user_data.port.send(midi_data)
-        _add_probe_data(
+        add(
             timestamp=timestamp,
             source=source,
             data=midi_data,
