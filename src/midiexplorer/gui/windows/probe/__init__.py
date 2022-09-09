@@ -114,7 +114,7 @@ def create() -> None:
         dpg.add_string_value(tag='syx_id_val')
         dpg.add_string_value(tag='syx_device_id')
         dpg.add_string_value(tag='syx_payload')
-        # FIXME: part of Defined Universal SysEx should be separated.
+        # Defined Universal SysEx
         dpg.add_string_value(tag='syx_sub_id1_name')
         dpg.add_string_value(tag='syx_sub_id1_val')
         dpg.add_string_value(tag='syx_sub_id2_name')
@@ -427,6 +427,7 @@ def create() -> None:
         # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
 
         # Keyboard
+        # TODO: Graphical
         dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120,
                              border=False)
 
@@ -556,7 +557,7 @@ def create() -> None:
         # -----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=True):
 
-            with dpg.child_window(tag='probe_sysex_container', height=170, border=False):
+            with dpg.child_window(tag='probe_sysex_container', height=120, border=False):
                 with dpg.group():
                     with dpg.group(horizontal=True):
                         dpg.add_text("ID")
@@ -579,7 +580,7 @@ def create() -> None:
                     dpg.add_text("Decoded Payload")
                     dyn_conv_tooltip(static_title="Payload", values_source='syx_payload')
 
-        # TODO: generate dynamically
+        # TODO: generate dynamically?
         with dpg.group(parent='syx_decoded_payload'):
             with dpg.group(horizontal=True, tag='syx_sub_id1'):
                 dpg.add_text("Sub-ID#1")
