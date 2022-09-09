@@ -430,9 +430,9 @@ def create() -> None:
         dpg.add_string_value(tag='input_mode', default_value='Callback')
 
     # FIXME: compute dynamically?
-    conn_win_height = 1020
+    conn_win_height = 510
     if DEBUG:
-        conn_win_height = 795
+        conn_win_height = 400
 
     with dpg.window(
             tag="conn_win",

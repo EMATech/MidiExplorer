@@ -104,22 +104,22 @@ def create() -> None:
             color = (170, 0, 170)  # magenta
             dpg.add_theme_color(dpg.mvThemeCol_Button, color)
 
-    # ------------------
-    # Probe window size
-    # ------------------
+    # -------------------------
+    # Probe monitor window size
+    # --------------------------
     # TODO: compute dynamically?
-    probe_win_height = 1020
+    probe_mon_win_height = 1020
     if DEBUG:
-        probe_win_height = 685
+        probe_mon_win_height = 685
 
     # -------------
     # Probe window
     # -------------
     with dpg.window(
-            tag='probe_win',
+            tag='probe_mon_win',
             label="Probe Monitor",
             width=1005,
-            height=probe_win_height,
+            height=probe_mon_win_height,
             no_close=True,
             collapsed=False,
             pos=[900, 20]
@@ -566,25 +566,37 @@ def create() -> None:
                 dpg.add_input_text(source='syx_sub_id2_name', readonly=True, width=250)
                 dyn_conv_tooltip('syx_sub_id2_name', 'syx_sub_id2_val')
 
+    # -------------------------
+    # Probe history window size
+    # --------------------------
+    # TODO: compute dynamically?
+    probe_hist_win_height = 510
+    probe_hist_win_y = 530
+    if DEBUG:
+        probe_hist_win_height = 395
+        probe_hist_win_y = 530 - 110
+
+    # --------------------
+    # Probe history window
+    # --------------------
+    with dpg.window(
+            tag='probe_hist_win',
+            label="Probe History",
+            width=900,
+            height=probe_hist_win_height,
+            no_close=True,
+            collapsed=False,
+            pos=[0, probe_hist_win_y]
+    ):
         # -------------------
         # Data history table
         # -------------------
-        # TODO: Move to its own window placed under the node graph.
-        with dpg.collapsing_header(label="History", default_open=True):
-            dpg.add_child_window(tag='probe_table_container', height=390, border=False)
-
-        # Details buttons
-        # FIXME: separated to not scroll with table child window until table scrolling is supported
-        dpg.add_child_window(parent='probe_table_container', tag='act_det_btns', label="Buttons", height=45,
-                             border=False)
-        with dpg.group(parent='act_det_btns', horizontal=True):
-            dpg.add_checkbox(tag='probe_data_table_autoscroll', label="Auto-Scroll", default_value=True)
-            dpg.add_button(label="Clear", callback=_clear_probe_data_table)
+        dpg.add_child_window(tag='probe_table_container', height=470, border=False)
 
         # Details
         # FIXME: workaround table scrolling not implemented upstream yet to have static headers
-        # dpg.add_child_window(tag='act_det_headers', label="Details headers", height=5, border=False)
-        with dpg.table(parent='act_det_btns',
+        # dpg.add_child_window(tag='hist_det_headers', label="Details headers", height=5, border=False)
+        with dpg.table(parent='probe_table_container',
                        tag='probe_data_table_headers',
                        header_row=True,
                        freeze_rows=1,
@@ -604,8 +616,8 @@ def create() -> None:
         # TODO: Show/hide columns
         # TODO: timegraph?
         # TODO: selecting an item shows it decoded values above
-        dpg.add_child_window(parent='probe_table_container', tag='act_det', label="Details", height=340, border=False)
-        with dpg.table(parent='act_det',
+        dpg.add_child_window(parent='probe_table_container', tag='hist_det', label="Details", height=420, border=False)
+        with dpg.table(parent='hist_det',
                        tag='probe_data_table',
                        header_row=False,  # FIXME: True when table scrolling will be implemented upstream
                        freeze_rows=0,  # FIXME: 1 when table scrolling will be implemented upstream
@@ -624,3 +636,10 @@ def create() -> None:
             dpg.add_table_column(label="Data 2")
 
             _init_details_table_data()
+
+        # Buttons
+        # FIXME: separated to not scroll with table child window until table scrolling is supported
+        dpg.add_child_window(parent='probe_table_container', tag='hist_btns', label="Buttons", border=False)
+        with dpg.group(parent='hist_btns', horizontal=True):
+            dpg.add_checkbox(tag='probe_data_table_autoscroll', label="Auto-Scroll", default_value=True)
+            dpg.add_button(label="Clear", callback=_clear_probe_data_table)

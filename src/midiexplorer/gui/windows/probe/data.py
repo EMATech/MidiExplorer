@@ -191,7 +191,7 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
 
     # Autoscroll
     if dpg.get_value('probe_data_table_autoscroll'):
-        dpg.set_y_scroll('act_det', -1.0)
+        dpg.set_y_scroll('hist_det', -1.0)
 
     # Single selection
     # FIXME: add a data structure tracking selected items to only deselect the one(s)
