@@ -19,7 +19,7 @@ import midiexplorer.midi.notes
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import get_supported_indicators
-from midiexplorer.gui.windows.probe.data import conv_tooltip
+from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip
 
 
 def _init_details_table_data() -> None:
@@ -84,6 +84,9 @@ def create() -> None:
     """Creates the probe window.
 
     """
+    # -------------------------
+    # DEAR PYGUI VALUE REGISTRY
+    # -------------------------
     with dpg.value_registry():
         # ------------
         # Preferences
@@ -105,15 +108,17 @@ def create() -> None:
         # ---------------
         # SysEx decoding
         # ---------------
-        dpg.add_string_value(tag='syx_id_type', default_value="ID")
-        dpg.add_string_value(tag='syx_id')
-        dpg.add_string_value(tag='syx_id_label')
+        dpg.add_string_value(tag='syx_id_group')
+        dpg.add_string_value(tag='syx_id_region')
+        dpg.add_string_value(tag='syx_id_name')
+        dpg.add_string_value(tag='syx_id_val')
         dpg.add_string_value(tag='syx_device_id')
-        dpg.add_string_value(tag='syx_sub_id1')
-        dpg.add_string_value(tag='syx_sub_id1_label')
-        dpg.add_string_value(tag='syx_sub_id2')
-        dpg.add_string_value(tag='syx_sub_id2_label')
         dpg.add_string_value(tag='syx_payload')
+        # FIXME: part of Defined Universal SysEx should be separated.
+        dpg.add_string_value(tag='syx_sub_id1_name')
+        dpg.add_string_value(tag='syx_sub_id1_val')
+        dpg.add_string_value(tag='syx_sub_id2_name')
+        dpg.add_string_value(tag='syx_sub_id2_val')
 
     # ---------------------------------------
     # DEAR PYGUI THEME for activated buttons
@@ -137,7 +142,7 @@ def create() -> None:
     # -------------
     with dpg.window(
             tag='probe_win',
-            label="Probe",
+            label="Probe Monitor",
             width=1005,
             height=probe_win_height,
             no_close=True,
@@ -165,6 +170,8 @@ def create() -> None:
                         callback=_update_eox_category,
                         user_data=eox_categories
                     )
+
+        # TODO: Panic button to reset all monitored states.
 
         # -----
         # Mode
@@ -548,42 +555,40 @@ def create() -> None:
         # System Exclusive
         # -----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=True):
-            dpg.add_child_window(tag='probe_sysex_container', height=130, border=False)
 
-        with dpg.table(tag='probe_sysex', parent='probe_sysex_container', header_row=False,
-                       policy=dpg.mvTable_SizingFixedFit):
-            dpg.add_table_column(label="Title")
+            with dpg.child_window(tag='probe_sysex_container', height=170, border=False):
+                with dpg.group():
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("ID")
+                        dpg.add_input_text(source='syx_id_region', readonly=True, width=200)
+                        dyn_conv_tooltip(static_title="Region", values_source='syx_id_region')
+                        dpg.add_input_text(source='syx_id_group', readonly=True, width=200)
+                        dyn_conv_tooltip(static_title="Group", values_source='syx_id_group')
+                        dpg.add_input_text(source='syx_id_name', readonly=True, width=200)
+                        dyn_conv_tooltip('syx_id_name', 'syx_id_val')
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("Device ID")
+                        dpg.add_input_text(source='syx_device_id', readonly=True, width=50)
+                        dyn_conv_tooltip(static_title="Device ID", values_source='syx_device_id')
+                    with dpg.group(horizontal=True, tag='syx_payload_container'):
+                        dpg.add_text("Undecoded Payload")
+                        dpg.add_input_text(source='syx_payload', readonly=True, width=500)
+                        dyn_conv_tooltip(static_title="Payload", values_source='syx_payload')
 
-            for _i in range(2):
-                dpg.add_table_column()
+                with dpg.group(tag='syx_decoded_payload', show=False):
+                    dpg.add_text("Decoded Payload")
+                    dyn_conv_tooltip(static_title="Payload", values_source='syx_payload')
 
-            with dpg.table_row():
-                dpg.add_text(source='syx_id_type')
-                dpg.add_text(source='syx_id')
-                # TODO: dynamic conversion tooltip
-                dpg.add_text(source='syx_id_label')
-            with dpg.table_row():
-                dpg.add_text("Device ID")
-                dpg.add_text(source='syx_device_id')
-                # TODO: dynamic conversion tooltip
-                dpg.add_text()
-            # FIXME: Optional. Don't display if N.A.
-            with dpg.table_row():
-                dpg.add_text("(Sub-ID#1)")
-                dpg.add_text(source='syx_sub_id1')
-                # TODO: dynamic conversion tooltip
-                dpg.add_text(source='syx_sub_id1_label')
-            # FIXME: Optional. Don't display if N.A.
-            with dpg.table_row():
-                dpg.add_text("(Sub-ID#2)")
-                dpg.add_text(source='syx_sub_id2')
-                # TODO: dynamic conversion tooltip
-                dpg.add_text(source='syx_sub_id2_label')
-            with dpg.table_row():
-                dpg.add_text("Undecoded payload")
-                dpg.add_text(source='syx_payload')
-                # TODO: dynamic conversion tooltip
-                dpg.add_text()
+        # TODO: generate dynamically
+        with dpg.group(parent='syx_decoded_payload'):
+            with dpg.group(horizontal=True, tag='syx_sub_id1'):
+                dpg.add_text("Sub-ID#1")
+                dpg.add_input_text(source='syx_sub_id1_name', readonly=True, width=250)
+                dyn_conv_tooltip('syx_sub_id1_name', 'syx_sub_id1_val')
+            with dpg.group(horizontal=True, tag='syx_sub_id2'):
+                dpg.add_text("Sub-ID#2")
+                dpg.add_input_text(source='syx_sub_id2_name', readonly=True, width=250)
+                dyn_conv_tooltip('syx_sub_id2_name', 'syx_sub_id2_val')
 
         # -------------------
         # Data history table

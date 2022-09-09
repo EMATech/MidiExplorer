@@ -7,8 +7,7 @@
 """
 Probe data management.
 """
-
-from typing import Tuple, Callable, Any
+from typing import Callable, Any
 
 import mido
 from dearpygui import dearpygui as dpg
@@ -18,6 +17,7 @@ from midiexplorer.gui.config import START_TIME, DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import _mon, _note_on, _note_off
 from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
+from midiexplorer.midi.decoders.sysex import DecodedUniversalSysExPayload, DecodedSysEx
 
 US2MS = 1000  # microseconds to milliseconds ratio
 
@@ -210,8 +210,8 @@ def decode(data: mido.Message):
     elif 'sysex' == data.type:
         data0_name = "Data"
         data0_val: tuple = data.data
-        decoded_sysex = _decode_sysex(data)
-        _mon_update_sysex(decoded_sysex)
+        decoded_sysex = DecodedSysEx(data.data)
+        _update_sysex_gui(decoded_sysex)
     elif 'quarter_frame' == data.type:
         data0_name = "Frame type"
         data0_val = data.frame_type  # TODO: decode
@@ -227,154 +227,36 @@ def decode(data: mido.Message):
     return chan_val, data0_name, data0_val, data0_dec, data1_name, data1_val, data1_dec
 
 
-def _decode_sysex(data):
-    """System exclusive decoding.
-
-    """
-    logger = Logger()
-
-    id_type: str = ""
-    id_group: str = ""
-    id_region: None | str = None
-    id_val: None | int | Tuple = None
-    id_name: str = "Undefined"
-    device_id: None | int = None
-    sub_id1_val: None | int = None
-    sub_id1_name: str = ""
-    sub_id2_val: None | int = None
-    sub_id2_name: str = ""
-    payload: None | int | Tuple = None
-    default_name = "Undefined"
-
-    # --------------------------------
-    # Decode 1 or 3 byte IDs (page 34)
-    # --------------------------------
-
-    # Extract ID
-    id_val = data.data[0]  # 1-byte ID or first byte of 3-byte ID
-    syx_id_len = 1
-
-    # Decode group
-    id_group = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_GROUPS.get(id_val)
-
-    if id_val == 0:
-        # 3-byte ID
-        syx_id_len = 3
-        id_val = data.data[0:3]
-        syx_region_idx = 1
-    logger.log_debug(f"[SysEx] ID: {id_val}")
-
-    # Decode region
-    if syx_id_len == 1:
-        id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(id_val, "")
-    elif syx_id_len == 3:
-        id_region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(id_val[syx_region_idx], "")
-    else:
-        raise ValueError("SysEx IDs are either 1 or 3 bytes long")
-
-    # Decode ID
-    if syx_id_len == 1:
-        id_name = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(id_val, default_name)
-    if syx_id_len == 3:
-        # TODO: optimise?
-        id_name = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(id_val[0], default_name)
-        if id_name != default_name:
-            id_name = id_name.get(id_val[1], default_name)
-        if id_name != default_name:
-            id_name = id_name.get(id_val[2], default_name)
-    logger.log_debug(f"[SysEx] Manufacturer or ID name: {id_name}")
-
-    # -----------------
-    # Extract device ID
-    # -----------------
-    next_byte = syx_id_len
-    device_id = data.data[next_byte]
-    logger.log_debug(f"[SysEx] Device ID: {device_id}")
-
-    # -------
-    # Sub IDs
-    # -------
-
-    # Defined Universal System Exclusive Messages
-
-    #     Non-Real Time
-    if id_val == 0x7E:
-        next_byte += 1
-        sub_id1_val = data.data[next_byte]
-        logger.log_debug(f"[SysEx] Sub-ID#1: {sub_id1_val} ")
-        sub_id1_name = midiexplorer.midi.constants. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
-            sub_id1_val, default_name)
-        logger.log_debug(f"[SysEx] Sub-ID#1 name: {sub_id1_name}")
-        if sub_id1_val in midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1:
-            next_byte += 1
-            sub_id2_val = data.data[next_byte]
-            logger.log_debug(f"[SysEx] Sub-ID#2: {sub_id2_val} ")
-            sub_id2_name = midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1.get(sub_id1_val).get(
-                sub_id2_val, default_name)
-            logger.log_debug(f"[SysEx] Sub-ID#2 name: {sub_id2_name}")
-
-    #     Real Time
-    if id_val == 0x7F:
-        next_byte += 1
-        sub_id1_val = data.data[next_byte]
-        logger.log_debug(f"[SysEx] Sub-ID#1: {sub_id1_val} ")
-        sub_id1_name = midiexplorer.midi.constants. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
-            sub_id1_val, default_name)
-        logger.log_debug(f"[SysEx] Sub-ID#1 name: {sub_id1_name}")
-        if sub_id1_val in midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1:
-            next_byte += 1
-            sub_id2_val = data.data[next_byte]
-            logger.log_debug(f"[SysEx] Sub-ID#2: {sub_id2_val} ")
-            sub_id2_name = midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1.get(sub_id1_val).get(
-                sub_id2_val, default_name)
-            logger.log_debug(f"[SysEx] Sub-ID#2 name: {sub_id2_name}")
-
-    # TODO: decode sample dump standard (page 35)
-    # ACK, NAK, Wait, Cancel & EOF
-    # TODO: decode device inquiry (page 40)
-    # TODO: decode file dump (page 41)
-    # TODO: decode midi tuning (page 47)
-    # TODO: decode general midi system messages (page 52)
-    # TODO: decode MTC full message, user bits and real time cueing (page 53 + dedicated spec)
-    # TODO: decode midi show control (page 53 + dedicated spec)
-    # TODO: decode notation information (page 54)
-    # TODO: decode device control (page 57)
-    # TODO: decode MMC (page 58 + dedicated spec)
-
-    # -----------------
-    # Undecoded payload
-    # -----------------
-    next_byte += 1
-    payload = data.data[next_byte:]
-    logger.log_debug(f"[SysEx] Payload: {payload}")
-
-    # Build ID type string
-    if id_region:
-        id_type = f"{id_region} {id_group} ID"
-    else:
-        id_type = f"{id_group} ID"
-
-    return [id_type, id_name, id_val, device_id,
-            sub_id1_name, sub_id1_val, sub_id2_name, sub_id2_val, payload]
-
-
-def _mon_update_sysex(decoded):
+def _update_sysex_gui(decoded: DecodedSysEx):
     """Populate decoded system exclusive values in the GUI.
 
-    :param decoded: Decoded system exclusive message from _decode_sysex(). TODO: custom type?
+    :param decoded: Decoded system exclusive message from _decode_sysex().
     """
 
-    dpg.set_value('syx_id_type', decoded[0])
-    dpg.set_value('syx_id_label', decoded[1])
-    dpg.set_value('syx_id', decoded[2])
-    dpg.set_value('syx_device_id', decoded[3])
-    dpg.set_value('syx_sub_id1_label', decoded[4])
-    dpg.set_value('syx_sub_id1', decoded[5] if not None else "")
-    dpg.set_value('syx_sub_id2_label', decoded[6])
-    dpg.set_value('syx_sub_id2', decoded[7] if not None else "")
-    dpg.set_value('syx_payload', decoded[8])
+    dpg.set_value('syx_id_group', decoded.id.group)
+    dpg.set_value('syx_id_region', decoded.id.region)
+    dpg.set_value('syx_id_name', decoded.id.name)
+    dpg.set_value('syx_id_val', str(decoded.id.value))
+    dpg.set_value('syx_device_id', str(decoded.device_id))
+    dpg.set_value('syx_payload', str(decoded.payload.value))
+    if isinstance(decoded.payload, DecodedUniversalSysExPayload):
+        dpg.hide_item('syx_payload_container')
+        if decoded.payload.sub_id1_value:
+            dpg.set_value('syx_sub_id1_name', decoded.payload.sub_id1_name)
+            dpg.set_value('syx_sub_id1_val', str(decoded.payload.sub_id1_value) if not None else "")
+            dpg.show_item('syx_sub_id1')
+        else:
+            dpg.hide_item('syx_sub_id1')
+        if decoded.payload.sub_id2_value:
+            dpg.set_value('syx_sub_id2_name', decoded.payload.sub_id2_name)
+            dpg.set_value('syx_sub_id2_val', str(decoded.payload.sub_id2_value) if not None else "")
+            dpg.show_item('syx_sub_id2')
+        else:
+            dpg.hide_item('syx_sub_id2_value')
+        dpg.show_item('syx_decoded_payload')
+    else:
+        dpg.hide_item('syx_decoded_payload')
+        dpg.show_item('syx_payload_container')
 
 
 def conv_tooltip(title: str, values: int | tuple[int] | list[int] | None = None,
@@ -413,3 +295,26 @@ def conv_tooltip(title: str, values: int | tuple[int] | list[int] | None = None,
 
     with dpg.tooltip(dpg.last_item()):
         dpg.add_text(f"{text}")
+
+
+def dyn_conv_tooltip(title_value_source: str | None = None, values_source: str | None = None,
+                     static_title: str | None = None,
+                     hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
+    """Adds a tooltip with data converted to hexadecimal, decimal and binary.
+
+    :param title_value_source: Tooltip title text value source.
+    :param values_source: Tooltip value(s)
+    :param static_title: Tooltip static title. Replaces the dynamic one if also provided.
+    :param hlen: Hexadecimal length
+    :param dlen: Decimal length
+    :param blen: Binary length
+
+    """
+    with dpg.tooltip(dpg.last_item()):
+        if static_title:
+            dpg.add_text(static_title)
+        else:
+            dpg.add_text(source=title_value_source)
+        dpg.add_text()
+        # FIXME: compute conversions dynamically. How?
+        dpg.add_text(source=values_source)

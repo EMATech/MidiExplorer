@@ -918,12 +918,12 @@ SYSTEM_EXCLUSIVE_ID = {
     0x7F: "Realtime"
 }
 
-# ID groups
+# ID Groups
 SYSTEM_EXCLUSIVE_ID_GROUPS = {}
-for syx_id in range(0, 125):
+for syx_id in range(0x00, 0x7C + 1):
     SYSTEM_EXCLUSIVE_ID_GROUPS.update({syx_id: "Manufacturer"})
-SYSTEM_EXCLUSIVE_ID_GROUPS.update({125: "Reserved"})
-for syx_id in range(126, 128):
+SYSTEM_EXCLUSIVE_ID_GROUPS.update({0x7D: "Reserved"})
+for syx_id in range(0x7E, 0x7F + 1):
     SYSTEM_EXCLUSIVE_ID_GROUPS.update({syx_id: "Universal"})
 
 # ID Regions
