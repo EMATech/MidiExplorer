@@ -155,7 +155,7 @@ def create() -> None:
                 dpg.add_slider_float(
                     tag='mon_blink_duration_slider',
                     label="Persistence (s)",
-                    min_value=0, max_value=0.5, source='mon_blink_duration',
+                    min_value=1 / 120, max_value=2 / 3, source='mon_blink_duration',  # Min is one frame@120FPS
                     callback=lambda:
                     dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider'))
                 )
