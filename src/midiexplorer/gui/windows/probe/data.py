@@ -88,7 +88,8 @@ def add(timestamp: float, source: str, data: mido.Message) -> None:
     # Compute timestamp and delta ASAP
     time_stamp = (timestamp - START_TIME) * US2MS
     delta = "0.32"  # Minimum delay between MIDI messages on the wire is 320us
-    if data.time is not None:
+    # FIXME: data.time can also be 0 when using rtmidi time delta. How do we discriminate? Use another property in mido?
+    if data.time:
         delta = data.time * US2MS
         logger.log_debug("Timing: Using rtmidi time delta")
     elif previous_timestamp is not None:
