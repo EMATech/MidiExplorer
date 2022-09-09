@@ -9,7 +9,7 @@
 
 Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
-![GUI](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/screenshots/GUIstaticdecoding.png)
+![GUI](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/screenshots/GUIhistoryleft.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
