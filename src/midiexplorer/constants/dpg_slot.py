@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-DearPyGui Slots type.
+DearPyGui Slot types.
 """
 
 SPECIAL = 0

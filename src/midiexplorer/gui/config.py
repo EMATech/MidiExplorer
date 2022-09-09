@@ -16,7 +16,7 @@ from dearpygui import dearpygui as dpg
 
 START_TIME = time.time()  # Initialize ASAP
 INIT_FILENAME = "midiexplorer.ini"
-DEBUG = False  # TODO: allow changing with CLI parameter to the main app
+DEBUG = True  # TODO: allow changing with CLI parameter to the main app
 
 
 def _doload(_, app_data) -> None:

@@ -19,7 +19,7 @@ import midiexplorer.midi.notes
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import get_supported_indicators
-from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip
+from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip, selectables
 
 
 def _init_details_table_data() -> None:
@@ -41,6 +41,8 @@ def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optiona
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
+    global selectables
+
     logger = Logger()
 
     # Debug
@@ -48,6 +50,8 @@ def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optiona
     logger.log_debug(f"\tSender: {sender!r}")
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
+
+    selectables.clear()
 
     dpg.delete_item('probe_data_table', children_only=True, slot=1)
     _init_details_table_data()

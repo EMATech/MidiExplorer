@@ -12,6 +12,7 @@ import time
 
 from dearpygui import dearpygui as dpg
 
+import midiexplorer.midi.notes
 from midiexplorer.gui.config import START_TIME, DEBUG
 
 
@@ -67,7 +68,23 @@ def get_supported_indicators() -> list:
     return mon_indicators
 
 
-def _mon(indicator: int | str) -> None:
+def get_supported_decoders() -> list:
+    decoders = [
+        'syx_id_group',
+        'syx_id_region',
+        'syx_id_name',
+        'syx_id_val',
+        'syx_device_id',
+        'syx_payload',
+        'syx_sub_id1_name',
+        'syx_sub_id1_val',
+        'syx_sub_id2_name',
+        'syx_sub_id2_val',
+    ]
+    return decoders
+
+
+def _mon(indicator: int | str, static: bool = False) -> None:
     """Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
 
     :param indicator: Name of the indicator to blink
@@ -79,7 +96,10 @@ def _mon(indicator: int | str) -> None:
     now = time.time() - START_TIME
     delay = dpg.get_value('mon_blink_duration')
     target = f'mon_{indicator}_active_until'
-    until = now + delay
+    if not static:
+        until = now + delay
+    else:
+        until = float('inf')
     dpg.set_value(target, until)
     theme = '__act'
     # EOX special case since we have two alternate representations.
@@ -121,10 +141,27 @@ def update_mon_status() -> None:
         value = dpg.get_value(f'{indicator}_active_until')
         if value:  # Prevent resetting theme when not needed.
             if value < now:
-                # EOX is a special case since we have two alternate representations.
-                if indicator != 'mon_end_of_exclusive':
-                    dpg.bind_item_theme(f'{indicator}', None)
-                else:
-                    dpg.bind_item_theme(f'{indicator}_common', None)
-                    dpg.bind_item_theme(f'{indicator}_syx', None)
-                dpg.set_value(f'{indicator}_active_until', 0.0)
+                _reset_indicator(indicator)
+
+
+def _reset_indicator(indicator):
+    # EOX is a special case since we have two alternate representations.
+    if indicator != 'mon_end_of_exclusive':
+        dpg.bind_item_theme(f'{indicator}', None)
+    else:
+        dpg.bind_item_theme(f'{indicator}_common', None)
+        dpg.bind_item_theme(f'{indicator}_syx', None)
+    dpg.set_value(f'{indicator}_active_until', 0.0)
+
+
+def reset_mon() -> None:
+    # FIXME: add a data structure caching the currently lit indicators to only process those needed
+    for indicator in get_supported_indicators():
+        _reset_indicator(indicator)
+    for index, name in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.items():
+        _note_off(index)
+    for decoder in get_supported_decoders():
+        dpg.set_value(f'{decoder}', "")
+    # SysEx dynamic display
+    dpg.hide_item('syx_decoded_payload')
+    dpg.show_item('syx_payload_container')

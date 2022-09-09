@@ -7,15 +7,17 @@
 """
 Probe data management.
 """
+import sys
 from typing import Callable, Any
 
 import mido
 from dearpygui import dearpygui as dpg
 
+import midiexplorer.constants.dpg_slot
 import midiexplorer.midi
 from midiexplorer.gui.config import START_TIME, DEBUG
 from midiexplorer.gui.logger import Logger
-from midiexplorer.gui.windows.probe.blink import _mon, _note_on, _note_off
+from midiexplorer.gui.windows.probe.blink import _mon, _note_on, _note_off, reset_mon
 from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
 from midiexplorer.midi.decoders.sysex import DecodedUniversalSysExPayload, DecodedSysEx
 
@@ -28,6 +30,45 @@ US2MS = 1000  # microseconds to milliseconds ratio
 ###
 probe_data_counter = 0
 previous_timestamp = START_TIME
+selectables = []
+
+
+def _selection(sender, app_data, user_data):
+    """History row selection management.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    logger = Logger()
+
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
+
+    # FIXME: add a data structure tracking selected items to only deselect the one(s)
+    for item in user_data:
+        if item != sender:
+            dpg.set_value(item, False)
+
+    reset_mon()  # Reset Monitor to clear any spurious data from previous receive or selection
+
+    # TODO: Decode as a static display aka ignore blink
+
+    raw_message = dpg.get_value(
+        dpg.get_item_children(
+            dpg.get_item_parent(sender),
+            midiexplorer.constants.dpg_slot.MOST
+        )[6]
+    )
+    message = mido.Message.from_hex(raw_message)
+    decode(message, static=True)
 
 
 def add(timestamp: float, source: str, data: mido.Message) -> None:
@@ -63,7 +104,7 @@ def add(timestamp: float, source: str, data: mido.Message) -> None:
 
 def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, data0_val, data0_dec, data1_name,
                       data1_val, data1_dec):
-    global probe_data_counter
+    global probe_data_counter, selectables
 
     # TODO: insert new data at the top of the table
     previous_data = probe_data_counter
@@ -74,7 +115,10 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
                        before=f'probe_data_{previous_data}'):
 
         # Source
-        dpg.add_selectable(label=source, span_columns=True)
+        target = f'selectable_{probe_data_counter}'
+        dpg.add_selectable(label=source, span_columns=True, tag=target)
+        selectables.append(target)
+        dpg.configure_item(target, callback=_selection, user_data=selectables)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(source)
 
@@ -142,25 +186,32 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
     if dpg.get_value('probe_data_table_autoscroll'):
         dpg.set_y_scroll('act_det', -1.0)
 
+    # Single selection
+    # FIXME: add a data structure tracking selected items to only deselect the one(s)
+    for item in selectables:
+        dpg.set_value(item, False)  # Deselect all items upon receiving new data
 
-def decode(data: mido.Message):
+
+def decode(data: mido.Message, static: bool = False):
     """Decodes the data to display into the probe monitor.
 
     :param data: MIDI data.
     :return: Channel value, data 1 & 2 names, values and decoded.
     """
 
+    reset_mon()  # Reset monitor before decoding to avoid keeping old data from selected history row.
+
     # Status
-    _mon(data.type)
+    _mon(data.type, static)
 
     # Channel
     chan_val = None
     if hasattr(data, 'channel'):
-        _mon('c')  # CHANNEL
-        _mon(data.channel)
+        _mon('c', static)  # CHANNEL
+        _mon(data.channel, static)
         chan_val = data.channel
     else:
-        _mon('s')  # SYSTEM
+        _mon('s', static)  # SYSTEM
 
     # Data 1 & 2
     data0_name: str | False = False
@@ -171,7 +222,7 @@ def decode(data: mido.Message):
     data1_dec: str | False = False
     if 'note' in data.type:
         if dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY:
-            _mon('note_off')
+            _mon('note_off', static)
         # Keyboard
         if 'on' in data.type and not (
                 dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
@@ -191,7 +242,7 @@ def decode(data: mido.Message):
         data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)
         data1_val: int = data.value
     elif 'control_change' == data.type:
-        _mon(f'cc_{data.control}')
+        _mon(f'cc_{data.control}', static)
         data0_name = "Controller"
         data0_val: int = data.control
         data0_dec = midiexplorer.midi.constants.CONTROLLER_NUMBERS.get(data.control)
