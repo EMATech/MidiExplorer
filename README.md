@@ -1,12 +1,15 @@
-![MIDI Explorer Logo](data/assets/midiexplorer_logo.svg) MIDI Explorer
-===========================================================
+[![MIDI Explorer Logo](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/assets/midiexplorer_logo.svg) MIDI Explorer](https://github.com/EMATech/midiexplorer)
+=============================================================================================================================================================================
 
-[![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
+
+[![Downloads](https://pepy.tech/badge/midiexplorer)](https://pepy.tech/project/midiexplorer)
+[![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
 
 Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
-![GUI](data/screenshots/GUIimprovedprobedecoding.png)
+![GUI](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/screenshots/GUIstaticdecoding.png)
 
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
@@ -29,34 +32,41 @@ Status
 ------
 
 Basic features implemented.
-Testers welcome ;)
 
-Alpha coming soon!
+First alpha released!
+
+Testers welcome ;)
 
 
 Installation
 ------------
 
-Install Python 3.10 first from [python.org](https://www.python.org/downloads/windows/).
+### Install Python 3.10
 
-Install PipX:
+From [python.org](https://www.python.org/downloads/windows/) (*recommended*) or your favorite package manager.
 
-### Microsoft Windows
+### Install PipX
+
+Follow the instructions for your operating system.
+
+#### Microsoft Windows
+
+In a terminal
 
 ```console
 py -m pip install --user pipx
 py -m pipx ensurepath
 ```
 
-Close and reopen your terminal.
+*Close and reopen your terminal.*
 
-### Mac OS X / Linux
+#### Mac OS X / Linux
 
 ```console
 python3 -m pip install --user pipx
 ```
 
-### Common
+### Install MIDI Explorer
 
 ```console
 pipx install midiexplorer
@@ -127,9 +137,12 @@ Features / TODO list
     - [ ] **(WIP)** List MIDI I/O
         - [x] USB / IEEE-1394 (OS level)
         - [ ] Bluetooth Low Energy (BLE-MIDI)
-            - Requires WinRt for Microsoft Windows
+            - Requires [WinRt MIDI](https://docs.microsoft.com/en-us/windows/uwp/audio-video-camera/midi) for Microsoft
+              Windows
         - [ ] RTP-MIDI / IETF RFC 6295
+            - Requires [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html) for Microsoft Windows
         - [ ] Virtual
+            - Requires [loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html) for Microsoft Windows
     - [x] Input reading modes
         - [x] Polling
         - [x] Callback
@@ -179,18 +192,24 @@ Features / TODO list
                             - [ ] Lite (2002)
             - [ ] **(WIP)** SysEx
                 - [x] Basic decoding
-                - [ ] Sample dump standard
-                - [ ] Device inquiry
-                - [ ] File dump
-                - [ ] MIDI tuning
-                - [ ] General MIDI system messages
-                - [ ] MIDI Time Code (MTC)
-                - [ ] MIDI Show Control (MSC)
-                - [ ] Notation information
-                - [ ] Device Control
-                - [ ] MIDI Machine Control (MMC)
+                    - [x] (Manufacturer) ID
+                    - [x] Device ID
+                    - [x] Raw payload
+                - [ ] Universal System Exclusive
+                    - [x] Sub-IDs
+                    - [ ] Sample dump standard
+                    - [ ] Device inquiry
+                    - [ ] File dump
+                    - [ ] MIDI tuning
+                    - [ ] General MIDI system messages
+                    - [ ] MIDI Time Code (MTC)
+                    - [ ] MIDI Show Control (MSC)
+                    - [ ] Notation information
+                    - [ ] Device Control
+                    - [ ] MIDI Machine Control (MMC)
         - [x] Read raw input
-        - [x] Table decode input
+        - [x] History: table decode input
+            - [x] Decode to monitor upon selection
         - [x] Timing
             - [x] Hardware
                 - retrieved using a modified mido RtMidi backend
