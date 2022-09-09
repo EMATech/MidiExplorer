@@ -8,7 +8,7 @@
 Probe data management.
 """
 import sys
-from typing import Callable, Any
+from typing import Callable, Any, Optional
 
 import mido
 from dearpygui import dearpygui as dpg
@@ -108,9 +108,15 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
 
     # TODO: insert new data at the top of the table
     previous_data = probe_data_counter
+
+    # Flush data after a certain amount to avoid memory leak issues
+    # TODO: add setting
+    if probe_data_counter >= 250:
+        # TODO: serialize chunk somewhere to allow unlimited scrolling when implemented
+        _clear_probe_data_table()
+
     probe_data_counter += 1
 
-    # TODO: Flush data after a certain amount to avoid memory leak issues
     with dpg.table_row(parent='probe_data_table', label=f'probe_data_{probe_data_counter}',
                        before=f'probe_data_{previous_data}'):
 
@@ -199,7 +205,7 @@ def decode(data: mido.Message, static: bool = False):
     :return: Channel value, data 1 & 2 names, values and decoded.
     """
 
-    reset_mon()  # Reset monitor before decoding to avoid keeping old data from selected history row.
+    reset_mon(static=True)  # Reset monitor before decoding to avoid keeping old data from selected history row.
 
     # Status
     _mon(data.type, static)
@@ -227,9 +233,9 @@ def decode(data: mido.Message, static: bool = False):
         if 'on' in data.type and not (
                 dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
         ):
-            _note_on(data.note)
+            _note_on(data.note, static)
         else:
-            _note_off(data.note)
+            _note_off(data.note, static)
         data0_name = "Note"
         data0_val: int = data.note
         # TODO: add preference for syllabic / EN / DE
@@ -237,6 +243,9 @@ def decode(data: mido.Message, static: bool = False):
         data1_name = "Velocity"
         data1_val: int = data.velocity
     elif 'polytouch' == data.type:
+        if static:
+            _note_on(data.note, static)
+        data0_name = "Note"
         data0_val: int = data.note
         # TODO: add preference for syllabic / EN / DE
         data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)
@@ -369,3 +378,40 @@ def dyn_conv_tooltip(title_value_source: str | None = None, values_source: str |
         dpg.add_text()
         # FIXME: compute conversions dynamically. How?
         dpg.add_text(source=values_source)
+
+
+def _clear_probe_data_table(
+        sender: None | int | str = None, app_data: Any = None, user_data: Optional[Any] = None) -> None:
+    """Clears the data table.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    global selectables, probe_data_counter
+
+    logger = Logger()
+
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
+
+    selectables.clear()
+    probe_data_counter = 0
+
+    dpg.delete_item('probe_data_table', children_only=True, slot=1)
+    _init_details_table_data()
+
+
+def _init_details_table_data() -> None:
+    """Initial table data for reverse scrolling.
+
+    """
+    with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
+        pass

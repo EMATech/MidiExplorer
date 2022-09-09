@@ -84,6 +84,16 @@ def get_supported_decoders() -> list:
     return decoders
 
 
+def get_theme(static, disable: bool = False):
+    if not static and not disable:
+        theme = '__act'
+    elif not static and disable:
+        theme = None
+    else:
+        theme = '__force_act'
+    return theme
+
+
 def _mon(indicator: int | str, static: bool = False) -> None:
     """Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
 
@@ -101,7 +111,7 @@ def _mon(indicator: int | str, static: bool = False) -> None:
     else:
         until = float('inf')
     dpg.set_value(target, until)
-    theme = '__act'
+    theme = get_theme(static)
     # EOX special case since we have two alternate representations.
     if indicator != 'end_of_exclusive':
         dpg.bind_item_theme(f'mon_{indicator}', theme)
@@ -112,22 +122,34 @@ def _mon(indicator: int | str, static: bool = False) -> None:
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
 
 
-def _note_on(number: int | str) -> None:
+def _note_on(number: int | str, static: bool = False) -> None:
     """Illuminates the note.
 
     :param number: MIDI note number.
 
     """
-    dpg.bind_item_theme(f'note_{number}', '__act')
+    theme = get_theme(static)
+    dpg.bind_item_theme(f'note_{number}', theme)
 
 
-def _note_off(number: int | str) -> None:
+def _note_off(number: int | str, static: bool = False) -> None:
     """Darken the note.
 
     :param number: MIDI note number.
 
     """
-    dpg.bind_item_theme(f'note_{number}', None)
+    theme = get_theme(static, disable=True)
+    dpg.bind_item_theme(f'note_{number}', theme)
+
+
+def _reset_indicator(indicator):
+    # EOX is a special case since we have two alternate representations.
+    if indicator != 'mon_end_of_exclusive':
+        dpg.bind_item_theme(f'{indicator}', None)
+    else:
+        dpg.bind_item_theme(f'{indicator}_common', None)
+        dpg.bind_item_theme(f'{indicator}_syx', None)
+    dpg.set_value(f'{indicator}_active_until', 0.0)
 
 
 def update_mon_status() -> None:
@@ -144,24 +166,19 @@ def update_mon_status() -> None:
                 _reset_indicator(indicator)
 
 
-def _reset_indicator(indicator):
-    # EOX is a special case since we have two alternate representations.
-    if indicator != 'mon_end_of_exclusive':
-        dpg.bind_item_theme(f'{indicator}', None)
-    else:
-        dpg.bind_item_theme(f'{indicator}_common', None)
-        dpg.bind_item_theme(f'{indicator}_syx', None)
-    dpg.set_value(f'{indicator}_active_until', 0.0)
-
-
-def reset_mon() -> None:
+def reset_mon(static: bool = False) -> None:
     # FIXME: add a data structure caching the currently lit indicators to only process those needed
     for indicator in get_supported_indicators():
-        _reset_indicator(indicator)
+        if not static or dpg.get_value(f'{indicator}_active_until') == float('inf'):
+            _reset_indicator(indicator)
+
     for index, name in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.items():
-        _note_off(index)
-    for decoder in get_supported_decoders():
-        dpg.set_value(f'{decoder}', "")
-    # SysEx dynamic display
-    dpg.hide_item('syx_decoded_payload')
-    dpg.show_item('syx_payload_container')
+        if not static or dpg.get_item_theme(f'note_{index}') == '__force_act':
+            _note_off(index)
+
+    if not static:
+        for decoder in get_supported_decoders():
+            dpg.set_value(f'{decoder}', "")
+        # SysEx dynamic display
+        dpg.hide_item('syx_decoded_payload')
+        dpg.show_item('syx_payload_container')

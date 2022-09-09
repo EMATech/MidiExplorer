@@ -19,42 +19,8 @@ import midiexplorer.midi.notes
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import get_supported_indicators
-from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip, selectables
-
-
-def _init_details_table_data() -> None:
-    """Initial table data for reverse scrolling.
-
-    """
-    with dpg.table_row(parent='probe_data_table', label='probe_data_0'):
-        pass
-
-
-def _clear_probe_data_table(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
-    """Clears the data table.
-
-    :param sender: argument is used by DPG to inform the callback
-                   which item triggered the callback by sending the tag
-                   or 0 if trigger by the application.
-    :param app_data: argument is used DPG to send information to the callback
-                     i.e. the current value of most basic widgets.
-    :param user_data: argument is Optionally used to pass your own python data into the function.
-
-    """
-    global selectables
-
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
-
-    selectables.clear()
-
-    dpg.delete_item('probe_data_table', children_only=True, slot=1)
-    _init_details_table_data()
+from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip, selectables, probe_data_counter, \
+    _clear_probe_data_table, _init_details_table_data
 
 
 def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
@@ -131,6 +97,11 @@ def create() -> None:
         with dpg.theme_component(dpg.mvButton):
             # TODO: add preference
             color = (255, 0, 0)  # red
+            dpg.add_theme_color(dpg.mvThemeCol_Button, color)
+    with dpg.theme(tag='__force_act'):
+        with dpg.theme_component(dpg.mvButton):
+            # TODO: add preference
+            color = (170, 0, 170)  # magenta
             dpg.add_theme_color(dpg.mvThemeCol_Button, color)
 
     # ------------------
@@ -598,6 +569,7 @@ def create() -> None:
         # -------------------
         # Data history table
         # -------------------
+        # TODO: Move to its own window placed under the node graph.
         with dpg.collapsing_header(label="History", default_open=True):
             dpg.add_child_window(tag='probe_table_container', height=390, border=False)
 
