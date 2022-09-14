@@ -12,7 +12,6 @@ import time
 
 from dearpygui import dearpygui as dpg
 
-import midiexplorer.midi.notes
 from midiexplorer.gui.config import START_TIME, DEBUG
 
 
@@ -172,7 +171,7 @@ def reset_mon(static: bool = False) -> None:
         if not static or dpg.get_value(f'{indicator}_active_until') == float('inf'):
             _reset_indicator(indicator)
 
-    for index, name in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.items():
+    for index in range(0, 128):  # All MIDI notes
         if not static or dpg.get_item_theme(f'note_{index}') == '__force_act':
             _note_off(index)
 

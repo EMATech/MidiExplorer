@@ -21,6 +21,17 @@ from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import get_supported_indicators
 from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip, selectables, probe_data_counter, \
     _clear_probe_data_table, _init_details_table_data
+from midiexplorer.gui.windows.probe.settings import eox_categories, notation_modes
+
+
+def _verticalize(text: str) -> str:
+    """Converts text to a vertical representation.
+
+    :param text: text to convert
+    :return: verticalized text
+    """
+    v_text = "\n".join(text)
+    return v_text
 
 
 def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
@@ -50,6 +61,30 @@ def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[A
         dpg.show_item('mon_end_of_exclusive_syx_grp')
 
 
+def _update_notation_mode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Changes the way notes are displayed.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    logger = Logger()
+
+    # Debug
+    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    logger.log_debug(f"\tSender: {sender!r}")
+    logger.log_debug(f"\tApp data: {app_data!r}")
+    logger.log_debug(f"\tUser data: {user_data!r}")
+
+    # Update keyboard
+    for index in range(0, 128):  # All MIDI notes
+        dpg.set_item_label(f'note_{index}', _verticalize(user_data.get(dpg.get_value('notation_mode')).get(index)))
+
+
 def create() -> None:
     """Creates the probe window.
 
@@ -64,12 +99,8 @@ def create() -> None:
         dpg.add_float_value(tag='mon_blink_duration', default_value=.25)  # seconds
         # Per standard, consider note-on with velocity set to 0 as note-off
         dpg.add_bool_value(tag='zero_velocity_note_on_is_note_off', default_value=True)
-        # TODO: add both?
-        eox_categories = (
-            "System Common Message (default, MIDI specification compliant)",
-            "System Exclusive Message"
-        )
         dpg.add_string_value(tag='eox_category', default_value=eox_categories[0])
+        dpg.add_string_value(tag='notation_mode', default_value=next(iter(notation_modes.keys())))  # First key
         # ----------------------------
         # Indicators blink management
         # ----------------------------
@@ -95,14 +126,18 @@ def create() -> None:
     # ---------------------------------------
     with dpg.theme(tag='__act'):
         with dpg.theme_component(dpg.mvButton):
-            # TODO: add preference
-            color = (255, 0, 0)  # red
-            dpg.add_theme_color(dpg.mvThemeCol_Button, color)
+            dpg.add_theme_color(
+                tag='__act_but_col',
+                target=dpg.mvThemeCol_Button,
+                value=(255, 0, 0),  # red
+            )
     with dpg.theme(tag='__force_act'):
         with dpg.theme_component(dpg.mvButton):
-            # TODO: add preference
-            color = (170, 0, 170)  # magenta
-            dpg.add_theme_color(dpg.mvThemeCol_Button, color)
+            dpg.add_theme_color(
+                tag='__force_act_col',
+                target=dpg.mvThemeCol_Button,
+                value=(170, 0, 170),  # light magenta
+            )
 
     # -------------------------
     # Probe monitor window size
@@ -126,16 +161,29 @@ def create() -> None:
     ):
 
         with dpg.menu_bar():
+            # --------
+            # Settings
+            # --------
             with dpg.menu(label="Settings"):
-                dpg.add_slider_float(
-                    tag='mon_blink_duration_slider',
-                    label="Persistence (s)",
-                    min_value=1 / 120, max_value=2 / 3, source='mon_blink_duration',  # Min is one frame@120FPS
-                    callback=lambda:
-                    dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider'))
-                )
-                dpg.add_checkbox(label="0 velocity note-on is note-off (default, MIDI specification compliant)",
-                                 source='zero_velocity_note_on_is_note_off')
+                with dpg.group():
+                    dpg.add_text("Active button color:")
+                    dpg.add_color_picker(source='__act_but_col')
+                with dpg.group():
+                    dpg.add_text("Selected button color:")
+                    dpg.add_color_picker(source='__force_act_col')
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Persistence:")
+                    dpg.add_slider_float(
+                        tag='mon_blink_duration_slider',
+                        label="seconds",
+                        min_value=1 / 120, max_value=2 / 3, source='mon_blink_duration',  # Min is one frame@120FPS
+                        callback=lambda:
+                        dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider'))
+                    )
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Zero (0) velocity Note On is Note Off:")
+                    dpg.add_checkbox(label="(default, MIDI specification compliant)",
+                                     source='zero_velocity_note_on_is_note_off')
                 with dpg.group(horizontal=True):
                     dpg.add_text("EOX is a:")
                     dpg.add_radio_button(
@@ -144,6 +192,15 @@ def create() -> None:
                         source='eox_category',
                         callback=_update_eox_category,
                         user_data=eox_categories
+                    )
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Notation:")
+                    dpg.add_radio_button(
+                        items=[item for item in notation_modes.keys()],
+                        default_value=next(iter(notation_modes.values())),  # First value
+                        source='notation_mode',
+                        callback=_update_notation_mode,
+                        user_data=notation_modes
                     )
 
         # TODO: Panic button to reset all monitored states.
@@ -396,26 +453,25 @@ def create() -> None:
         # Notes
         # ------
         with dpg.collapsing_header(label="Notes", default_open=True):
-            dpg.add_child_window(tag='probe_notes_container', height=120, border=False)
+            dpg.add_child_window(tag='probe_notes_container', height=180, border=False)
 
         # TODO: Staff?
         # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
 
         # Keyboard
         # TODO: Graphical
-        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=120,
+        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=180,
                              border=False)
 
         # TODO: add an intensity display for velocity?
 
         width = 12  # Key width
-        height = 60  # Key height
+        height = 90  # Key height
         margin = 1  # Margin between keys
         bxpos = width / 2  # Black key X position
         wxpos = 0  # White key X position
 
-        # TODO: add preference for default notes notation?
-        for index, name in midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.items():
+        for index, name in notation_modes.get(dpg.get_value('notation_mode')).items():
             # Compute actual key position
             xpos = wxpos
             ypos = height
@@ -424,14 +480,14 @@ def create() -> None:
                 xpos = bxpos
                 ypos = 0
 
-            label = "\n".join(name)  # Vertical text
+            label = _verticalize(name)
 
             dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
                            pos=(xpos, ypos))
             conv_tooltip(
+                f"English Alphabetical:\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN[index]}\n"
                 f"Syllabic:{' ':9}\t{midiexplorer.midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
-                f"Alphabetical (EN):\t{name}\n"
-                f"Alphabetical (DE):\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
+                f" German Alphabetical:\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
                 index, blen=7
             )
 

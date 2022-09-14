@@ -18,6 +18,7 @@ import midiexplorer.midi
 from midiexplorer.gui.config import START_TIME, DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import _mon, _note_on, _note_off, reset_mon
+from midiexplorer.gui.windows.probe.settings import notation_modes
 from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
 from midiexplorer.midi.decoders.sysex import DecodedUniversalSysExPayload, DecodedSysEx
 
@@ -239,8 +240,7 @@ def decode(data: mido.Message, static: bool = False):
             _note_off(data.note, static)
         data0_name = "Note"
         data0_val: int = data.note
-        # TODO: add preference for syllabic / EN / DE
-        data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)
+        data0_dec = notation_modes.get(dpg.get_value('notation_mode')).get(data.note)
         data1_name = "Velocity"
         data1_val: int = data.velocity
     elif 'polytouch' == data.type:
@@ -248,8 +248,7 @@ def decode(data: mido.Message, static: bool = False):
             _note_on(data.note, static)
         data0_name = "Note"
         data0_val: int = data.note
-        # TODO: add preference for syllabic / EN / DE
-        data0_dec = midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN.get(data.note)
+        data0_dec = notation_modes.get(dpg.get_value('notation_mode')).get(data.note)
         data1_val: int = data.value
     elif 'control_change' == data.type:
         _mon(f'cc_{data.control}', static)
