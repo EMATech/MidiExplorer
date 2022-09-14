@@ -21,7 +21,7 @@ import midiexplorer.gui.windows.main
 import midiexplorer.gui.windows.probe
 import midiexplorer.gui.windows.probe.blink
 import midiexplorer.midi
-from midiexplorer.constants import dpg_mvlogger
+from midiexplorer.dpg_helpers.constants.mvlogger import TRACE, INFO
 from midiexplorer.gui.config import DEBUG, INIT_FILENAME, START_TIME
 from midiexplorer.midi.ports import midi_in_queue
 
@@ -37,9 +37,9 @@ def init() -> None:
     midiexplorer.gui.windows.log.create()
     logger = midiexplorer.gui.logger.Logger('log_win')
     if DEBUG:
-        logger.log_level = dpg_mvlogger.TRACE
+        logger.log_level = TRACE
     else:
-        logger.log_level = dpg_mvlogger.INFO
+        logger.log_level = INFO
     logger.log_debug(f"Application started at {START_TIME}")
 
     # ----------------
@@ -75,8 +75,10 @@ def init() -> None:
     # ------------------
     with dpg.handler_registry():
         # FIXME: this doesn't seem to work in Mac OS X and Linux. Report upstream?
-        dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)  # Fullscreen on F11
-        dpg.add_key_press_handler(key=123, callback=midiexplorer.gui.windows.log.toggle)  # Log on F12
+        # Fullscreen on F11
+        dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)
+        # Log on F12
+        dpg.add_key_press_handler(key=123, callback=midiexplorer.gui.windows.log.toggle)
 
     # -----
     # Theme

@@ -10,7 +10,6 @@ Connections window and management.
 TODO: separate presentation from processing logic
 """
 import platform
-import sys
 import time
 from collections import OrderedDict
 from typing import Optional, Any
@@ -18,7 +17,8 @@ from typing import Optional, Any
 import mido
 from dearpygui import dearpygui as dpg
 
-from midiexplorer.constants import dpg_slot
+from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.dpg_helpers.constants.slots import MOST, SPECIAL
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.data import add
@@ -140,14 +140,14 @@ def _get_pin_text(pin: int | str) -> str:
     :return: Main label of the pin
 
     """
-    text = dpg.get_value(dpg.get_item_children(pin, slot=dpg_slot.MOST)[0])
+    text = dpg.get_value(dpg.get_item_children(pin, slot=MOST)[0])
     if text is None:
         # Extract from I/O
-        mvgroup = dpg.get_item_children(pin, slot=dpg_slot.MOST)[0]
+        mvgroup = dpg.get_item_children(pin, slot=MOST)[0]
         mvtext_index = 0
         if platform.system() == "Windows":  # We have port indexe numbers
             mvtext_index = 1
-        mvtext = dpg.get_item_children(mvgroup, slot=dpg_slot.MOST)[mvtext_index]
+        mvtext = dpg.get_item_children(mvgroup, slot=MOST)[mvtext_index]
         text = dpg.get_value(mvtext)
     return text
 
@@ -169,11 +169,8 @@ def link_node_callback(sender: int | str,
     """
     logger = Logger()
 
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # Get the pins we are connecting to and related metadata
     pin1: dpg.mvNodeAttribute = app_data[0]
@@ -184,7 +181,7 @@ def link_node_callback(sender: int | str,
 
     # Only allow one link per pin for now
     # TODO: Automatically add merger node when linked to multiple nodes.
-    for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), slot=dpg_slot.SPECIAL):
+    for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), slot=SPECIAL):
         if dpg.get_item_info(children)['type'] == 'mvAppItemType::mvNodeLink':
             link_conf = dpg.get_item_configuration(children)
             if pin1 == link_conf['attr_1'] or pin2 == link_conf['attr_1'] or \
@@ -246,11 +243,8 @@ def delink_node_callback(sender: int | str,
     """
     logger = Logger()
 
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # Retrieve the pins that this link was connected to
     conf = dpg.get_item_configuration(app_data)
@@ -304,11 +298,8 @@ def input_mode_callback(sender: int | str, app_data: bool, user_data: Optional[A
     """
     logger = Logger()
 
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     pin_user_data = dpg.get_item_user_data('probe_in')
     if pin_user_data:
@@ -663,7 +654,7 @@ def poll_processing() -> None:
 
     # inputs = []
     #
-    # for pin in dpg.get_item_children('connections_editor', DPG_SLOT_MOST):
+    # for pin in dpg.get_item_children('connections_editor', slot=MOST):
     #     if pin is MidiInPort:
     #         inputs.append(dpg.get_item_user_data(pin))
     #

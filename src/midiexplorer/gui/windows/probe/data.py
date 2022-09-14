@@ -7,14 +7,14 @@
 """
 Probe data management.
 """
-import sys
 from typing import Callable, Any, Optional
 
 import mido
 from dearpygui import dearpygui as dpg
 
-import midiexplorer.constants.dpg_slot
 import midiexplorer.midi
+from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.dpg_helpers.constants.slots import MOST
 from midiexplorer.gui.config import START_TIME, DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import _mon, _note_on, _note_off, reset_mon
@@ -45,13 +45,8 @@ def _selection(sender, app_data, user_data):
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # FIXME: add a data structure tracking selected items to only deselect the one(s)
     for item in user_data:
@@ -65,7 +60,7 @@ def _selection(sender, app_data, user_data):
     raw_message = dpg.get_value(
         dpg.get_item_children(
             dpg.get_item_parent(sender),
-            midiexplorer.constants.dpg_slot.MOST
+            slot=MOST
         )[6]
     )
     message = mido.Message.from_hex(raw_message)
@@ -394,13 +389,8 @@ def _clear_probe_data_table(
     """
     global selectables, probe_data_counter
 
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     selectables.clear()
     probe_data_counter = 0

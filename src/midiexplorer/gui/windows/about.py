@@ -9,14 +9,14 @@ About window layout and content.
 """
 import pathlib
 import platform
-import sys
 from typing import Any, Optional
 
 import mido
 from dearpygui import dearpygui as dpg
 
 import midiexplorer.__about__
-from midiexplorer.gui.logger import Logger
+from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.gui.config import DEBUG
 
 
 def create() -> None:
@@ -159,12 +159,7 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     dpg.configure_item('about_win', show=not dpg.is_item_visible('about_win'))

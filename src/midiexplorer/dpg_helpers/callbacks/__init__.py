@@ -5,5 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Useful global constants for readability.
+DearPy GUI Callbacks helpers.
 """
+
+__all__ = ['debugging']

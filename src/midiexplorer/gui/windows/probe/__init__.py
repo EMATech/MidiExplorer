@@ -8,7 +8,6 @@
 Probe window.
 """
 
-import sys
 from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
@@ -16,8 +15,8 @@ from dearpygui import dearpygui as dpg
 import midiexplorer.midi.constants
 import midiexplorer.midi.mido2standard
 import midiexplorer.midi.notes
+from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.config import DEBUG
-from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.blink import get_supported_indicators
 from midiexplorer.gui.windows.probe.data import conv_tooltip, dyn_conv_tooltip, selectables, probe_data_counter, \
     _clear_probe_data_table, _init_details_table_data
@@ -45,13 +44,8 @@ def _update_eox_category(sender: int | str, app_data: Any, user_data: Optional[A
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     if dpg.get_value('eox_category') == user_data[0]:
         dpg.hide_item('mon_end_of_exclusive_syx_grp')
@@ -72,13 +66,8 @@ def _update_notation_mode(sender: int | str, app_data: Any, user_data: Optional[
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # Update keyboard
     for index in range(0, 128):  # All MIDI notes

@@ -8,13 +8,12 @@
 Logging window.
 """
 
-import sys
 from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
 
+from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.config import DEBUG
-from midiexplorer.gui.logger import Logger
 
 
 def create() -> None:
@@ -46,12 +45,7 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    logger = Logger()
-
-    # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
-    logger.log_debug(f"\tSender: {sender!r}")
-    logger.log_debug(f"\tApp data: {app_data!r}")
-    logger.log_debug(f"\tUser data: {user_data!r}")
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
 
     dpg.configure_item('log_win', show=not dpg.is_item_visible('log_win'))
