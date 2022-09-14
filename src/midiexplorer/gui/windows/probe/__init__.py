@@ -166,10 +166,10 @@ def create() -> None:
             # --------
             with dpg.menu(label="Settings"):
                 with dpg.group():
-                    dpg.add_text("Active button color:")
+                    dpg.add_text("Live color:")
                     dpg.add_color_picker(source='__act_but_col')
                 with dpg.group():
-                    dpg.add_text("Selected button color:")
+                    dpg.add_text("Selected color:")
                     dpg.add_color_picker(source='__force_act_col')
                 with dpg.group(horizontal=True):
                     dpg.add_text("Persistence:")
@@ -671,7 +671,6 @@ def create() -> None:
         # TODO: Allow sorting
         # TODO: Show/hide columns
         # TODO: timegraph?
-        # TODO: selecting an item shows it decoded values above
         dpg.add_child_window(parent='probe_table_container', tag='hist_det', label="Details", height=420, border=False)
         with dpg.table(parent='hist_det',
                        tag='probe_data_table',

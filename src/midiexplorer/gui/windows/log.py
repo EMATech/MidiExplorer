@@ -22,7 +22,7 @@ def create() -> None:
 
     """
     # TODO: allow logging to file
-    # TODO: append/overwrite
+    # TODO: append/overwrite modes
 
     with dpg.window(
             tag='log_win',

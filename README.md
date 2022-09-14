@@ -165,8 +165,16 @@ Features / TODO list
     - [x] Virtual Debug Probe
         - [x] Activity monitor
             - [x] Settings
+                - [x] Colors
+                    - [x] Live
+                    - [x] Selected
                 - [x] Persistence
                 - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
+                - [x] Display EOX as either a System Common or a System Exclusive message
+                - [x] Notation
+                    - [x] English Alphabetical
+                    - [x] Syllabic
+                    - [x] German Alphabetical
             - [x] Message type
                 - [x] Channel
                 - [x] System
