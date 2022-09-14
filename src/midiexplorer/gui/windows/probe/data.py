@@ -199,7 +199,9 @@ def decode(data: mido.Message, static: bool = False):
     """Decodes the data to display into the probe monitor.
 
     :param data: MIDI data.
+    :param static: Live or static mode
     :return: Channel value, data 1 & 2 names, values and decoded.
+
     """
 
     reset_mon(static=True)  # Reset monitor before decoding to avoid keeping old data from selected history row.
@@ -288,10 +290,10 @@ def _update_sysex_gui(decoded: DecodedSysEx):
     :param decoded: Decoded system exclusive message from _decode_sysex().
     """
 
-    dpg.set_value('syx_id_group', decoded.id.group)
-    dpg.set_value('syx_id_region', decoded.id.region)
-    dpg.set_value('syx_id_name', decoded.id.name)
-    dpg.set_value('syx_id_val', str(decoded.id.value))
+    dpg.set_value('syx_id_group', decoded.identifier.group)
+    dpg.set_value('syx_id_region', decoded.identifier.region)
+    dpg.set_value('syx_id_name', decoded.identifier.name)
+    dpg.set_value('syx_id_val', str(decoded.identifier.value))
     dpg.set_value('syx_device_id', str(decoded.device_id))
     dpg.set_value('syx_payload', str(decoded.payload.value))
     if isinstance(decoded.payload, DecodedUniversalSysExPayload):

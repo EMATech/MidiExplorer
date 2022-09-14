@@ -185,7 +185,7 @@ def create() -> None:
                 with dpg.group(horizontal=True):
                     dpg.add_text("Notation:")
                     dpg.add_radio_button(
-                        items=[item for item in notation_modes.keys()],
+                        items=list(notation_modes.keys()),
                         default_value=next(iter(notation_modes.values())),  # First value
                         source='notation_mode',
                         callback=_update_notation_mode,

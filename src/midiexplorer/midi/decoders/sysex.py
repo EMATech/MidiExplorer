@@ -78,7 +78,6 @@ class DecodedSysExId:
 
     @functools.cached_property
     def name(self) -> str:
-        index: int
         name: str = "Undefined"
         if self._len == 1:
             name = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(self._raw, "Undefined")
@@ -97,8 +96,8 @@ class DecodedSysExPayload:
     _id = int
     _raw: int | tuple[int]
 
-    def __init__(self, id: DecodedSysExId, contents: int | tuple[int]):
-        self._id = id
+    def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
+        self._id = identifier
         self._raw = contents
 
     @property
@@ -106,25 +105,24 @@ class DecodedSysExPayload:
         return self._raw
 
     @staticmethod
-    def get_decoder(id):
-        if id.value == 0x7E:
+    def get_decoder(identifier):
+        if identifier.value == 0x7E:
             return DecodedUniversalNonRealTimeSysExPayload
-        if id.value == 0x7F:
+        if identifier.value == 0x7F:
             return DecodedUniversalRealTimeSysExPayload
-        else:
-            return DecodedSysExPayload
+        return DecodedSysExPayload
 
 
 class DecodedUniversalSysExPayload(DecodedSysExPayload):
-    def __init__(self, id: DecodedSysExId, contents: int | tuple[int]):
-        super().__init__(id, contents)
+    def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
+        super().__init__(identifier, contents)
 
 
 class DecodedUniversalNonRealTimeSysExPayload(DecodedUniversalSysExPayload):
-    def __init__(self, id: DecodedSysExId, contents: int | tuple[int]):
-        if id.value != 0x7E:
+    def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
+        if identifier.value != 0x7E:
             raise ValueError
-        super().__init__(id, contents)
+        super().__init__(identifier, contents)
         next_byte: int = 0
         self.sub_id1_value = self._raw[next_byte]
         self.sub_id1_name = midiexplorer.midi.constants. \
@@ -137,10 +135,10 @@ class DecodedUniversalNonRealTimeSysExPayload(DecodedUniversalSysExPayload):
 
 
 class DecodedUniversalRealTimeSysExPayload(DecodedUniversalSysExPayload):
-    def __init__(self, id: DecodedSysExId, contents: int | tuple[int]):
-        if id.value != 0x7F:
+    def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
+        if identifier.value != 0x7F:
             raise ValueError
-        super().__init__(id, contents)
+        super().__init__(identifier, contents)
         next_byte: int = 0
         self.sub_id1_value = self._raw[next_byte]
         self.sub_id1_name = midiexplorer.midi.constants. \
@@ -169,11 +167,11 @@ class DecodedSysEx:
                     "Message too short (less than 5 bytes) to be a proper system exclusive message with a 3-byte ID."
                 )
             self._device_id_byte = 3
-            self.id = DecodedSysExId(self._raw[0:self._device_id_byte])
+            self.identifier = DecodedSysExId(self._raw[0:self._device_id_byte])
         else:
             # 1-byte ID
             self._device_id_byte = 1
-            self.id = DecodedSysExId(self._raw[0])
+            self.identifier = DecodedSysExId(self._raw[0])
 
     @functools.cached_property
     def device_id(self) -> int:
@@ -185,5 +183,5 @@ class DecodedSysEx:
 
     @functools.cached_property
     def payload(self) -> DecodedSysExPayload:
-        decoder = DecodedSysExPayload.get_decoder(self.id)
-        return decoder(self.id, self._payload)
+        decoder = DecodedSysExPayload.get_decoder(self.identifier)
+        return decoder(self.identifier, self._payload)

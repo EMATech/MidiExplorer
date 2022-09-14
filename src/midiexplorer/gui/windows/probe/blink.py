@@ -96,7 +96,8 @@ def get_theme(static, disable: bool = False):
 def _mon(indicator: int | str, static: bool = False) -> None:
     """Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
 
-    :param indicator: Name of the indicator to blink
+    :param indicator: Name of the indicator to blink.
+    :param static: Live or static mode.
 
     """
     # logger = midiexplorer.gui.logger.Logger()
@@ -125,6 +126,7 @@ def _note_on(number: int | str, static: bool = False) -> None:
     """Illuminates the note.
 
     :param number: MIDI note number.
+    :param static: Live or static mode.
 
     """
     theme = get_theme(static)
@@ -135,6 +137,7 @@ def _note_off(number: int | str, static: bool = False) -> None:
     """Darken the note.
 
     :param number: MIDI note number.
+    :param static: Live or static mode.
 
     """
     theme = get_theme(static, disable=True)
