@@ -7,8 +7,11 @@
 """
 DearPyGui Slot types.
 """
+from enum import IntEnum
 
-SPECIAL = 0
-MOST = 1
-DRAW = 2
-DRAG_PAYLOAD = 3
+
+class Slots(IntEnum):
+    SPECIAL = 0
+    MOST = 1
+    DRAW = 2
+    DRAG_PAYLOAD = 3

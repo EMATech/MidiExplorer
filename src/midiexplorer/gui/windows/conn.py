@@ -18,7 +18,7 @@ import mido
 from dearpygui import dearpygui as dpg
 
 from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
-from midiexplorer.dpg_helpers.constants.slots import MOST, SPECIAL
+from midiexplorer.dpg_helpers.constants.slots import Slots
 from midiexplorer.gui.config import DEBUG
 from midiexplorer.gui.logger import Logger
 from midiexplorer.gui.windows.probe.data import add
@@ -140,14 +140,14 @@ def _get_pin_text(pin: int | str) -> str:
     :return: Main label of the pin
 
     """
-    text = dpg.get_value(dpg.get_item_children(pin, slot=MOST)[0])
+    text = dpg.get_value(dpg.get_item_children(pin, slot=Slots.MOST)[0])
     if text is None:
         # Extract from I/O
-        mvgroup = dpg.get_item_children(pin, slot=MOST)[0]
+        mvgroup = dpg.get_item_children(pin, slot=Slots.MOST)[0]
         mvtext_index = 0
         if platform.system() == "Windows":  # We have port indexe numbers
             mvtext_index = 1
-        mvtext = dpg.get_item_children(mvgroup, slot=MOST)[mvtext_index]
+        mvtext = dpg.get_item_children(mvgroup, slot=Slots.MOST)[mvtext_index]
         text = dpg.get_value(mvtext)
     return text
 
@@ -181,7 +181,7 @@ def link_node_callback(sender: int | str,
 
     # Only allow one link per pin for now
     # TODO: Automatically add merger node when linked to multiple nodes.
-    for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), slot=SPECIAL):
+    for children in dpg.get_item_children(dpg.get_item_parent(dpg.get_item_parent(pin1)), slot=Slots.SPECIAL):
         if dpg.get_item_info(children)['type'] == 'mvAppItemType::mvNodeLink':
             link_conf = dpg.get_item_configuration(children)
             if pin1 == link_conf['attr_1'] or pin2 == link_conf['attr_1'] or \
@@ -332,7 +332,7 @@ def refresh_midi_ports() -> None:
     logger.log_debug(f"Available MIDI outputs: {midi_outputs}")
 
     # Delete links
-    dpg.delete_item('connections_editor', children_only=True, slot=0)
+    dpg.delete_item('connections_editor', children_only=True, slot=Slots.SPECIAL)
 
     # Delete ports
     dpg.delete_item('inputs_node', children_only=True)
@@ -654,7 +654,7 @@ def poll_processing() -> None:
 
     # inputs = []
     #
-    # for pin in dpg.get_item_children('connections_editor', slot=MOST):
+    # for pin in dpg.get_item_children('connections_editor', slot=Slots.MOST):
     #     if pin is MidiInPort:
     #         inputs.append(dpg.get_item_user_data(pin))
     #

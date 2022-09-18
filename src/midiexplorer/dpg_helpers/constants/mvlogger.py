@@ -7,10 +7,13 @@
 """
 DearPyGui mvLogger levels.
 """
+from enum import IntEnum
 
-TRACE = 0
-DEBUG = 1
-INFO = 2
-WARNING = 3
-ERROR = 4
-CRITICAL = 5
+
+class MvLogger(IntEnum):
+    TRACE = 0
+    DEBUG = 1
+    INFO = 2
+    WARNING = 3
+    ERROR = 4
+    CRITICAL = 5

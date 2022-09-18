@@ -21,7 +21,8 @@ import midiexplorer.gui.windows.main
 import midiexplorer.gui.windows.probe
 import midiexplorer.gui.windows.probe.blink
 import midiexplorer.midi
-from midiexplorer.dpg_helpers.constants.mvlogger import TRACE, INFO
+from midiexplorer.dpg_helpers.constants.mvlogger import MvLogger
+from midiexplorer.dpg_helpers.constants.slots import Slots
 from midiexplorer.gui.config import DEBUG, INIT_FILENAME, START_TIME
 from midiexplorer.midi.ports import midi_in_queue
 
@@ -37,9 +38,9 @@ def init() -> None:
     midiexplorer.gui.windows.log.create()
     logger = midiexplorer.gui.logger.Logger('log_win')
     if DEBUG:
-        logger.log_level = TRACE
+        logger.log_level = MvLogger.TRACE
     else:
-        logger.log_level = INFO
+        logger.log_level = MvLogger.INFO
     logger.log_debug(f"Application started at {START_TIME}")
 
     # ----------------
@@ -104,7 +105,7 @@ def init() -> None:
 
     dpg.bind_font('default_font')
 
-    log_win_textbox = dpg.get_item_children('log_win', slot=1)[2]
+    log_win_textbox = dpg.get_item_children('log_win', slot=Slots.MOST)[2]
     dpg.bind_item_font(log_win_textbox, 'mono_font')
 
     if DEBUG:
