@@ -22,9 +22,6 @@ def create() -> None:
     """Creates the generator window.
 
     """
-    with dpg.value_registry():
-        dpg.add_string_value(tag='generator_decoded_message', default_value='')
-
     with dpg.window(
             tag='gen_win',
             label="Generator",
@@ -32,25 +29,30 @@ def create() -> None:
             height=110,
             no_close=True,
             collapsed=False,
-            pos=[900, 705]
+            pos=[900, 705],
     ):
         dpg.add_input_text(
             tag='generator_raw_message',
             label="Raw Message",
             hint="XXYYZZ (HEX)",
             hexadecimal=True,
-            callback=decode_callback
+            callback=decode,
         )
         dpg.add_input_text(
             label="Decoded",
             readonly=True,
             hint="Automatically decoded raw message",
-            source='generator_decoded_message'
+            tag='generator_decoded_message',
         )
-        dpg.add_button(tag="generator_send_button", label="Send", enabled=False)
+        dpg.add_button(
+            tag="generator_send_button",
+            label="Send",
+            enabled=False,
+            callback=send,
+        )
 
 
-def decode_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+def decode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """Callback to decode raw MIDI message input.
 
     :param sender: argument is used by DPG to inform the callback
@@ -66,12 +68,45 @@ def decode_callback(sender: int | str, app_data: Any, user_data: Optional[Any]) 
     if DEBUG:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
+    warning = None
     try:
-        decoded = repr(mido.Message.from_hex(app_data))
+        decoded: mido.Message = mido.Message.from_hex(app_data)
     except (TypeError, ValueError) as error:
-        decoded = f"Warning: {error!s}"
+        warning = f"Warning: {error!s}"
         pass
 
-    logger.log_debug(f"Raw message {app_data} decoded to: {decoded}.")
+    if warning is None:
+        logger.log_debug(f"Raw message {app_data} decoded to: {decoded!r}.")
+        dpg.set_value('generator_decoded_message', repr(decoded))
+        dpg.enable_item('generator_send_button')
+        dpg.set_item_user_data('generator_send_button', decoded)
+    else:
+        logger.log_warning(f"Error decoding raw message {app_data}: {warning}")
+        dpg.set_value('generator_decoded_message', warning)
+        dpg.disable_item('generator_send_button')
+        dpg.set_item_user_data('generator_send_button', None)
 
-    dpg.set_value('generator_decoded_message', decoded)
+
+def send(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Callback to send raw MIDI message from input.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    logger = Logger()
+
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
+
+    port = dpg.get_item_user_data('gen_out')
+    if port:
+        port.port.send(user_data)
+    else:
+        logger.log_warning("Generator output is not connected to anything.")
+
+    # raise NotImplementedError
