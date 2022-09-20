@@ -8,7 +8,7 @@
 Common callback debugging technique.
 """
 
-import sys
+import inspect
 from typing import Any, Optional
 
 from midiexplorer.gui.logger import Logger
@@ -28,7 +28,8 @@ def enable(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     logger = Logger()
 
     # Debug
-    logger.log_debug(f"Entering {sys._getframe().f_code.co_name}:")
+    stack_frame = inspect.stack()[1]
+    logger.log_debug(f"Callback {stack_frame.function} ({stack_frame.filename} line {stack_frame.lineno}):")
     logger.log_debug(f"\tSender: {sender!r}")
     logger.log_debug(f"\tApp data: {app_data!r}")
     logger.log_debug(f"\tUser data: {user_data!r}")
