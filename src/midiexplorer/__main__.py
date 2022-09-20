@@ -13,11 +13,11 @@ import pathlib
 import dearpygui.dearpygui as dpg  # https://dearpygui.readthedocs.io/en/latest/
 
 import midiexplorer.gui.logger
+import midiexplorer.gui.menu
 import midiexplorer.gui.windows.about
 import midiexplorer.gui.windows.conn
 import midiexplorer.gui.windows.gen
 import midiexplorer.gui.windows.log
-import midiexplorer.gui.windows.main
 import midiexplorer.gui.windows.probe
 import midiexplorer.gui.windows.probe.blink
 import midiexplorer.midi
@@ -56,8 +56,7 @@ def init() -> None:
     # -------
     # Windows
     # -------
-    midiexplorer.gui.windows.about.create()
-    midiexplorer.gui.windows.main.create()
+    midiexplorer.gui.menu.create()
     midiexplorer.gui.windows.conn.create()
     midiexplorer.gui.windows.probe.create()
     if DEBUG:
@@ -133,8 +132,6 @@ def init() -> None:
     )
     dpg.setup_dearpygui()
     dpg.show_viewport()
-    merge_primary_window = True
-    dpg.set_primary_window('main_win', merge_primary_window)
 
 
 def main() -> None:
