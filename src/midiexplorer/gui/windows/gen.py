@@ -22,6 +22,9 @@ def create() -> None:
     """Creates the generator window.
 
     """
+    posy = 930
+    if DEBUG:
+        posy = 705
     with dpg.window(
             tag='gen_win',
             label="Generator",
@@ -29,7 +32,7 @@ def create() -> None:
             height=110,
             no_close=True,
             collapsed=False,
-            pos=[900, 705],
+            pos=[900, posy],
     ):
         dpg.add_input_text(
             tag='generator_raw_message',

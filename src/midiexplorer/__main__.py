@@ -59,8 +59,7 @@ def init() -> None:
     midiexplorer.gui.menu.create()
     midiexplorer.gui.windows.conn.create()
     midiexplorer.gui.windows.probe.create()
-    if DEBUG:
-        midiexplorer.gui.windows.gen.create()
+    midiexplorer.gui.windows.gen.create()
 
     # ---------------------
     # Initial configuration

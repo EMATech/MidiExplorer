@@ -515,17 +515,15 @@ def create() -> None:
                 ):
                     dpg.add_text("Thru")
 
-            if DEBUG:
-                # TODO: implement
-                with dpg.node(label="GENERATOR",
-                              pos=[360, 165]):
-                    with dpg.node_attribute(
-                            tag='gen_out',
-                            attribute_type=dpg.mvNode_Attr_Output,
-                            shape=dpg.mvNode_PinShape_Triangle,
-                            label="Out",
-                    ):
-                        dpg.add_text("Out", indent=2)
+            with dpg.node(label="GENERATOR",
+                          pos=[360, 165]):
+                with dpg.node_attribute(
+                        tag='gen_out',
+                        attribute_type=dpg.mvNode_Attr_Output,
+                        shape=dpg.mvNode_PinShape_Triangle,
+                        label="Out",
+                ):
+                    dpg.add_text("Out", indent=2)
 
             if DEBUG:
                 # TODO: implement
