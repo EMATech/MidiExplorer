@@ -76,9 +76,9 @@ def init() -> None:
     with dpg.handler_registry():
         # FIXME: this doesn't seem to work in Mac OS X and Linux. Report upstream?
         # Fullscreen on F11
-        dpg.add_key_press_handler(key=122, callback=dpg.toggle_viewport_fullscreen)
+        dpg.add_key_press_handler(key=dpg.mvKey_F11, callback=dpg.toggle_viewport_fullscreen)
         # Log on F12
-        dpg.add_key_press_handler(key=123, callback=midiexplorer.gui.windows.log.toggle)
+        dpg.add_key_press_handler(key=dpg.mvKey_F12, callback=midiexplorer.gui.windows.log.toggle)
 
     # -----
     # Theme
