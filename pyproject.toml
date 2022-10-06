@@ -137,10 +137,21 @@ exclude_lines = [
 
 [tool.hatch.build.targets.sdist]
 exclude = [
+    '/.cache',
+    '/.pytest_cache',
+    '/.run',
     '/.gitignore',
-    '/_assets',
-    '/_screenshots',
+    '/data',
+    '/dist',
     '/docs',
+    '/midiexplorer.build',
+    '/.coverage',
+    '/.gitignore',
+    '/.midiexplorer.cmd',
+    '/.midiexplorer.exe',
+    '/RELEASE.md',
+    '/STYLE.md',
+    '/TODO.md',
 ]
 
 [tool.hatch.build.targets.wheel]
