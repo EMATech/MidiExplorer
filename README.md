@@ -275,7 +275,7 @@ Legal notice
 
 ### License
 
-![GPLv3](data/assets/sources/gplv3-or-later.svg)
+![GPLv3](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/assets/sources/gplv3-or-later.svg)
 
 Author: ©2021-2022 Raphaël Doursenaud.
 
