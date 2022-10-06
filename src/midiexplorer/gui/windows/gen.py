@@ -71,7 +71,7 @@ def decode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     warning = None
     try:
         decoded: mido.Message = mido.Message.from_hex(app_data)
-    except (TypeError, ValueError) as error:
+    except (TypeError, ValueError, IndexError) as error:
         warning = f"Warning: {error!s}"
         pass
 
