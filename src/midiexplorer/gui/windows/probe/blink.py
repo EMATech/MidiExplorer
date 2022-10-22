@@ -12,7 +12,8 @@ import time
 
 from dearpygui import dearpygui as dpg
 
-from midiexplorer.gui.config import START_TIME, DEBUG
+from midiexplorer.__config__ import DEBUG
+from midiexplorer.midi.timestamp import Timestamp
 
 
 @functools.lru_cache()  # Only compute once
@@ -93,7 +94,7 @@ def get_theme(static, disable: bool = False):
     return theme
 
 
-def _mon(indicator: int | str, static: bool = False) -> None:
+def mon(indicator: int | str, static: bool = False) -> None:
     """Illuminates an indicator in the monitor panel and prepare metadata for its lifetime management.
 
     :param indicator: Name of the indicator to blink.
@@ -103,7 +104,7 @@ def _mon(indicator: int | str, static: bool = False) -> None:
     # logger = midiexplorer.gui.logger.Logger()
     # logger.log_debug(f"blink {indicator}")
 
-    now = time.time() - START_TIME
+    now = time.time() - Timestamp.START_TIME
     delay = dpg.get_value('mon_blink_duration')
     target = f'mon_{indicator}_active_until'
     if not static:
@@ -118,11 +119,11 @@ def _mon(indicator: int | str, static: bool = False) -> None:
     else:
         dpg.bind_item_theme(f'mon_{indicator}_common', theme)
         dpg.bind_item_theme(f'mon_{indicator}_syx', theme)
-    # logger.log_debug(f"Current time:{time.time() - START_TIME}")
+    # logger.log_debug(f"Current time:{time.time() - Timestamp.START_TIME}")
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
 
 
-def _note_on(number: int | str, static: bool = False) -> None:
+def note_on(number: int | str, static: bool = False) -> None:
     """Illuminates the note.
 
     :param number: MIDI note number.
@@ -133,7 +134,7 @@ def _note_on(number: int | str, static: bool = False) -> None:
     dpg.bind_item_theme(f'note_{number}', theme)
 
 
-def _note_off(number: int | str, static: bool = False) -> None:
+def note_off(number: int | str, static: bool = False) -> None:
     """Darken the note.
 
     :param number: MIDI note number.
@@ -160,7 +161,7 @@ def update_mon_status() -> None:
     Checks for the time it should stay illuminated and darkens it if expired.
 
     """
-    now = time.time() - START_TIME
+    now = time.time() - Timestamp.START_TIME
     for indicator in get_supported_indicators():
         value = dpg.get_value(f'{indicator}_active_until')
         if value:  # Prevent resetting theme when not needed.
@@ -176,7 +177,7 @@ def reset_mon(static: bool = False) -> None:
 
     for index in range(0, 128):  # All MIDI notes
         if not static or dpg.get_item_theme(f'note_{index}') == '__force_act':
-            _note_off(index)
+            note_off(index)
 
     if not static:
         for decoder in get_supported_decoders():

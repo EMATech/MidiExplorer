@@ -12,8 +12,8 @@ For reference only.
 
 from typing import Any, Optional
 
-from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
-from midiexplorer.gui.config import DEBUG
+from midiexplorer.__config__ import DEBUG
+from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 
 
 def callback(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:

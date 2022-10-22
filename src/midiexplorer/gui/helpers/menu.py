@@ -11,11 +11,11 @@ Main menu.
 from dearpygui import dearpygui as dpg
 from dearpygui.demo import show_demo
 
-import midiexplorer.gui.config
-import midiexplorer.gui.logger
+import midiexplorer.gui.helpers.config
+import midiexplorer.gui.helpers.logger
 import midiexplorer.gui.windows.about
 import midiexplorer.gui.windows.log
-from midiexplorer.gui.config import DEBUG
+from midiexplorer.__config__ import DEBUG
 
 
 def create() -> None:
@@ -24,17 +24,17 @@ def create() -> None:
     Including the menu bar, associated items and file selector dialogs.
 
     """
-    midiexplorer.gui.config.create_selectors()
+    midiexplorer.gui.helpers.config.create_selectors()
     midiexplorer.gui.windows.about.create()
 
     with dpg.viewport_menu_bar():
         if DEBUG:  # FIXME: Currently unstable
             with dpg.menu(label="Configuration"):
-                dpg.add_menu_item(label="Load", callback=midiexplorer.gui.config.load)
-                dpg.add_menu_item(label="Save", callback=midiexplorer.gui.config.save)
-                dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.config.saveas)
-                dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.config.clear)
-                dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.config.clear)
+                dpg.add_menu_item(label="Load", callback=midiexplorer.gui.helpers.config.load)
+                dpg.add_menu_item(label="Save", callback=midiexplorer.gui.helpers.config.save)
+                dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.helpers.config.saveas)
+                dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
+                dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 
         with dpg.menu(label="Display"):
             dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)

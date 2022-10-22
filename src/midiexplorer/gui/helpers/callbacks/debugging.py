@@ -11,7 +11,7 @@ Common callback debugging technique.
 import inspect
 from typing import Any, Optional
 
-from midiexplorer.gui.logger import Logger
+from midiexplorer.gui.helpers.logger import Logger
 
 
 def enable(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:

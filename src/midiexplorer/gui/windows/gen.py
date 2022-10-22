@@ -7,15 +7,17 @@
 """
 Generator window and management.
 """
-
+import time
 from typing import Any, Optional
 
 import mido
 from dearpygui import dearpygui as dpg
 
-from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
-from midiexplorer.gui.config import DEBUG
-from midiexplorer.gui.logger import Logger
+import midiexplorer.gui.windows.hist.data
+from midiexplorer.__config__ import DEBUG
+from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.gui.helpers.logger import Logger
+from midiexplorer.midi.timestamp import Timestamp
 
 
 def create() -> None:
@@ -101,6 +103,10 @@ def send(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
+
+    # Compute timestamp and delta ASAP
+    timestamp = Timestamp()
+
     logger = Logger()
 
     if DEBUG:
@@ -109,7 +115,7 @@ def send(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     port = dpg.get_item_user_data('gen_out')
     if port:
         port.port.send(user_data)
+        midiexplorer.gui.windows.hist.data.add(data=user_data, source='Generator', destination=port.label,
+                                               timestamp=timestamp)
     else:
         logger.log_warning("Generator output is not connected to anything.")
-
-    # raise NotImplementedError

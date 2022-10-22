@@ -10,7 +10,7 @@ MIDI helpers.
 
 import mido  # https://mido.readthedocs.io/en/latest/
 
-from midiexplorer.gui.logger import Logger
+from midiexplorer.gui.helpers.logger import Logger
 
 
 def init() -> None:

@@ -10,19 +10,19 @@ Connections window and management.
 TODO: separate presentation from processing logic
 """
 import platform
-import time
 from collections import OrderedDict
 from typing import Optional, Any
 
 import mido
 from dearpygui import dearpygui as dpg
 
-from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
-from midiexplorer.dpg_helpers.constants.slots import Slots
-from midiexplorer.gui.config import DEBUG
-from midiexplorer.gui.logger import Logger
+from midiexplorer.__config__ import DEBUG
+from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.gui.helpers.constants.slots import Slots
+from midiexplorer.gui.helpers.logger import Logger
 from midiexplorer.gui.windows.probe.data import add
 from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
+from midiexplorer.midi.timestamp import Timestamp
 
 
 def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
@@ -602,7 +602,7 @@ def create() -> None:
         refresh_midi_ports()
 
 
-def handle_received_data(timestamp: float, source: str, dest: str, midi_data: mido.Message) -> None:
+def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data: mido.Message) -> None:
     """Handles received MIDI data and echoes "Soft Thru" messages.
 
     :param timestamp: MIDI data timestamp.
@@ -648,6 +648,9 @@ def poll_processing() -> None:
     For reference: 60 FPS ~= 16.7 ms, 120 FPS ~= 8.3 ms
 
     """
+    # Get the system timestamp ASAP
+    timestamp = Timestamp()
+
     # TODO: subscribe pattern for multi module handling?
 
     # inputs = []
@@ -665,6 +668,5 @@ def poll_processing() -> None:
     if probe_in_user_data:
         # logger.log_debug(f"Probe input has user data: {probe_in_user_data}")
         for midi_message in probe_in_user_data.port.iter_pending():
-            timestamp = time.time()
             with midi_in_lock:
                 midi_in_queue.put((timestamp, probe_in_user_data.label, probe_in_user_data.dest, midi_message))

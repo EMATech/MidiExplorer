@@ -11,13 +11,13 @@ MIDI ports helpers.
 import multiprocessing
 import platform
 import threading
-import time
 from abc import ABC
 from functools import cached_property
 
 import mido
 
-from midiexplorer.gui.logger import Logger
+from midiexplorer.gui.helpers.logger import Logger
+from midiexplorer.midi.timestamp import Timestamp
 
 # TODO: MIDI Input Queue Singleton?
 midi_in_lock = threading.Lock()
@@ -158,7 +158,7 @@ class MidiInPort(MidiPort):
 
         """
         # Get the system timestamp ASAP
-        timestamp = time.time()
+        timestamp = Timestamp()
 
         logger = Logger()
         logger.log_debug(f"Callback data: {midi_message} from {self.label} to {self.dest}")

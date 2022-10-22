@@ -15,8 +15,8 @@ import mido
 from dearpygui import dearpygui as dpg
 
 import midiexplorer.__about__
-from midiexplorer.dpg_helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
-from midiexplorer.gui.config import DEBUG
+from midiexplorer.__config__ import DEBUG
+from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 
 
 def create() -> None:

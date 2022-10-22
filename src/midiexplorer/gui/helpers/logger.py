@@ -7,6 +7,8 @@
 """
 GUI logging system.
 """
+from enum import IntEnum
+
 from dearpygui_ext.logger import mvLogger
 
 
@@ -33,3 +35,12 @@ class Logger:
         if Logger.__instance is None:
             Logger.__instance = super(Logger, cls).__new__(cls)
         return cls.__instance
+
+
+class MvLogger(IntEnum):
+    TRACE = 0
+    DEBUG = 1
+    INFO = 2
+    WARNING = 3
+    ERROR = 4
+    CRITICAL = 5
