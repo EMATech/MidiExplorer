@@ -475,8 +475,8 @@ def create() -> None:
                            pos=(xpos, ypos))
             conv_tooltip(
                 f"English Alphabetical:\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN[index]}\n"
-                f"Syllabic:{' ':9}\t{midiexplorer.midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
-                f" German Alphabetical:\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
+                f"Syllabic:{' ':12}\t{midiexplorer.midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
+                f"German Alphabetical: \t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_DE[index]}",
                 index, blen=7
             )
 
