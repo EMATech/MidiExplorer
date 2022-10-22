@@ -157,7 +157,7 @@ Features / TODO list
         - [x] [USB MIDI 1.0](https://www.midi.org/specifications/midi-transports-specifications/usb/usb-midi-1-0-2)
             - [x] OS Level
             - [ ] Direct Access?
-        -[ ] [USB MIDI 2.0](https://www.midi.org/specifications/midi-transports-specifications/usb/usb-midi-2-0-2)
+        - [ ] [USB MIDI 2.0](https://www.midi.org/specifications/midi-transports-specifications/usb/usb-midi-2-0-2)
             - [ ] OS Level?
             - [ ] Direct Access?
         - [ ] IEEE-1394  
@@ -311,7 +311,7 @@ Features / TODO list
                       (GM)
                         - [ ] Level 1 (GM1/GM-1) (1991)  
                           [MMA0007/RP-003](https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-1)
-                          General MIDI System Level 1
+                          General MIDI System Level 1  
                           [RP-015 (AMEI/MSC)](https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp15.pdf)
                           Response to Reset All Controllers
                         - [ ] Level 2 (GM2/GM-2) (1999)  
