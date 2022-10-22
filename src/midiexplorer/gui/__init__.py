@@ -15,7 +15,7 @@ import midiexplorer.gui.helpers.menu
 import midiexplorer.gui.windows.conn
 import midiexplorer.gui.windows.gen
 import midiexplorer.gui.windows.hist
-import midiexplorer.gui.windows.probe
+import midiexplorer.gui.windows.mon
 import midiexplorer.midi
 from midiexplorer.__config__ import DEBUG, INIT_FILENAME
 from midiexplorer.gui.helpers.constants.slots import Slots
@@ -55,7 +55,7 @@ def init():
     midiexplorer.gui.helpers.menu.create()
     midiexplorer.gui.windows.conn.create()
     midiexplorer.gui.windows.hist.create()
-    midiexplorer.gui.windows.probe.create()
+    midiexplorer.gui.windows.mon.create()
     midiexplorer.gui.windows.gen.create()
 
     # ---------------------
@@ -74,8 +74,8 @@ def init():
         # dpg.add_key_press_handler(key=dpg.mvKey_F1, callback=midiexplorer.gui.windows.conn.toggle)
         # TODO: F2: history
         # dpg.add_key_press_handler(key=dpg.mvKey_F2, callback=midiexplorer.gui.windows.hist.toggle)
-        # TODO: F3: probe monitor
-        # dpg.add_key_press_handler(key=dpg.mvKey_F3, callback=midiexplorer.gui.windows.probe.toggle)
+        # TODO: F3: monitor
+        # dpg.add_key_press_handler(key=dpg.mvKey_F3, callback=midiexplorer.gui.windows.mon.toggle)
         # TODO: F4: generator
         # dpg.add_key_press_handler(key=dpg.mvKey_F4, callback=midiexplorer.gui.windows.gen.toggle)
         # Fullscreen on F11
@@ -114,11 +114,11 @@ def init():
     dpg.bind_item_font('hist_data_table', 'mono_font')
 
     if DEBUG:
-        dpg.bind_item_font('probe_midi_mode', 'mono_font')
-    dpg.bind_item_font('probe_status_container', 'mono_font')
-    dpg.bind_item_font('probe_controllers_container', 'mono_font')
-    dpg.bind_item_font('probe_sysex_container', 'mono_font')
-    dpg.bind_item_font('probe_notes_container', 'mono_font')
+        dpg.bind_item_font('mon_midi_mode', 'mono_font')
+    dpg.bind_item_font('mon_status_container', 'mono_font')
+    dpg.bind_item_font('mon_controllers_container', 'mono_font')
+    dpg.bind_item_font('mon_sysex_container', 'mono_font')
+    dpg.bind_item_font('mon_notes_container', 'mono_font')
 
     # --------
     # Viewport

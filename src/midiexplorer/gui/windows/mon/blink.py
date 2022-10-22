@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Probe monitoring blinking buttons.
+Monitoring blinking buttons.
 """
 import functools
 import time

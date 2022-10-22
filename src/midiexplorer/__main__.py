@@ -39,8 +39,8 @@ def main() -> None:
         while not midi_in_queue.empty():
             midiexplorer.gui.windows.conn.handle_received_data(*midi_in_queue.get())
 
-        # Update probe visual cues
-        midiexplorer.gui.windows.probe.blink.update_mon_status()
+        # Update monitor visual cues
+        midiexplorer.gui.windows.mon.blink.update_mon_status()
 
         # Render DPG frame
         dpg.render_dearpygui_frame()

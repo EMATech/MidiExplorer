@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """
-Probe window.
+Monitor window.
 """
 
 from typing import Any, Optional
@@ -18,8 +18,8 @@ import midiexplorer.midi.notes
 from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.helpers.convert import tooltip_conv, tooltip_preconv, add_string_value_preconv
-from midiexplorer.gui.windows.probe.blink import get_supported_indicators
-from midiexplorer.gui.windows.probe.settings import eox_categories, notation_modes
+from midiexplorer.gui.windows.mon.blink import get_supported_indicators
+from midiexplorer.gui.windows.mon.settings import eox_categories, notation_modes
 
 
 def _verticalize(text: str) -> str:
@@ -74,7 +74,7 @@ def _update_notation_mode(sender: int | str, app_data: Any, user_data: Optional[
 
 
 def create() -> None:
-    """Creates the probe window.
+    """Creates the monitor window.
 
     """
     # -------------------------
@@ -127,22 +127,22 @@ def create() -> None:
                 value=(170, 0, 170),  # light magenta
             )
 
-    # -------------------------
-    # Probe monitor window size
-    # --------------------------
+    # -------------------
+    # Monitor window size
+    # -------------------
     # TODO: compute dynamically?
-    probe_mon_win_height = 910
+    mon_win_height = 910
     if DEBUG:
-        probe_mon_win_height = 685
+        mon_win_height = 685
 
-    # -------------
-    # Probe window
-    # -------------
+    # --------------
+    # Monitor window
+    # --------------
     with dpg.window(
-            tag='probe_mon_win',
-            label="Probe Monitor",
+            tag='mon_win',
+            label="Monitor",
             width=1005,
-            height=probe_mon_win_height,
+            height=mon_win_height,
             no_close=True,
             collapsed=False,
             pos=[900, 20]
@@ -199,7 +199,7 @@ def create() -> None:
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="MIDI Mode", default_open=False):
-                dpg.add_child_window(tag='probe_midi_mode', height=10, border=False)
+                dpg.add_child_window(tag='mon_midi_mode', height=10, border=False)
 
                 dpg.add_text("Not implemented yet")
 
@@ -226,9 +226,9 @@ def create() -> None:
         if DEBUG:
             status_height = 180
         with dpg.collapsing_header(label="Status", default_open=True):
-            dpg.add_child_window(tag='probe_status_container', height=status_height, border=False)
+            dpg.add_child_window(tag='mon_status_container', height=status_height, border=False)
 
-        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='mon_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(3):
@@ -249,7 +249,7 @@ def create() -> None:
         dlen = 3  # Decimal
         blen = 4  # Binary
 
-        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='mon_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
             for channel in range(17):
                 dpg.add_table_column()
@@ -261,7 +261,7 @@ def create() -> None:
                     dpg.add_button(tag=f"mon_{channel}", label=f"{channel + 1:2d}")
                     tooltip_conv(f"Channel {channel + 1}", channel, hlen, dlen, blen)
 
-        with dpg.table(parent='probe_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
+        with dpg.table(parent='mon_status_container', header_row=False, policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
             for _i in range(9):
@@ -441,14 +441,14 @@ def create() -> None:
         # Notes
         # ------
         with dpg.collapsing_header(label="Notes", default_open=True):
-            dpg.add_child_window(tag='probe_notes_container', height=180, border=False)
+            dpg.add_child_window(tag='mon_notes_container', height=180, border=False)
 
         # TODO: Staff?
-        # dpg.add_child_window(parent='probe_notes_container', tag='staff', label="Staff", height=120, border=False)
+        # dpg.add_child_window(parent='mon_notes_container', tag='staff', label="Staff", height=120, border=False)
 
         # Keyboard
         # TODO: Graphical
-        dpg.add_child_window(parent='probe_notes_container', tag='keyboard', label="Keyboard", height=180,
+        dpg.add_child_window(parent='mon_notes_container', tag='keyboard', label="Keyboard", height=180,
                              border=False)
 
         # TODO: add an intensity display for velocity?
@@ -493,17 +493,17 @@ def create() -> None:
         if DEBUG:
             # TODO: implement
             with dpg.collapsing_header(label="Running Status", default_open=False):
-                dpg.add_child_window(tag='probe_running_status_container', height=20, border=False)
+                dpg.add_child_window(tag='mon_running_status_container', height=20, border=False)
                 # FIXME: unimplemented upstream (page A-1)
-                dpg.add_text("Not implemented yet", parent='probe_running_status_container')
+                dpg.add_text("Not implemented yet", parent='mon_running_status_container')
 
         # ------------
         # Controllers
         # ------------
         with dpg.collapsing_header(label="Controllers", default_open=True):
-            dpg.add_child_window(tag='probe_controllers_container', height=192, border=False)
+            dpg.add_child_window(tag='mon_controllers_container', height=192, border=False)
 
-        with dpg.table(tag='probe_controllers', parent='probe_controllers_container', header_row=False,
+        with dpg.table(tag='mon_controllers', parent='mon_controllers_container', header_row=False,
                        policy=dpg.mvTable_SizingFixedFit):
             dpg.add_table_column(label="Title")
 
@@ -522,7 +522,7 @@ def create() -> None:
                 newrownum = int((controller + 1) / 16)
                 if newrownum > rownum and newrownum != 8:
                     rownum = newrownum
-                    dpg.add_table_row(tag=f'ctrls_{rownum}', parent='probe_controllers')
+                    dpg.add_table_row(tag=f'ctrls_{rownum}', parent='mon_controllers')
                     dpg.add_text("", parent=f'ctrls_{rownum}')
                     dpg.add_text("", parent=f'ctrls_{rownum}')
             del rownum
@@ -576,7 +576,7 @@ def create() -> None:
         # -----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=True):
 
-            with dpg.child_window(tag='probe_sysex_container', height=120, border=False):
+            with dpg.child_window(tag='mon_sysex_container', height=120, border=False):
                 with dpg.group():
                     with dpg.group(horizontal=True):
                         title = "ID"

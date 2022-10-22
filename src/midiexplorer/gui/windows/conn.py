@@ -20,7 +20,7 @@ from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.helpers.constants.slots import Slots
 from midiexplorer.gui.helpers.logger import Logger
-from midiexplorer.gui.windows.probe.data import add
+from midiexplorer.gui.helpers.probe import add
 from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
 from midiexplorer.midi.timestamp import Timestamp
 

@@ -18,7 +18,7 @@ from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.helpers.constants.slots import Slots
 from midiexplorer.gui.helpers.convert import tooltip_conv
-from midiexplorer.gui.windows.probe import notation_modes
+from midiexplorer.gui.windows.mon import notation_modes
 from midiexplorer.midi.timestamp import Timestamp
 
 S2MS = 1000  # Seconds to milliseconds ratio
@@ -203,7 +203,7 @@ def _selection(sender, app_data, user_data):
         )[7]
     )
     message = mido.Message.from_hex(raw_message)
-    midiexplorer.gui.windows.probe.data.update_gui_monitor(message, static=True)
+    midiexplorer.gui.windows.mon.data.update_gui_monitor(message, static=True)
 
 
 def decode(data: mido.Message) -> tuple[int, int, int, int, int, int, int]:
