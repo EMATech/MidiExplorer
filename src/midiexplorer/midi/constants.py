@@ -8,7 +8,8 @@
 MIDI related constants.
 
 Derived from official MIDI specifications available at:
-- MIDI Association (MMA) [US]: https://midi.org
+- MIDI Association, ex MIDI Manufacturers Association (MMA) [US]: https://midi.org
+- Association of Musical Electronics Industry (AMEI) [JP]: (https://www.amei.or.jp/)
 - MIDI Standard Committee (MSC) [JP]: http://amei.or.jp/midistandardcommittee
 """
 
@@ -18,9 +19,10 @@ MIDI_VERSION = {
 }
 
 ###
-# MIDI STANDARD CONSTANTS
+# MIDI 1.0 STANDARD CONSTANTS
 #
 # Reference: MIDI 1.0 Detailed Specification v4.2.1
+#            February 1996
 ###
 
 # TODO: contribute to mido?
@@ -90,17 +92,17 @@ CHANNEL_VOICE_MESSAGES = {
 # Page T-3
 CONTROLLER_NUMBERS = {
     0: "Bank Select",
-    1: "Modulation wheel or lever",
+    1: "Modulation Depth",  # Amended by RP-024. Was "Modulation" under RP-003. Was "Modulation wheel or lever".
     2: "Breath controller",
     3: "Undefined",
     4: "Foot controller",
-    5: "Portamento time",
+    5: "Portamento Time",
     6: "Data entry MSB",
-    7: "Channel Volume",  # formerly Main Volume
+    7: "Channel Volume",  # Amended by RP-024. Was "Volume" under RP-003. Formerly "Main Volume".
     8: "Balance",
     9: "Undefined",
     10: "Pan",
-    11: "Expression Controller",
+    11: "Expression",  # Amended by RP-003. Was "Expression Controller".
     12: "Effect Control 1",
     13: "Effect Control 2",
     14: "Undefined",
@@ -154,22 +156,23 @@ CONTROLLER_NUMBERS = {
     61: "Undefined LSB (29)",
     62: "Undefined LSB (30)",
     63: "Undefined LSB (31)",
-    64: "Damper pedal (sustain)",
-    65: "Portamento On/Off",
+    64: "Hold 1 (Damper)",  # Amended by RP-024. Was "Sustain" under RP-003. Was "Damper pedal (sustain)".
+    65: "Portamento ON/OFF",
     66: "Sostenuto",
-    67: "Soft pedal",
+    67: "Soft",  # Amended by RP-024. Was "Soft pedal".
     68: "Legato Footswitch",  # vv = 00-3F:Normal, 40-7F: Legatto
     69: "Hold 2",
-    70: "Sound Controller 1",  # default: Sound Variation
-    71: "Sound Controller 2",  # default: Timbre/Harmonic Intensity
-    72: "Sound Controller 3",  # default: Release Time
-    73: "Sound Controller 4",  # default: Attack Time
-    74: "Sound Controller 5",  # default: Brightness
-    75: "Sound Controller 6",  # no defaults
-    76: "Sound Controller 7",  # no defaults
-    77: "Sound Controller 8",  # no defaults
-    78: "Sound Controller 9",  # no defaults
-    79: "Sound Controller 10",  # no defaults
+    # FIXME: Add default names structure?
+    70: "Sound Controller 1 (Sound Variation)",  # default name: Sound Variation
+    71: "Sound Controller 2 (Timbre/Harmonic Intensity)",  # default name: Timbre/Harmonic Intensity
+    72: "Sound Controller 3 (Release Time)",  # default name: Release Time
+    73: "Sound Controller 4 (Attack Time)",  # default name : Attack Time
+    74: "Sound Controller 5 (Brightness)",  # default name: Brightness
+    75: "Sound Controller 6 (Decay Time)",  # default name per RP-021: Decay Time
+    76: "Sound Controller 7 (Vibrato Rate)",  # default name per RP-021: Vibrato Rate
+    77: "Sound Controller 8 (Vibrato Depth)",  # default name per RP-021: Vibrato Depth
+    78: "Sound Controller 9 (Vibrato Delay)",  # default name per RP-021: Vibrato Delay
+    79: "Sound Controller 10 (undefined)",  # default name per RP-021: undefined
     80: "General Purpose Controller 5",
     81: "General Purpose Controller 6",
     82: "General Purpose Controller 7",
@@ -178,12 +181,13 @@ CONTROLLER_NUMBERS = {
     85: "Undefined",
     86: "Undefined",
     87: "Undefined",
-    88: "Undefined",
+    88: "High Resolution Velocity Prefix",  # Amended by CA-031. Was "Undefined"
     89: "Undefined",
     90: "Undefined",
-    91: "Effects 1 Depth",  # formerly and recommended default: External Effects Depth
+    91: "Reverb Send Level",
+    # Amended by RP-023. Was "Effects 1 Depth". Formerly and recommended default: External Effects Depth.
     92: "Effects 2 Depth",  # formerly and recommended default: Tremolo Depth
-    93: "Effects 3 Depth",  # formerly and recommended default: Chorus Depth
+    93: "Chorus Send Level",  # Amended by RP-024. Was "Effects 3 Depth". Formerly and recommended default: Chorus Depth
     94: "Effects 4 Depth",  # formerly and recommended default: Celeste (Detune) Depth
     95: "Effects 5 Depth",  # formerly and recommended default: Phaser Depth
     96: "Data increment",
@@ -223,12 +227,13 @@ CONTROLLER_NUMBERS = {
 
 # Page T-4
 REGISTERED_PARAMETER_NUMBERS = {
-    # LSB only since MSB is always 0x00
+    # LSB only since MSB is always 0x00. # FIXME: RP-024 defines an LSB of 0x7F!
     0x00: "Pitch Bend Sensitivity",
-    0x01: "Fine Tuning",
-    0x02: "Coarse Tuning",
+    0x01: "Channel Fine Tuning",  # Amended by RP-022, was "Fine Tuning" under RP-003.
+    0x02: "Channel Coarse Tuning",  # Amended by RP-022 was "Coarse Tuning" under RP-003.
     0x03: "Tuning Program Select",
     0x04: "Tuning Bank Select",
+    0x05: "Modulation Depth Range",  # Introduced by CA-026.
 }
 
 # Page T-5
@@ -298,14 +303,15 @@ DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1 = {  # 0x7E
     0x06: "General Information",  # SUB-ID #2
     0x07: "File Dump",  # SUB-ID #2
     0x08: "MIDI Tuning Standard",  # SUB-ID #2
-    0x09: "General MIDI",  # SUB-ID #2
+    0x09: "General MIDI Message",  # SUB-ID #2
+    0x0B: "File Reference Message Command",  # Introduced by CA-018.
     0x7B: "End of File",
     0x7C: "Wait",
     0x7D: "Cancel",
     0x7E: "NAK",
     0x7F: "ACK",
 }
-MIDI_TIME_CODE_SUB_ID_2 = {  # 0x04
+NON_REAL_TIME_MIDI_TIME_CODE_SUB_ID_2 = {  # 0x04
     0x00: "Special",
     0x01: "Punch In Points",
     0x02: "Punch Out Points",
@@ -322,47 +328,77 @@ MIDI_TIME_CODE_SUB_ID_2 = {  # 0x04
     0x0D: "Delete Cue Point",
     0x0E: "Event Name in additional info.",
 }
-SAMPLE_DUMP_EXTENSIONS_SUB_ID_2 = {  # 0x05
+NON_REAL_TIME_SAMPLE_DUMP_EXTENSIONS_SUB_ID_2 = {  # 0x05
     0x01: "Multiple Loop Points",
     0x02: "Loop Points Request",
+    0x03: "Sample Name Transmission",  # Introduced by CA-019.
+    0x04: "Sample Name Request",  # Introduced by CA-019.
+    0x05: "Extended Dump Header",  # Introduced by CA-019.
+    0x06: "Sample Extended Loop Point Transmission",  # Introduced by CA-019.
+    0x07: "Sample Extended Loop Point Request",
+    # Introduced by CA-019. FIXME: report typo in CA-019, "Transmission" instead of "Request" in the sample.
 }
-GENERAL_INFORMATION_SUB_ID_2 = {  # 0x06
+NON_REAL_TIME_GENERAL_INFORMATION_SUB_ID_2 = {  # 0x06
     0x01: "Identity Request",
     0x02: "Identity Reply",
 }
-FILE_DUMP_SUB_ID_2 = {  # 0x07
+NON_REAL_TIME_FILE_DUMP_SUB_ID_2 = {  # 0x07
     0x01: "Header",
     0x02: "Data Packet",
     0x03: "Request",
 }
-MIDI_TUNING_STANDARD_SUB_ID_2 = {  # 0x08
+NON_REAL_TIME_MIDI_TUNING_STANDARD_SUB_ID_2 = {  # 0x08
     0x00: "Bulk Dump Request",
     0x01: "Bulk Dump Reply",
+    0x03: "Bulk Tuning Dump Request (Bank)",  # Introduced by CA-020.
+    0x04: "Key-Based Tuning Dump",  # Introduced by CA-020.
+    0x05: "Scale/Octave Tuning Dump, 1 byte format",  # Introduced by CA-020.
+    0x06: "Scale/Octave Tuning Dump, 2 byte format",  # Introduced by CA-020.
+    0x07: "Single Note Tuning Change (Bank)",  # Introduced by CA-020.
+    0x08: "Scale/Octave Tuning 1-Byte Form",  # Introduced by CA-021.
+    0x09: "Scale/Octave Tuning 2-Byte Form",  # Introduced by CA-021.
 }
-GENERAL_MIDI_SUB_ID_2 = {  # 0x09
-    0x01: "General MIDI System On",
-    0x02: "General MIDI System Off",
+NON_REAL_TIME_GENERAL_MIDI_SUB_ID_2 = {  # 0x09
+    0x01: "General MIDI 1 On",  # Amended by CA-027. Was "General MIDI System On".
+    0x02: "General MIDI Off",  # Amended by RP-003. Was "General MIDI System Off"
+    0x03: "General MIDI 2 On",  # Introduced by CA-027.
+}
+NON_REAL_TIME_FILE_REFERENCE_MESSAGE_COMMAND_SUB_ID_2 = {  # 0x0B
+    # Introduced by CA-018.
+    0x00: "reserved",
+    0x01: "Open File",
+    0x02: "Select or Reselect Contents",
+    0x03: "Open File and Select Contents",
+    0x04: "Close File",
+    0x05: "reserved",
+    # FIXME: Fill with reserved.
+    0x7F: "reserved",
 }
 NON_REAL_TIME_SUB_ID_2_FROM_1 = {
-    0x04: MIDI_TIME_CODE_SUB_ID_2,
-    0x05: SAMPLE_DUMP_EXTENSIONS_SUB_ID_2,
-    0x06: GENERAL_INFORMATION_SUB_ID_2,
-    0x07: FILE_DUMP_SUB_ID_2,
-    0X08: MIDI_TUNING_STANDARD_SUB_ID_2,
-    0X09: GENERAL_MIDI_SUB_ID_2
+    0x04: NON_REAL_TIME_MIDI_TIME_CODE_SUB_ID_2,
+    0x05: NON_REAL_TIME_SAMPLE_DUMP_EXTENSIONS_SUB_ID_2,
+    0x06: NON_REAL_TIME_GENERAL_INFORMATION_SUB_ID_2,
+    0x07: NON_REAL_TIME_FILE_DUMP_SUB_ID_2,
+    0X08: NON_REAL_TIME_MIDI_TUNING_STANDARD_SUB_ID_2,
+    0X09: NON_REAL_TIME_GENERAL_MIDI_SUB_ID_2,
+    0x0B: NON_REAL_TIME_FILE_REFERENCE_MESSAGE_COMMAND_SUB_ID_2,  # Introduced by CA-018.
 }
 
 # Page T-10
 DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1 = {  # 0x7F
     0x00: "Unused",
-    0x01: "MIDI Time Code",  # SUB-ID #2
-    0x02: "MIDI Show Control",  # SUB-ID #2
-    0x03: "Notation Information",  # SUB-ID #2
-    0x04: "Device Control",  # SUB-ID #2
-    0x05: "Real Time MTC Cueing",  # SUB-ID #2
-    0x06: "MIDI Machine Control Commands",  # SUB-ID #2
-    0x07: "MIDI Machine Control Responses",  # SUB-ID #2
-    0x08: "MIDI Tuning Standard",  # SUB-ID #2
+    0x01: "MIDI Time Code",  # Has a SUB-ID #2.
+    0x02: "MIDI Show Control",  # Has a SUB-ID #2.
+    0x03: "Notation Information",  # Has a SUB-ID #2.
+    0x04: "Device Control",  # Has a SUB-ID #2.
+    0x05: "Real Time MTC Cueing",  # Has a SUB-ID #2.
+    0x06: "MIDI Machine Control Commands",  # Has a SUB-ID #2.
+    0x07: "MIDI Machine Control Responses",  # Has a SUB-ID #2.
+    0x08: "MIDI Tuning Standard",  # Has a SUB-ID #2.
+    0x09: "Controller Destination Setting",  # Introduced by CA-022. Has SUB-ID#2.
+    0x0A: "Key-Based Instrument Control",  # Introduced by CA-023. Has SUB-ID #2.
+    0x0B: "Scalable Polyphony MIDI",  # Introduced by CA-029. Has a SUB-ID#2.
+    0x0C: "Mobile Phone Control Message",  # Introduced by CA-030. Has a SUB-ID#2.
 }
 REAL_TIME_MIDI_TIME_CODE_SUB_ID_2 = {  # 0x01
     0x01: "Full Message",
@@ -441,11 +477,14 @@ REAL_TIME_NOTATION_INFORMATION_SUB_ID_2 = {  # 0x03
     0x02: "Time Signature (Immediate)",
     0x03: "Time Signature (Delayed)",
 }
-REAL_TIME_DEVICE_CONTROL = {  # 0x04
+REAL_TIME_DEVICE_CONTROL_SUB_ID_2 = {  # 0x04
     0x01: "Master Volume",
     0x02: "Master Balance",
+    0x03: "Master Fine Tuning",  # Introduced by CA-025.
+    0x04: "Master Coarse Tuning",  # Introduced by CA-025.
+    0x05: "Global Parameter Control",  # Introduced by CA-024.
 }
-REAL_TIME_MTC_CUEING = {  # 0x05
+REAL_TIME_MTC_CUEING_SUB_ID_2 = {  # 0x05
     0x00: "Special",
     0x01: "Punch In Points",
     0x02: "Punch Out Points",
@@ -462,7 +501,7 @@ REAL_TIME_MTC_CUEING = {  # 0x05
     0x0D: "(Reserved)",
     0x0E: "Event Name in additional info.",
 }
-REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS = {  # 0x06
+REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS_SUB_ID_2 = {  # 0x06
     # Extracted from the MMC specification
     0x00: "(Reserved)",
     0x01: "STOP",
@@ -506,7 +545,7 @@ REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS = {  # 0x06
 
     0x7F: "RESUME",
 }
-REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES = {  # 0x07
+REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES_SUB_ID_2 = {  # 0x07
     # Extracted from the MMC specification
     0x00: "(Reserved)",
     0x01: "SELECTED TIME CODE",
@@ -586,18 +625,43 @@ REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES = {  # 0x07
 
     0x7F: "RESUME",
 }
-REAL_TIME_MIDI_TUNING_STANDARD = {  # 0x08
+REAL_TIME_MIDI_TUNING_STANDARD_SUB_ID_2 = {  # 0x08
     0x02: "Note Change",
+    0x07: "Single Note Tuning Change (Bank)",  # Introduced by CA-020.
+    0x08: "Scale/Octave Tuning 1-Byte Form",  # Introduced in CA-021.
+    0x09: "Scale/Octave Tuning 2-Byte Form",  # Introduced in CA-021.
+}
+REAL_TIME_CONTROLLER_DESTINATION_SETTING_SUB_ID_2 = {  # 0x09
+    # Introduced by CA-022.
+    0x01: "Channel Pressure (Aftertouch)",
+    0x02: "Polyphonic Key Pressure (Aftertouch)",
+    0x03: "Control Change",
+}
+REAL_TIME_KEY_BASED_INSTRUMENT_CONTROL_SUB_ID_2 = {  # 0x0A
+    # Introduced by CA-023.
+    0x01: "Basic Message",
+}
+REAL_TIME_SCALABLE_POLYPHONY_MIDI_SUB_ID_2 = {  # 0x0B
+    # Introduced by CA-029.
+    0x01: "MIP Message",
+}
+REAL_TIME_MOBILE_PHONE_CONTROL_MESSAGE_SUB_ID_2 = {  # 0x0C
+    # Introduced by CA-030.
+    0x00: "",  # Always 00
 }
 REAL_TIME_SUB_ID_2_FROM_1 = {
     0x01: REAL_TIME_MIDI_TIME_CODE_SUB_ID_2,
     0x02: REAL_TIME_SHOW_CONTROL_SUB_ID_2,
     0x03: REAL_TIME_NOTATION_INFORMATION_SUB_ID_2,
-    0x04: REAL_TIME_DEVICE_CONTROL,
-    0x05: REAL_TIME_MTC_CUEING,
-    0x06: REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS,
-    0x07: REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES,
-    0x08: REAL_TIME_MIDI_TUNING_STANDARD
+    0x04: REAL_TIME_DEVICE_CONTROL_SUB_ID_2,
+    0x05: REAL_TIME_MTC_CUEING_SUB_ID_2,
+    0x06: REAL_TIME_MIDI_MACHINE_CONTROL_COMMANDS_SUB_ID_2,
+    0x07: REAL_TIME_MIDI_MACHINE_CONTROL_RESPONSES_SUB_ID_2,
+    0x08: REAL_TIME_MIDI_TUNING_STANDARD_SUB_ID_2,
+    0x09: REAL_TIME_CONTROLLER_DESTINATION_SETTING_SUB_ID_2,  # Introduced by CA-022.
+    0x0A: REAL_TIME_KEY_BASED_INSTRUMENT_CONTROL_SUB_ID_2,  # Introduced by CA-024.
+    0x0B: REAL_TIME_SCALABLE_POLYPHONY_MIDI_SUB_ID_2,  # Introduced by CA-029.
+    0x0C: REAL_TIME_MOBILE_PHONE_CONTROL_MESSAGE_SUB_ID_2,  # Introduced by CA-030.
 }
 
 # Page T-11
@@ -954,6 +1018,28 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 
 ###
+# CA-001
+# CA-002
+# CA-003
+# CA-004
+# CA-005
+# CA-006
+# CA-007
+# CA-008
+# CA-009
+# CA-010
+# CA-011
+# CA-012
+# CA-013
+# CA-014
+# CA-015
+# CA-016
+# CA-017
+###
+
+# FIXME: original specifications lost to time. Probably integrated into the MIDI 1.0 specification.
+
+###
 # STANDARD MIDI FILES (SMF)
 # v1.0
 #
@@ -991,45 +1077,66 @@ ADDITIONAL_SPECIFICATIONS = {
 # NOTATION INFORMATION
 #
 # Reference: RP-005, RP-006
+# Integrated into v1.0 specification
 ###
 
-# FIXME: missing or integrated into main spec?
+# FIXME: original specification lost
+
+# TODO!
 
 ###
 # MASTER VOLUME & BALANCE
 #
 # Reference: RP-007
+# Integrated into v1.0 specification
 ###
 
-# FIXME: missing or integrated into main spec?
+# FIXME: original specification lost
 
-# RP-008: See RP-004 MIDI TIME CODE (MTC)
+# TODO!
+
+###
+# RP-008
+#
+# See RP-004 MIDI TIME CODE (MTC)
+###
 
 ###
 # FILE DUMP
 #
 # Reference: RP-009
+# Integrated into v1.0 specification
 ###
 
-# FIXME: missing or integrated into other spec?
+# FIXME: original specification lost
+# TODO!
 
 ###
 # SOUND CONTROLLER DEFAULT
 #
 # Reference: RP-010
+# Integrated into v1.0 specification
 ###
 
-# FIXME: missing or integrated into main spec?
+# FIXME: original specification lost
+# TODO!
 
-# No RP-011!
+###
+# RP-011
+#
+# Integrated into v1.0 specification
+###
+
+# FIXME: original specification lost
 
 ###
 # MIDI TUNING STANDARD
 #
 # Reference: RP-012
+# Integrated into v1.0 specification
 ###
 
-# FIXME: missing or integrated into main spec?
+# FIXME: original specification lost
 
 ###
 # MIDI MACHINE CONTROL (MMC)
@@ -1040,7 +1147,11 @@ ADDITIONAL_SPECIFICATIONS = {
 
 # TODO!
 
-# RP-014: See MIDI Show Control RP-002
+###
+# RP-014
+#
+# See MIDI Show Control RP-002
+###
 
 ###
 # RESPONSE TO RESET ALL CONTROLLERS
@@ -1092,7 +1203,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # TODO!
 
 ###
-# EXTENDED DUMP SIZE, RATE AND NAME EXTENSIONS
+# SAMPLE DUMP SIZE, RATE AND NAME EXTENSIONS
 #
 # Reference: CA-019
 ###
@@ -1102,26 +1213,26 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 # GM-2 MIDI TUNING MESSAGES
 #
-# Reference: CA-020, CA-021/RP-020 (GM2)
+# Reference: CA-020, CA-021, RP-020 (GM2)
 ###
 
 # TODO!
 
 ###
-# Sound Controller Default Revision
+# SOUND CONTROLLER DEFAULTS (Revised)
 #
 # Reference: RP-021
 ###
 
-# FIXME: missing or intergrated into main spec?
+# FIXME: missing or integrated into main spec?
 
 ###
-# RPN 01-02 Redefined
+# Controller Destination Setting
 #
-# Reference: RP-022
+# Reference: RP-022 (GM2)
 ###
 
-# FIXME: missing or intergrated into main spec?
+# FIXME: missing or integrated into main spec?
 
 ###
 # Control number 91/93 function name change
@@ -1129,7 +1240,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-023
 ###
 
-# FIXME: missing or intergrated into main spec?
+# FIXME: missing or integrated into main spec?
 
 ###
 # CONTROLLER DESTINATION SETTING
@@ -1181,7 +1292,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # TODO!
 
 ###
-# GM system Level 2 SysEx Message
+# GM System Level 2 SysEx Message
 #
 # Reference: CA-027
 ###
@@ -1235,7 +1346,7 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 # XMF SPECIFICATION
 #
-# Reference: RP-030, RP-031, RP-032, RP-039, RP-040, RP-042a, RP-043, RP-045, RP-047
+# Reference: RP-030, RP-031, RP-032, RP-039, RP-040, RP-042, RP-043, RP-045, RP-047
 ###
 
 # TODO!
@@ -1243,7 +1354,7 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 # XMF PATCH PREFIX META EVENT
 #
-# Reference: RP-032 (SMF)
+# Reference: RP-032 (XMF)
 ###
 
 # TODO!
@@ -1281,6 +1392,7 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 
 # FIXME: Unavailable at MMA. Found at AMEI MSC.
+# TODO!
 
 ###
 # DEFAULT PAN CURVE
@@ -1288,7 +1400,11 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-036 (GM2)
 ###
 
+###
 # No RP-038!
+###
+
+# FIXME: Unavailable at MMA & AMEI MSC.
 
 ###
 # MOBILE DLS SPECIFICATION
@@ -1297,6 +1413,7 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-041 (DLS)
 ###
 
+# FIXME: AMEI MSC. version is password protected! MMA has a "public" version.
 # TODO!
 
 ###
@@ -1325,12 +1442,13 @@ ADDITIONAL_SPECIFICATIONS = {
 # TODO!
 
 ###
-# 3D SOUND CONTROLLER
+# THREE DIMENSIONAL SOUND CONTROLLER
 #
 # Reference: RP-049
 ###
 
 # FIXME: Unavailable at MMA. Found at AMEI MSC.
+# TODO!
 
 ###
 # MIDI VISUAL CONTROL (MVC)
@@ -1342,12 +1460,13 @@ ADDITIONAL_SPECIFICATIONS = {
 # TODO!
 
 ###
-# International MIDI Standard Code (MIDI Watermark)
+# International Standard MIDI Code (ISMC) (MIDI Watermark)
 #
 # Reference: RP-051
 ###
 
 # FIXME: Unavailable at MMA. Found at AMEI MSC.
+# TODO!
 
 ###
 # MIDI 1.0 Electrical Specification Update
@@ -1368,9 +1487,9 @@ ADDITIONAL_SPECIFICATIONS = {
 
 ###
 # MIDI POLYPHONIC EXPRESSION (MPE)
-# v1.0
+# v1.1
 #
-# Reference: RP-053, CA-034
+# Reference: RP-053, CA-034, M1-100-UM
 ###
 
 # TODO!
