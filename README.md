@@ -126,7 +126,7 @@ Features / TODO list
         - [X] Outputs
         - [x] Modules
     - [x] Probe data window
-    - [ ] Generator data window
+    - [x] Generator data window
     - [x] Log window
     - [ ] **(WIP)** Actions
         - [x] Toggle fullscreen (F11)
@@ -154,12 +154,22 @@ Features / TODO list
         - [ ] Port to any module
         - [ ] Any module to port
         - [ ] Module to module
-    - [ ] **(WIP)** Refresh
-        - [X] Manual
-        - [ ] Auto with reconnect
-    - [ ] Virtual ports
-        - [ ] Add/Remove
-    - [ ] Save state
+  - [ ] **(WIP)** Refresh
+      - [X] Manual
+      - [ ] Auto with reconnect
+  - [ ] Virtual ports
+      - [ ] Add/Remove
+  - [ ] Save state
+- [x] Timing
+    - [x] Hardware
+        - retrieved using a modified mido RtMidi backend
+    - [x] System
+        - computed using the local clock
+- [ ] History view (Table decode)
+    - [x] Input
+    - [x] Output
+    - [x] Selection decodes to monitor
+    - [ ] Selection prepares generator
 - [ ] **(WIP)** Modules (Plugins?)
     - [ ] Instances management (Add/Remove)
     - [x] Virtual Debug Probe
@@ -175,53 +185,49 @@ Features / TODO list
                     - [x] English Alphabetical
                     - [x] Syllabic
                     - [x] German Alphabetical
-            - [x] Message type
+            - [ ] Stateless
+                - [x] Message type
+                    - [x] Channel
+                    - [x] System
                 - [x] Channel
-                - [x] System
-            - [x] Channel
-            - [x] Controllers
-            - [ ] **(WIP)** Notes
-                - [x] Keyboard
-                - [ ] Staff
-            - [ ] Patches
-                - [ ] GM (General MIDI)
-                    - [ ] Level 1 (1991)
-                    - [ ] Level 2 (1999)
-                    - [ ] Lite (2001)
-                - [ ] Proprietary
-                    - [ ] Roland
-                        - [ ] LA (Linear Arithmetic) (MT-32…) (1987)
-                        - [ ] GS (General Standard) (Sound Canvas…) (1991)
-                    - [ ] Yamaha
-                        - [ ] XG (E**X**tended **G**eneral MIDI)
-                            - [ ] Level 1 (1994)
-                            - [ ] Level 2 (1997)
-                            - [ ] Level 3 (1998)
-                            - [ ] Lite (2002)
-            - [ ] **(WIP)** SysEx
-                - [x] Basic decoding
-                    - [x] (Manufacturer) ID
-                    - [x] Device ID
-                    - [x] Raw payload
-                - [ ] Universal System Exclusive
-                    - [x] Sub-IDs
-                    - [ ] Sample dump standard
-                    - [ ] Device inquiry
-                    - [ ] File dump
-                    - [ ] MIDI tuning
-                    - [ ] General MIDI system messages
-                    - [ ] MIDI Time Code (MTC)
-                    - [ ] MIDI Show Control (MSC)
-                    - [ ] Notation information
-                    - [ ] Device Control
-                    - [ ] MIDI Machine Control (MMC)
+                - [x] Controllers
+                - [ ] **(WIP)** Notes
+                    - [x] Keyboard
+                    - [ ] Staff
+            - [ ] Stateful
+                - [ ] Patches
+                    - [ ] GM (General MIDI)
+                        - [ ] Level 1 (1991)
+                        - [ ] Level 2 (1999)
+                        - [ ] Lite (2001)
+                    - [ ] Proprietary
+                        - [ ] Roland
+                            - [ ] LA (Linear Arithmetic) (MT-32…) (1987)
+                            - [ ] GS (General Standard) (Sound Canvas…) (1991)
+                        - [ ] Yamaha
+                            - [ ] XG (E**X**tended **G**eneral MIDI)
+                                - [ ] Level 1 (1994)
+                                - [ ] Level 2 (1997)
+                                - [ ] Level 3 (1998)
+                                - [ ] Lite (2002)
+                - [ ] **(WIP)** SysEx
+                    - [x] Basic decoding
+                        - [x] (Manufacturer) ID
+                        - [x] Device ID
+                        - [x] Raw payload
+                    - [ ] Universal System Exclusive
+                        - [x] Sub-IDs
+                        - [ ] Sample dump standard
+                        - [ ] Device inquiry
+                        - [ ] File dump
+                        - [ ] MIDI tuning
+                        - [ ] General MIDI system messages
+                        - [ ] MIDI Time Code (MTC)
+                        - [ ] MIDI Show Control (MSC)
+                        - [ ] Notation information
+                        - [ ] Device Control
+                        - [ ] MIDI Machine Control (MMC)
         - [x] Read raw input
-        - [x] History: table decode input
-            - [x] Decode to monitor upon selection
-        - [x] Timing
-            - [x] Hardware
-                - retrieved using a modified mido RtMidi backend
-            - [x] System
         - [x] Thru support
         - [ ] Color code
             - [ ] Per source

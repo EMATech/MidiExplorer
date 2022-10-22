@@ -8,4 +8,4 @@
 MIDI Explorer metadata.
 """
 
-__version__ = '0.0.1a1'  # https://peps.python.org/pep-0440/
+__version__ = '0.0.1a2'  # https://peps.python.org/pep-0440/
