@@ -138,7 +138,7 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
         # Raw message
         raw_label = data.hex()
         dpg.add_text(raw_label)
-        conv_tooltip(raw_label, data.bin())
+        tooltip_conv(raw_label, data.bin())
 
         # Decoded message
         if DEBUG:
@@ -153,16 +153,16 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
         dpg.add_text(stat_label)
         if hasattr(data, 'channel'):
             status_nibble = int((status_byte - data.channel) / 16)
-            conv_tooltip(stat_label, status_nibble, hlen=1, dlen=2, blen=4)
+            tooltip_conv(stat_label, status_nibble, hlen=1, dlen=2, blen=4)
         else:
-            conv_tooltip(stat_label, status_byte)
+            tooltip_conv(stat_label, status_byte)
 
         # Channel
         chan_label = "Global"
         if chan_val is not None:
             chan_label = chan_val + 1  # Human-readable format
         dpg.add_text(chan_label)
-        conv_tooltip(chan_label, chan_val, hlen=1, dlen=2, blen=4)
+        tooltip_conv(chan_label, chan_val, hlen=1, dlen=2, blen=4)
 
         # Helper function equivalent to str() but avoids displaying 'None'.
         xstr: Callable[[Any], str] = lambda s: '' if s is None else str(s)
@@ -174,13 +174,13 @@ def _add_data_history(data, source, time_stamp, delta, chan_val, data0_name, dat
         prefix0 = ""
         if data0_name:
             prefix0 = data0_name + ": "
-        conv_tooltip(prefix0 + xstr(data0_dec if data0_dec else data0_val), data0_val, blen=7)
+        tooltip_conv(prefix0 + xstr(data0_dec if data0_dec else data0_val), data0_val, blen=7)
 
         dpg.add_text(xstr(data1_val))
         prefix1 = ""
         if data1_name:
             prefix1 = data1_name + ": "
-        conv_tooltip(prefix1 + xstr(data1_dec if data1_dec else data1_val), data1_val, blen=7)
+        tooltip_conv(prefix1 + xstr(data1_dec if data1_dec else data1_val), data1_val, blen=7)
 
     # TODO: per message type color coding
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
@@ -284,6 +284,20 @@ def decode(data: mido.Message, static: bool = False):
     return chan_val, data0_name, data0_val, data0_dec, data1_name, data1_val, data1_dec
 
 
+def _set_value_preconv(source: str, value: int | tuple[int] | list[int]) -> None:
+    """Set value and pre-converted values.
+
+    :param source: Value source tag name
+    :param value: Value to set
+    """
+    dpg.set_value(source, str(value))
+    if source == 'syx_payload':
+        dpg.set_value(f'{source}_char', conv2char(value))
+    dpg.set_value(f'{source}_hex', conv2hex(value))
+    dpg.set_value(f'{source}_bin', conv2bin(value))
+    dpg.set_value(f'{source}_dec', conv2dec(value))
+
+
 def _update_sysex_gui(decoded: DecodedSysEx):
     """Populate decoded system exclusive values in the GUI.
 
@@ -293,20 +307,20 @@ def _update_sysex_gui(decoded: DecodedSysEx):
     dpg.set_value('syx_id_group', decoded.identifier.group)
     dpg.set_value('syx_id_region', decoded.identifier.region)
     dpg.set_value('syx_id_name', decoded.identifier.name)
-    dpg.set_value('syx_id_val', str(decoded.identifier.value))
-    dpg.set_value('syx_device_id', str(decoded.device_id))
-    dpg.set_value('syx_payload', str(decoded.payload.value))
+    _set_value_preconv('syx_id_val', decoded.identifier.value)
+    _set_value_preconv('syx_device_id', decoded.device_id)
+    _set_value_preconv('syx_payload', decoded.payload.value)
     if isinstance(decoded.payload, DecodedUniversalSysExPayload):
         dpg.hide_item('syx_payload_container')
         if decoded.payload.sub_id1_value:
             dpg.set_value('syx_sub_id1_name', decoded.payload.sub_id1_name)
-            dpg.set_value('syx_sub_id1_val', str(decoded.payload.sub_id1_value) if not None else "")
+            _set_value_preconv('syx_sub_id1_val', decoded.payload.sub_id1_value if not None else "")
             dpg.show_item('syx_sub_id1')
         else:
             dpg.hide_item('syx_sub_id1')
         if decoded.payload.sub_id2_value:
             dpg.set_value('syx_sub_id2_name', decoded.payload.sub_id2_name)
-            dpg.set_value('syx_sub_id2_val', str(decoded.payload.sub_id2_value) if not None else "")
+            _set_value_preconv('syx_sub_id2_val', decoded.payload.sub_id2_value if not None else "")
             dpg.show_item('syx_sub_id2')
         else:
             dpg.hide_item('syx_sub_id2_value')
@@ -316,7 +330,79 @@ def _update_sysex_gui(decoded: DecodedSysEx):
         dpg.show_item('syx_payload_container')
 
 
-def conv_tooltip(title: str, values: int | tuple[int] | list[int] | None = None,
+def convert_to(unit: chr, values: int | tuple[int] | list[int], length, padding) -> str:
+    """Converts a single integer or a group to a text representation in the specified unit.
+
+    :param unit: Unit to convert to (Format specification type)
+    :param values: Value(s) to convert
+    :param length: Conversion length
+    :param padding: Prefixed padding length
+    :return: Text representation of value(s) in unit format
+    """
+    unit_name = "Unknown"
+    if unit == 'X':
+        unit_name = "Hexadecimal"
+    if unit == 'd':
+        unit_name = "Decimal"
+    if unit == 'b':
+        unit_name = "Binary"
+    if unit == 'c':
+        unit_name = "Character"
+    unit_name_padding = 12 - len(unit_name)
+
+    converted_values = ""
+    if values is not None:
+        if isinstance(values, int):
+            converted_values += f"{' ':{padding}}{values:0{length}{unit}}"
+        else:
+            for value in values:
+                converted_values += f"{' ':{padding}}{value:0{length}{unit}}"
+    return f"{unit_name}:{' ':{unit_name_padding}}{converted_values.rstrip()}"
+
+
+def conv2hex(values: int | tuple[int] | list[int], length: int = 2, padding: int = 7) -> str:
+    """Converts a group of integers or a single integer to its hexadecimal text representation.
+
+    :param values: Value(s) to convert
+    :param length: Conversion length
+    :param padding: Prefixed padding length
+    :return: Text representation of value(s) in hexadecimal format
+    """
+    return convert_to('X', values, length, padding)
+
+
+def conv2dec(values: int | tuple[int] | list[int], length: int = 3, padding: int = 6) -> str:
+    """Converts a group of integers or a single integer to its decimal text representation.
+
+    :param values: Value(s) to convert
+    :param length: Conversion length
+    :param padding: Prefixed padding length
+    :return: Text representation of value(s) in decimal format
+    """
+    return convert_to('d', values, length, padding)
+
+
+def conv2bin(values: int | tuple[int] | list[int], length: int = 8, padding: int = 1) -> str:
+    """Converts a group of integers or a single integer to its binary text representation.
+
+    :param values: Value(s) to convert
+    :param length: Conversion length
+    :param padding: Prefixed padding length
+    :return: Text representation of value(s) in binary format
+    """
+    return convert_to('b', values, length, padding)
+
+
+def conv2char(values: int | tuple[int] | list[int]) -> str:
+    """Converts a group of integers or a single integer to its ASCII text representation.
+
+    :param values: Value(s) to convert
+    :return: Text representation of value(s) in ASCII format
+    """
+    return convert_to('c', values, 1, 8)
+
+
+def tooltip_conv(title: str, values: int | tuple[int] | list[int] | None = None,
                  hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
     """Adds a tooltip with data converted to hexadecimal, decimal and binary.
 
@@ -327,54 +413,37 @@ def conv_tooltip(title: str, values: int | tuple[int] | list[int] | None = None,
     :param blen: Binary length
 
     """
-    if values is not None:
-        hconv = ""
-        dconv = ""
-        bconv = ""
-        if isinstance(values, int):
-            value = values
-            hconv += f"{' ':{blen - hlen}}{value:0{hlen}X}"
-            dconv += f"{' ':{blen - dlen}}{value:0{dlen}d}"
-            bconv += f"{value:0{blen}b}"
-        else:
-            for value in values:
-                hconv += f"{' ':{blen - hlen}}{value:0{hlen}X} "
-                dconv += f"{' ':{blen - dlen}}{value:0{dlen}d} "
-                bconv += f"{value:0{blen}b} "
-
-    text = f"{title}\n"
-    if values is not None:
-        text += \
-            "\n" \
-            f"Hexadecimal:\t{hconv.rstrip()}\n" \
-            f"Decimal:{' ':4}\t{dconv.rstrip()}\n" \
-            f"Binary:{' ':5}\t{bconv.rstrip()}\n"
-
     with dpg.tooltip(dpg.last_item()):
-        dpg.add_text(f"{text}")
+        dpg.add_text(f"{title}")
+        hconv = conv2hex(values, hlen, blen - hlen + 1)
+        dconv = conv2dec(values, dlen, blen - dlen + 1)
+        bconv = conv2bin(values, blen)
+        if values is not None:
+            dpg.add_text()
+            dpg.add_text(f"{hconv}")
+            dpg.add_text(f"{dconv}")
+            dpg.add_text(f"{bconv}")
 
 
-def dyn_conv_tooltip(title_value_source: str | None = None, values_source: str | None = None,
-                     static_title: str | None = None,
-                     hlen: int = 2, dlen: int = 3, blen: int = 8) -> None:
-    """Adds a tooltip with data converted to hexadecimal, decimal and binary.
+def tooltip_preconv(static_title: str | None = None, title_value_source: str | None = None,
+                    values_source: str | None = None) -> None:
+    """Adds a tooltip with pre-converted data.
 
+    :param static_title: Tooltip static title.
     :param title_value_source: Tooltip title text value source.
-    :param values_source: Tooltip value(s)
-    :param static_title: Tooltip static title. Replaces the dynamic one if also provided.
-    :param hlen: Hexadecimal length
-    :param dlen: Decimal length
-    :param blen: Binary length
-
+    :param values_source: Tooltip value(s) source tag name
     """
     with dpg.tooltip(dpg.last_item()):
         if static_title:
             dpg.add_text(static_title)
-        else:
+        if title_value_source:
             dpg.add_text(source=title_value_source)
         dpg.add_text()
-        # FIXME: compute conversions dynamically. How?
-        dpg.add_text(source=values_source)
+        if values_source == 'syx_payload':
+            dpg.add_text(source=f'{values_source}_char')
+        dpg.add_text(source=f'{values_source}_hex')
+        dpg.add_text(source=f'{values_source}_dec')
+        dpg.add_text(source=f'{values_source}_bin')
 
 
 def _clear_probe_data_table(
