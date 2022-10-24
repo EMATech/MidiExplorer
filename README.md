@@ -518,6 +518,30 @@ Features / TODO list
         Audio Clips for Mobile XMF  
         [RP-047 (AMEI/MSC)](https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp47.pdf)
         ID3 Metadata for XMF Files
+      - [ ] Support proprietary formats?
+          - [ ] Alesis
+              - [ ] DataDisk (v1.x)
+              - [ ] DataDisk SQ (v2.x)
+          - [ ] Ensoniq
+              - [ ] ASR series
+              - [ ] EPS series
+              - [ ] SQ-80 (.efs)
+              - [ ] TS series
+              - [ ] VFX-SD, SD-1
+          - [ ] Kawai
+              - [ ] Q-80
+          - [ ] Korg
+              - [ ] 01/W series
+              - [ ] T series
+          - [ ] PianoDisc
+              - [ ] PianoDisc Sequence
+          - [ ] Roland
+              - [ ] MC-50, MC-500
+          - [ ] Yamaha
+              - [ ] E-SEQ (Clavinova, Disklavier, DOM-30, DRC-20)
+      - [ ] Converter
+          - [ ] SMF between types
+          - [ ] From/to other formats?
   - [ ] Protocol analyzers/decoders
       - [ ] HUI
       - [ ] LCU
