@@ -21,7 +21,7 @@ class Timestamp:
     delta = 0  # Delta to previous timestamp (seconds)
 
     def __new__(cls) -> object:
-        """Instantiates a new logger or retrieves the existing one.
+        """Instantiates a new timestamp or retrieves the existing one.
 
         :return: A timestamp instance.
 
