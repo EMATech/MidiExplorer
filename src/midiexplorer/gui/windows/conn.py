@@ -516,7 +516,7 @@ def create() -> None:
                     dpg.add_text("Thru")
 
             with dpg.node(label="GENERATOR",
-                          pos=[360, 165]):
+                          pos=[360, 125]):
                 with dpg.node_attribute(
                         tag='gen_out',
                         attribute_type=dpg.mvNode_Attr_Output,
@@ -525,10 +525,34 @@ def create() -> None:
                 ):
                     dpg.add_text("Out", indent=2)
 
-            if DEBUG:
-                # TODO: implement
+            if DEBUG:  # Unstable feature
+                with dpg.node(label="SMF Recorder/Player",
+                              pos=[360, 200]):
+                    with dpg.node_attribute(
+                            tag='smf_in',
+                            attribute_type=dpg.mvNode_Attr_Input,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                            label="In",
+                    ):
+                        dpg.add_text("In", indent=2)
+                    with dpg.node_attribute(
+                            tag='smf_out',
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                            label="Out",
+                    ):
+                        dpg.add_text("Out", indent=2)
+                    with dpg.node_attribute(
+                            tag='smf_thru',
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                            label="Thru",
+                    ):
+                        dpg.add_text("Thru", indent=2)
+
+            if DEBUG:  # TODO: implement
                 with dpg.node(label="FILTER/TRANSLATOR",
-                              pos=[360, 250]):
+                              pos=[360, 325]):
                     with dpg.node_attribute(
                             label="In",
                             attribute_type=dpg.mvNode_Attr_Input,
@@ -542,10 +566,9 @@ def create() -> None:
                     ):
                         dpg.add_text("Out", indent=2)
 
-            if DEBUG:
-                # TODO: implement
+            if DEBUG:  # TODO: implement
                 with dpg.node(label="MERGER",
-                              pos=[360, 350]):
+                              pos=[360, 425]):
                     with dpg.node_attribute(
                             label="In1",
                             attribute_type=dpg.mvNode_Attr_Input,
@@ -565,11 +588,10 @@ def create() -> None:
                     ):
                         dpg.add_text("Out", indent=2)
 
-            if DEBUG:
-                # TODO: implement
+            if DEBUG:  # TODO: implement
                 with dpg.node(
                         tag='splitter_node',
-                        pos=[360, 475],
+                        pos=[360, 550],
                         label="SPLITTER",
                 ):
                     with dpg.node_attribute(

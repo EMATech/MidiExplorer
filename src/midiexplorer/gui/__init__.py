@@ -11,15 +11,10 @@ import pathlib
 
 from dearpygui import dearpygui as dpg
 
-import midiexplorer.gui.helpers.menu
-import midiexplorer.gui.windows.conn
-import midiexplorer.gui.windows.gen
-import midiexplorer.gui.windows.hist
-import midiexplorer.gui.windows.mon
 import midiexplorer.midi
 from midiexplorer.__config__ import DEBUG, INIT_FILENAME
-from midiexplorer.gui.helpers.constants.slots import Slots
-from midiexplorer.gui.helpers.logger import MvLogger
+from midiexplorer.gui.helpers import logger, constants, menu
+from midiexplorer.gui.windows import *
 from midiexplorer.midi.timestamp import Timestamp
 
 
@@ -34,9 +29,9 @@ def init():
     midiexplorer.gui.windows.log.create()
     logger = midiexplorer.gui.helpers.logger.Logger('log_win')
     if DEBUG:
-        logger.log_level = MvLogger.TRACE
+        logger.log_level = midiexplorer.gui.helpers.logger.MvLogger.TRACE
     else:
-        logger.log_level = MvLogger.INFO
+        logger.log_level = midiexplorer.gui.helpers.logger.MvLogger.INFO
     logger.log_debug(f"Application started at {Timestamp.START_TIME}")
 
     # ----------------
@@ -57,6 +52,8 @@ def init():
     midiexplorer.gui.windows.hist.create()
     midiexplorer.gui.windows.mon.create()
     midiexplorer.gui.windows.gen.create()
+    if DEBUG:
+        midiexplorer.gui.windows.smf.create()
 
     # ---------------------
     # Initial configuration
@@ -78,6 +75,8 @@ def init():
         # dpg.add_key_press_handler(key=dpg.mvKey_F3, callback=midiexplorer.gui.windows.mon.toggle)
         # TODO: F4: generator
         # dpg.add_key_press_handler(key=dpg.mvKey_F4, callback=midiexplorer.gui.windows.gen.toggle)
+        # TODO: F5: SMF
+        # dpg.add_key_press_handler(key=dpg.mvKey_F5, callback=midiexplorer.gui.windows.smf.toggle)
         # Fullscreen on F11
         dpg.add_key_press_handler(key=dpg.mvKey_F11, callback=dpg.toggle_viewport_fullscreen)
         # Log on F12
@@ -107,7 +106,7 @@ def init():
 
     dpg.bind_font('default_font')
 
-    log_win_textbox = dpg.get_item_children('log_win', slot=Slots.MOST)[2]
+    log_win_textbox = dpg.get_item_children('log_win', slot=midiexplorer.gui.helpers.constants.slots.Slots.MOST)[2]
     dpg.bind_item_font(log_win_textbox, 'mono_font')
 
     dpg.bind_item_font('hist_data_table_headers', 'mono_font')

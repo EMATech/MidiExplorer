@@ -8,4 +8,4 @@
 DearPy GUI Windows.
 """
 
-__all__ = ['about', 'conn', 'hist', 'mon', 'gen', 'log']
+__all__ = ['about', 'conn', 'gen', 'hist', 'log', 'mon', 'smf']

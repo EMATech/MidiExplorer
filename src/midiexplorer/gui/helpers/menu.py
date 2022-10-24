@@ -30,9 +30,9 @@ def create() -> None:
     with dpg.viewport_menu_bar():
         if DEBUG:  # FIXME: Currently unstable
             with dpg.menu(label="Configuration"):
-                dpg.add_menu_item(label="Load", callback=midiexplorer.gui.helpers.config.load)
-                dpg.add_menu_item(label="Save", callback=midiexplorer.gui.helpers.config.save)
-                dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.helpers.config.saveas)
+                dpg.add_menu_item(label="Load", callback=midiexplorer.gui.helpers.config.load_file)
+                dpg.add_menu_item(label="Save", callback=midiexplorer.gui.helpers.config.save_file)
+                dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.helpers.config.save_file_as)
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 

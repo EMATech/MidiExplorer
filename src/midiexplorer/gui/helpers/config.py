@@ -16,7 +16,7 @@ from dearpygui import dearpygui as dpg
 from midiexplorer.__config__ import INIT_FILENAME
 
 
-def _doload(_, app_data) -> None:
+def _do_load(_, app_data) -> None:
     """Loads a configuration from selected file.
 
     :param _: Sender is ignored
@@ -27,7 +27,7 @@ def _doload(_, app_data) -> None:
     dpg.configure_app(init_file=app_data['file_path_name'], load_init_file=True)
 
 
-def _dosaveas(_, app_data) -> None:
+def _do_save_as(_, app_data) -> None:
     """Saves the current configuration in the selected file.
 
     :param _: Sender is ignored
@@ -50,47 +50,47 @@ def create_selectors() -> None:
 
     """
     with dpg.file_dialog(
-            tag='load',
+            tag='conf_load',
             label="Load configuration",
             min_size=(640, 480),
             show=False,
             modal=True,
             directory_selector=False,
             default_filename=INIT_FILENAME,
-            callback=_doload,
+            callback=_do_load,
             file_count=100,
     ):
         dpg.add_file_extension('.ini')
 
     with dpg.file_dialog(
-            tag='saveas',
+            tag='conf_saveas',
             label="Save configuration as",
             min_size=(640, 480),
             show=False,
             modal=True,
             directory_selector=False,
             default_filename=INIT_FILENAME,
-            callback=_dosaveas,
+            callback=_do_save_as,
     ):
         dpg.add_file_extension('.ini')
 
 
-def load() -> None:
+def load_file() -> None:
     """Shows the configuration file selector for loading.
 
     """
-    dpg.show_item('load')
+    dpg.show_item('conf_load')
 
 
-def save() -> None:
+def save_file() -> None:
     """Saves the current configuration to the default file.
 
     """
     dpg.save_init_file(INIT_FILENAME)
 
 
-def saveas() -> None:
+def save_file_as() -> None:
     """Shows the configuration file selector for saving as.
 
     """
-    dpg.show_item('saveas')
+    dpg.show_item('conf_saveas')
