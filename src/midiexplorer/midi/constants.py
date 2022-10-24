@@ -1111,14 +1111,19 @@ SMF_TRACK_EVENT_META_EVENT_TYPES = {
     0x7F: "Sequencer-Specific Meta-Event",
 }
 
-
 # Page 14 (PDF: 16)
-def compute_delta_time(delta_time: int, division: int, tempo: int = 120) -> datetime.timedelta:
+_SECONDS_PER_MINUTE = 60
+_SECONDS_TO_MILLISECONDS = _MILLISECONDS_TO_MICROSECONDS = 1000
+_SMF_DEFAULT_TEMPO_BPM = 120
+SMF_DEFAULT_TEMPO = _SECONDS_PER_MINUTE * _SECONDS_TO_MILLISECONDS * _MILLISECONDS_TO_MICROSECONDS / _SMF_DEFAULT_TEMPO_BPM  # =50000 µs/qn
+
+
+def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_TEMPO) -> datetime.timedelta:
     """Computes natural delta-time in milliseconds from MIDI delta-time expressed in ticks.
     
     :param delta_time: SMF Track Event delta-time (in ticks)
     :param division: SMF Header Chunk division (in delta ticks per quarter-note)
-    :param tempo: SMF Track non-MIDI data Meta Event Tempo (in ticks per quarter-note).
+    :param tempo: SMF Track non-MIDI data Meta Event Tempo (in microseconds per quarter-note).
     Assumed to be 120 if not provided.
     :return: A time delta object.
     """
