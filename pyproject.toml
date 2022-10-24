@@ -18,7 +18,7 @@ requires-python = '>=3.10'
 # https://peps.python.org/pep-0508
 # https://peps.python.org/pep-0440/#version-specifiers
 dependencies = [
-    'dearpygui==1.6.2', # FIXME: (upstream) 1.7.0 breaks menu bars and default open for collapsing headers
+    'dearpygui==1.7.3',
     'dearpygui-ext==0.9.5',
     'mido==1.2.10', # FIXME: currently using custom 1.2.11a1 with EOX, running status and delta time support
     'python-rtmidi==1.4.9'  # While it's mido's default backend, we explicitly require it for some features.
