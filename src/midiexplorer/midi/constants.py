@@ -1086,13 +1086,16 @@ SMF_TRACK_EVENT_TYPES = {
 # Page 8-11 (PDF: 10-13)
 SMF_TRACK_EVENT_META_EVENT_TYPES = {
     0x00: "Sequence Number",
+    # 0x01 to 0XF reserved for various types of text events.
     0x01: "Text Event",
     0x02: "Copyright Notice",
     0x03: "Sequence/Track Name",
     0x04: "Instrument Name",
-    0x05: "Lyric",
+    0x05: "Lyric",  # Renamed to "Display/Lyric" by RP-026 (See below).
     0x06: "Marker",
     0x07: "Cue Point",
+    # 0x08: "Program Name",  # Added by RP-019 (See below).
+    # 0x09: "Device Name",  # Added by RP-019 (See below).
 
     0x20: "MIDI Channel Prefix",
 
@@ -1104,15 +1107,122 @@ SMF_TRACK_EVENT_META_EVENT_TYPES = {
 
     0x58: "Time Signature",
     0x59: "Key Signature",
+    # 0x60: "XMF Patch Type Prefix",  # Added by RP-032 (See below).
 
     0x7F: "Sequencer-Specific Meta-Event",
 }
+_VLQ = -1  # Variable-Length Quantity
+SMF_TRACK_EVENT_META_EVENT_PARAMETERS = {
+    0x00: {  # Sequence number
+        'length': 2,  # bytes
+        'bytes': {
+            0: "Number MSB",
+            1: "Number LSB",
+        },
+    },
+    0x01: {  # Text
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Any amount of text describing anything",
+        },
+    },
+    0x02: {  # Copyright Notice
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Copyright notice",
+        },
+    },
+    0x03: {  # Sequence/Track Name
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Name of the sequence or track",
+        },
+    },
+    0x04: {  # Instrument Name
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Description of the type of instrumentation to be used in that track",
+        },
+    },
+    0x05: {  # Lyric
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Lyric to be sung",
+        },
+    },
+    0x06: {  # Marker
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Name of that point in the sequence",
+        },
+    },
+    0x07: {  # Cue Point
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Description of something happening at that point in the musical score",
+        },
+    },
+    0x20: {  # MIDI Channel Prefix
+        'length': 1,
+        'bytes': {
+            0: "MIDI Channel",
+        }
+    },
+    0x2F: {  # End of Track
+        'length': 0,
+    },
+    0x51: {  # Set Tempo
+        'length': 3,
+        'bytes': {
+            0: 'Tempo (MSB)',
+            1: 'Tempo (Middle Byte)',
+            2: 'Tempo (LSB)',
+        },
+    },
+    0x54: {  # SMPTE Offset
+        'length': 5,
+        'bytes': {
+            0: "Hours (Including Time Code Type)",  # See section: MIDI Time Code
+            1: "Minutes",
+            2: "Seconds",
+            3: "Frames",
+            4: "Fractional frames (100ths of a frame)"
+        },
+    },
+    0x58: {  # Time Signature
+        'length': 4,
+        'bytes': {
+            0: "Numerator",
+            1: "Denominator",
+            2: "MIDI clocks in a metronome click",
+            3: "Number of 32nd-notes in MIDI quarter-note (24 MIDI Clocks)",
+        },
+    },
+    0x59: {  # Key Signature
+        'length': 2,
+        'bytes': {
+            0: "Flats",
+            1: "Key",
+        }
+    },
+    0x7F: {  # Sequencer-Specific Meta-Event
+        'length': _VLQ,
+        'bytes': {
+            _VLQ: "Sequencer-Specific Meta-Event data",
+            # See SYSTEM_EXCLUSIVE_MANUFACTURER_ID
+            0: "Manufacturer ID (Single of first byte)",
+            1: "Manufacturer ID (Second byte)",  # Only if byte 0 is 0x00!
+            2: "Manufacturer ID (Third byte)",  # Only if byte 0 is 0x00!
+            # Followed by Sequencer-Specific data
+        }
+    },
+}
 
 # Page 14 (PDF: 16)
-_SECONDS_PER_MINUTE = 60
-_SECONDS_TO_MILLISECONDS = _MILLISECONDS_TO_MICROSECONDS = 1000
+_S_PER_MIN = 60
+_S2MS = _MS2US_ = 1000
 _SMF_DEFAULT_TEMPO_BPM = 120
-SMF_DEFAULT_TEMPO = _SECONDS_PER_MINUTE * _SECONDS_TO_MILLISECONDS * _MILLISECONDS_TO_MICROSECONDS / _SMF_DEFAULT_TEMPO_BPM  # =50000 µs/qn
+SMF_DEFAULT_TEMPO = _S_PER_MIN * _S2MS * _MS2US_ / _SMF_DEFAULT_TEMPO_BPM  # = 50000 µs/qn
 
 
 def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_TEMPO) -> datetime.timedelta:
@@ -1125,6 +1235,10 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
     :return: A time delta object.
     """
     return datetime.timedelta(milliseconds=delta_time * (tempo / division) / 1000)
+
+
+# Inferred
+SMF_DEFAULT_ENCODING = 'ASCII'
 
 ###
 # MIDI SHOW CONTROL (MSC)
@@ -1146,7 +1260,7 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # MIDI TIME CODE (MTC)
 #
-# Reference: RP-004/RP-008
+# Reference: MMA0001/RP-004/RP-008
 ###
 
 # TODO!
@@ -1176,7 +1290,7 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # RP-008
 #
-# See RP-004 MIDI TIME CODE (MTC)
+# See section: MIDI TIME CODE (MTC)
 ###
 
 ###
@@ -1228,7 +1342,7 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # RP-014
 #
-# See MIDI Show Control RP-002
+# See section: MIDI Show Control
 ###
 
 ###
@@ -1251,10 +1365,16 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # SMF LYRICS EVENTS DEFINITION
 #
-# Reference: RP-017 (SMF)
+# Reference: RP-017
+# See section: STANDARD MIDI FILES (SMF)
 ###
 
-# TODO!
+SMF_TRACK_EVENT_META_EVENT_LYRIC_RECOMMENDED_FIRST_EVENT_POSITION = 0
+# FIXME: [Upstream MMA specification] Title says "Line Return" while text refers to "Carriage Return".
+SMF_TRACK_EVENT_META_EVENT_LYRIC_MAXIMUM_RECOMMENDED_LENGTH_BEFORE_RETURN = 40
+SMF_TRACK_EVENT_META_EVENT_LYRIC_RESERVED_CHARACTERS = {  # Further defined in RP-027 (See below).
+    '\\', '[', ']', '{', '}',
+}
 
 ###
 # DATA INCREMENT / DECREMENT CONTROLLER RECEPTION OPERATION
@@ -1267,10 +1387,25 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # SMF DEVICE & PROGRAM NAME
 #
-# Reference: RP-019 (SMF)
+# Reference: RP-019a
+# See section: STANDARD MIDI FILES (SMF)
 ###
 
-# TODO!
+SMF_TRACK_EVENT_META_EVENT_TYPES[0x09] = "Device Name"
+SMF_TRACK_EVENT_META_EVENT_PARAMETERS[0x09] = {
+    'length': _VLQ,
+    'bytes': {
+        _VLQ: "Name of the device that this track is intended to address",
+    },
+}
+SMF_TRACK_EVENT_META_EVENT_TYPES[0x08] = "Program Name"
+SMF_TRACK_EVENT_META_EVENT_PARAMETERS[0x08] = {
+    'length': _VLQ,
+    'bytes': {
+        _VLQ: "Name of the program called up by the immediately following sequence of bank select "
+              "and program change messages",
+    },
+}
 
 ###
 # FILE REFERENCE SYSTEM EXCLUSIVE MESSAGE
@@ -1389,10 +1524,39 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # SMF LANGUAGE & DISPLAY EXTENSIONS
 #
-# Reference: RP-026 (SMF)
+# Reference: RP-026
+# See section: STANDARD MIDI FILES (SMF)
 ###
 
-# TODO!
+SMF_TRACK_EVENT_META_EVENT_TYPES[0x05] = 'Lyric/Display'
+SMF_TRACK_EVENT_META_LYRIC_DISPLAY_RESERVED_CHARACTERS = {
+    # ASCII codes
+    0x5B: 'Beginning of Ruby Tag',  # "["
+    0x5C: "Prefix for Command Codes",  # "\"
+    0x5D: "End of Ruby Tag",  # "]"
+
+    0x7B: "With @ = Beginning of Language Tag, with # = Beginning of Song Information Tag",  # "{"
+    0x7D: "End of Language @ or # Song Information Tag",
+}
+SMF_TRACK_EVENT_META_LYRIC_DISPLAY_COMMANDS = {
+    'r': 0x0D,
+    'n': 0x0A,
+    't': 0x09,
+    '\\': '\\',
+    '{': '{',
+    '}': '}',
+    '[': '[',
+    ']': ']'
+}
+SMF_TRACK_EVENT_META_LYRIC_DISPLAY_CODE_SETS = {
+    'LATIN',  # ANSI
+    'Latin',  # Same as "LATIN"
+    'latin',  # Same as "LATIN"
+    'JP',  # MS-Kanji (Shift-JIS)
+    'Jp',  # Same as "JP"
+    'jp'  # Same as "JP"
+    # Warning: The Byte Order Mark (BOM) sets the code set to UNICODE despite not being declared here!
+}
 
 ###
 # MIDI MEDIA ADAPTATION LAYER FOR IEEE-1394
@@ -1432,10 +1596,22 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 ###
 # XMF PATCH PREFIX META EVENT
 #
-# Reference: RP-032 (XMF)
+# Reference: RP-032a (XMF)
+# See section: STANDARD MIDI FILES (SMF) RP-001
 ###
 
-# TODO!
+SMF_TRACK_EVENT_META_EVENT_TYPES[0x60] = "XMF Patch Type Prefix"
+SMF_TRACK_EVENT_META_EVENT_PARAMETERS[0x60] = {
+    'length': 1,
+    'bytes': {
+        0: "How to interpret subsequent Program Change and Bank Select Messages"
+    },
+    'values': {
+        0x01: "General MIDI 1",
+        0x02: "General MIDI 2",
+        0x03: "DLS",
+    },
+}
 
 ###
 # EXTENSION 00-01 TO FILE REFERENCE SYSEX MESSAGE
@@ -1589,10 +1765,30 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
 # TODO: Hardware!
 
 
+############
+# Template #
+############
+
 ###
+# TITLE
 #
-#
-# Reference:
+# Reference: Specification ID
+# See section: Specification section modified
 ###
 
 # TODO!
+
+
+#########
+# Tests #
+#########
+
+if __name__ == '__main__':
+    import logging
+    from pprint import pformat
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    # Check monkey patching works
+    logging.debug("SMF_TRACK_EVENT_META_EVENT_TYPES=%s", pformat(SMF_TRACK_EVENT_META_EVENT_TYPES))
+    logging.debug("SMF_TRACK_EVENT_META_EVENT_PARAMETERS=%s", pformat(SMF_TRACK_EVENT_META_EVENT_PARAMETERS))
