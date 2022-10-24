@@ -1047,8 +1047,6 @@ ADDITIONAL_SPECIFICATIONS = {
 # Reference: RP-001
 ###
 
-# TODO!
-
 # Page 2 (PDF: 4)
 SMF_MAC_FILE_TYPE = 'Midi'
 SMF_MAC_CLIPBOARD_DATA_TYPE = 'Midi'
@@ -1071,12 +1069,11 @@ SMF_HEADER_DIVISION_FORMAT = {
     1: "Negative SMPTE FPS & Ticks per frame",
 }
 
-# FIXME: include valid values from the SMPTE standard?
 SMF_HEADER_DIVISION_SMPTE = {
-    -24: "24 FPS",
-    -25: "25 FPS",
-    -29: "30 FPS DF",  # drop-frame
-    -30: "30 FPS",
+    -24: "24 FPS",  # Film
+    -25: "25 FPS",  # PAL
+    -29: "30 FPS DF",  # drop-frame (29.97 FPS NTSC)
+    -30: "30 FPS",  # non-drop
 }
 
 # Page 6-7 (PDF: 8-9)
