@@ -16,7 +16,7 @@ class Timestamp:
     
     """
     __instance = None
-    START_TIME = time.time()  # Initialize ASAP (seconds)
+    START_TIME = time.perf_counter()  # Initialize ASAP (seconds)
     value = 0  # Current timestamp (seconds)
     delta = 0  # Delta to previous timestamp (seconds)
 
@@ -31,6 +31,6 @@ class Timestamp:
         return cls.__instance
 
     def __init__(self):
-        now = time.time() - self.START_TIME
+        now = time.perf_counter() - self.START_TIME
         self.delta = now - self.value
         self.value = now

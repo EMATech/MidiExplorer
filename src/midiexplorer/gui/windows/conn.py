@@ -661,7 +661,7 @@ def poll_processing() -> None:
     #
     # for input in inputs:
     #     for midi_message in input.port.iter_pending():
-    #         timestamp = time.time()
+    #         timestamp = time.perf_counter()
     #         queue.put((timestamp, input.label, input.dest, midi_message))
 
     probe_in_user_data = dpg.get_item_user_data('probe_in')

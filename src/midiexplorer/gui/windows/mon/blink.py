@@ -104,7 +104,7 @@ def mon(indicator: int | str, static: bool = False) -> None:
     # logger = midiexplorer.gui.logger.Logger()
     # logger.log_debug(f"blink {indicator}")
 
-    now = time.time() - Timestamp.START_TIME
+    now = time.perf_counter() - Timestamp.START_TIME
     delay = dpg.get_value('mon_blink_duration')
     target = f'mon_{indicator}_active_until'
     if not static:
@@ -119,7 +119,7 @@ def mon(indicator: int | str, static: bool = False) -> None:
     else:
         dpg.bind_item_theme(f'mon_{indicator}_common', theme)
         dpg.bind_item_theme(f'mon_{indicator}_syx', theme)
-    # logger.log_debug(f"Current time:{time.time() - Timestamp.START_TIME}")
+    # logger.log_debug(f"Current time:{time.perf_counter() - Timestamp.START_TIME}")
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
 
 
@@ -161,7 +161,7 @@ def update_mon_status() -> None:
     Checks for the time it should stay illuminated and darkens it if expired.
 
     """
-    now = time.time() - Timestamp.START_TIME
+    now = time.perf_counter() - Timestamp.START_TIME
     for indicator in get_supported_indicators():
         value = dpg.get_value(f'{indicator}_active_until')
         if value:  # Prevent resetting theme when not needed.
