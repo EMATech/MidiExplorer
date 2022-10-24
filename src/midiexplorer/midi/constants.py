@@ -12,6 +12,7 @@ Derived from official MIDI specifications available at:
 - Association of Musical Electronics Industry (AMEI) [JP]: (https://www.amei.or.jp/)
 - MIDI Standard Committee (MSC) [JP]: http://amei.or.jp/midistandardcommittee
 """
+import datetime
 
 MIDI_VERSION = {
     1: "1.0",
@@ -1047,6 +1048,81 @@ ADDITIONAL_SPECIFICATIONS = {
 ###
 
 # TODO!
+
+# Page 2 (PDF: 4)
+SMF_MAC_FILE_TYPE = 'Midi'
+SMF_MAC_CLIPBOARD_DATA_TYPE = 'Midi'
+
+# Page 3 (PDF: 5)
+SMF_CHUNK_TYPES = {
+    'MThd': "Header",
+    'MTrk': "Track",
+}
+
+# Page 4 (PDF: 6)
+SMF_HEADER_FORMATS = {
+    0: "Single multi-channel track",
+    1: "One or more simultaneous tracks (or MIDI outputs) of a sequence",
+    2: "One or more sequentially independent single-track patterns",
+}
+
+SMF_HEADER_DIVISION_FORMAT = {
+    0: "Ticks per quarter-note",
+    1: "Negative SMPTE FPS & Ticks per frame",
+}
+
+# FIXME: include valid values from the SMPTE standard?
+SMF_HEADER_DIVISION_SMPTE = {
+    -24: "24 FPS",
+    -25: "25 FPS",
+    -29: "30 FPS DF",  # drop-frame
+    -30: "30 FPS",
+}
+
+# Page 6-7 (PDF: 8-9)
+SMF_TRACK_EVENT_TYPES = {
+    0xF0: "Sysex",
+    0xF7: "Escape (Sysex)",
+    0xFF: "Meta",
+}
+
+# Page 8-11 (PDF: 10-13)
+SMF_TRACK_EVENT_META_EVENT_TYPES = {
+    0x00: "Sequence Number",
+    0x01: "Text Event",
+    0x02: "Copyright Notice",
+    0x03: "Sequence/Track Name",
+    0x04: "Instrument Name",
+    0x05: "Lyric",
+    0x06: "Marker",
+    0x07: "Cue Point",
+
+    0x20: "MIDI Channel Prefix",
+
+    0x2F: "End of Track",
+
+    0x51: "Set Tempo",
+
+    0x54: "SMPTE Offset",
+
+    0x58: "Time Signature",
+    0x59: "Key Signature",
+
+    0x7F: "Sequencer-Specific Meta-Event",
+}
+
+
+# Page 14 (PDF: 16)
+def compute_delta_time(delta_time: int, division: int, tempo: int = 120) -> datetime.timedelta:
+    """Computes natural delta-time in milliseconds from MIDI delta-time expressed in ticks.
+    
+    :param delta_time: SMF Track Event delta-time (in ticks)
+    :param division: SMF Header Chunk division (in delta ticks per quarter-note)
+    :param tempo: SMF Track non-MIDI data Meta Event Tempo (in ticks per quarter-note).
+    Assumed to be 120 if not provided.
+    :return: A time delta object.
+    """
+    return datetime.timedelta(milliseconds=delta_time * (tempo / division) / 1000)
 
 ###
 # MIDI SHOW CONTROL (MSC)
