@@ -11,11 +11,13 @@ Yet another MIDI monitor, analyzer, debugger and manipulation tool.
 
 ![GUI](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/screenshots/GUIwithgenerator.png)
 
+![SMF GUI](https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/screenshots/GUIwithsmfdecodingprototype.png)
+
 The intent is to be [specifications](https://www.midi.org/specifications) compliant to help debugging,
 reverse-engineering and developing products based on the MIDI protocol while learning everything there is to know in the
 process.
 
-The reference specifications used ard linked below and comes from the following standards bodies:
+The reference specifications used are linked below and comes from the following standards bodies:
 
 - [MIDI Association, ex MIDI Manufacturers Association (MMA)](https://wwwmidi.org) USA
 - [Association of Musical Electronics Industry (AMEI)](https://www.amei.or.jp/) Japan

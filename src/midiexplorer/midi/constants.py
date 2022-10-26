@@ -1220,9 +1220,9 @@ SMF_TRACK_EVENT_META_EVENT_PARAMETERS = {
 
 # Page 14 (PDF: 16)
 _S_PER_MIN = 60
-_S2MS = _MS2US_ = 1000
+_S2MS = _MS2US_ = 1_000
 _SMF_DEFAULT_TEMPO_BPM = 120
-SMF_DEFAULT_TEMPO = _S_PER_MIN * _S2MS * _MS2US_ / _SMF_DEFAULT_TEMPO_BPM  # = 50000 µs/qn
+SMF_DEFAULT_TEMPO = _S_PER_MIN * _S2MS * _MS2US_ / _SMF_DEFAULT_TEMPO_BPM  # = 500_000 µs/qn
 
 
 def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_TEMPO) -> datetime.timedelta:
@@ -1234,7 +1234,7 @@ def compute_delta_time(delta_time: int, division: int, tempo: int = SMF_DEFAULT_
     Assumed to be 120 if not provided.
     :return: A time delta object.
     """
-    return datetime.timedelta(milliseconds=delta_time * (tempo / division) / 1000)
+    return datetime.timedelta(milliseconds=delta_time * (tempo / division) / 1_000)
 
 
 # Inferred
@@ -1788,6 +1788,8 @@ if __name__ == '__main__':
     from pprint import pformat
 
     logging.basicConfig(level=logging.DEBUG)
+
+    assert SMF_DEFAULT_TEMPO == 500_000  # us/qn <=> 120 BPM
 
     # Check monkey patching works
     logging.debug("SMF_TRACK_EVENT_META_EVENT_TYPES=%s", pformat(SMF_TRACK_EVENT_META_EVENT_TYPES))

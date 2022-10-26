@@ -11,8 +11,8 @@ Standard MIDI File (SMF) menus callbacks.
 from dearpygui import dearpygui as dpg
 from mido import MidiFile
 
+import midiexplorer.gui.windows.smf
 from midiexplorer.__config__ import DEBUG
-from midiexplorer.gui.helpers.logger import Logger
 
 
 def _do_load(_, app_data) -> None:
@@ -23,17 +23,22 @@ def _do_load(_, app_data) -> None:
 
     """
     # TODO: sanity checks?
-    Logger().log_debug(f"{app_data!r}")
+
+    # Logger().log_debug(f"{app_data!r}")
     filename = app_data['file_path_name']
-    # FIXME: Use raw file or mido?
+
+    # Raw file
     with open(filename, 'rb') as file:
         contents = file.read()
-    Logger().log_debug(f"{contents!r}")
-    mid = MidiFile(filename)
-    Logger().log_debug(f"{mid!r}")
-    # FIXME: Decode & Serialize to YAML?
-    dpg.set_value('SMF', f"{mid!r}")
-    raise NotImplementedError
+    # Logger().log_debug(f"{contents!r}")
+
+    # Decoded file
+    mid = MidiFile(filename, clip=True, debug=DEBUG,
+                   # charset='ascii',
+                   )
+    # Logger().log_debug(f"{mid!r}")
+
+    midiexplorer.gui.windows.smf.populate(contents, mid)
 
 
 def _do_save_as(_, app_data) -> None:
@@ -112,4 +117,4 @@ def close_file() -> None:
     """Closes the current SMF.
 
     """
-    dpg.set_value('SMF', None)
+    midiexplorer.gui.windows.smf.init()
