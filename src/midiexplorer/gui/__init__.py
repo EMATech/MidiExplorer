@@ -120,7 +120,7 @@ def init():
     dpg.bind_item_font('mon_notes_container', 'mono_font')
 
     if DEBUG:
-        dpg.bind_item_font('smf_contents', 'mono_font')
+        dpg.bind_item_font('smf_container', 'mono_font')
 
     # --------
     # Viewport
