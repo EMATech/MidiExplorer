@@ -34,7 +34,6 @@ def create() -> None:
                 dpg.add_menu_item(label="Save", callback=midiexplorer.gui.helpers.config.save_file)
                 dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.helpers.config.save_file_as)
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
-                dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 
         with dpg.menu(label="Display"):
             dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
