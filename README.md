@@ -3,7 +3,6 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
-
 [![Downloads](https://pepy.tech/badge/midiexplorer)](https://pepy.tech/project/midiexplorer)
 [![PyPI - Version](https://img.shields.io/pypi/v/midiexplorer.svg)](https://pypi.org/project/midiexplorer)
 
@@ -644,30 +643,31 @@ Logo and icons released under the
 ### Dependencies & License Acknowledgment
 
 - [Python](https://python.org) v3.10  
+  Copyright © 2001-2022 Python Software Foundation.  
   Used under the terms of the PSF License Agreement.
 - [RtMidi](https://github.com/thestk/rtmidi)  
-  Copyright (c) 2003-2021 Gary P. Scavone  
-  Used under the terms of the MIT License.
+  Copyright (c) 2003-2021 Gary P. Scavone.  
+  Used under the terms of the MIT license.
 - via [python-rtmidi](https://github.com/SpotlightKid/python-rtmidi)  
-  Copyright (c) 2012 - 2021 Christopher Arndt  
-  Used under the terms of the MIT License.
+  Copyright (c) 2012 - 2021 Christopher Arndt.  
+  Used under the terms of the MIT license.
 - via [mido](https://github.com/mido/mido)  
-  Copyright (c) 2013-infinity Ole Martin Bjørndalen    
-  Used under the terms of the MIT License.
+  Copyright (c) 2013-infinity Ole Martin Bjørndalen.    
+  Used under the terms of the MIT license.
 - [Dear ImGui](https://github.com/ocornut/imgui)  
-  Copyright (c) 2014-2022 Omar Cornut  
-  Used under the terms of the MIT License.
+  Copyright (c) 2014-2022 Omar Cornut.  
+  Used under the terms of the MIT license.
 - via [Dear PyGui](https://github.com/hoffstadt/DearPyGui)  
-  Copyright (c) 2021 Dear PyGui, LLC  
-  Used under the terms of the MIT License.
+  Copyright (c) 2021 Dear PyGui, LLC.  
+  Used under the terms of the MIT license.
 
 #### Fonts
 
 - [Roboto](https://github.com/googlefonts/Roboto)  
-  Copyright (c) 2015 The Roboto Project Authors  
+  Copyright (c) 2015 The Roboto Project Authors.  
   Used under the terms of the Apache License, Version 2.0.
 - [Roboto Mono](https://github.com/googlefonts/RobotoMono)  
-  Copyright (c) 2015 The Roboto Mono Project Authors  
+  Copyright (c) 2015 The Roboto Mono Project Authors.  
   Used under the terms of the Apache License, Version 2.0.
 
 #### Logo and icons
