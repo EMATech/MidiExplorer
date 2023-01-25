@@ -1255,7 +1255,244 @@ SMF_DEFAULT_ENCODING = 'ASCII'
 # Reference: MMA-00007/RP-003
 ###
 
-# TODO!
+GM1_MINIMUM_VOICES = 24
+GM1_MINIMUM_MELODY_VOICES = 16
+GM1_MINIMUM_PERCUSSION_VOICES = 8
+
+GM1_PERCUSSION_CHANNEL = 10
+
+GM1_MINIMUM_INSTRUMENTS = 128  # See: GM Sound Set
+GM1_MINIMUM_PERCUSSION_SOUNDS = 47  # See: GM Percussion Map
+
+GM1_REQUIRED_CONTROLLER_CHANGES = (
+    1,  # Modulation
+    7,  # Volume
+    10,  # Pan
+    11,  # Expression
+    64,  # Sustain
+    121,  # Reset All Controllers
+    123  # All Notes Off
+)
+
+GM1_REQUIRED_REGISTERED_PARAMETER_NUMBERS = (
+    0,  # Pitch Bend Sensitivity
+    1,  # Fine Tuning
+    2  # Coarse Tuning
+)
+
+GM1_REQUIRED_CHANNEL_MESSAGES = (
+    0xD,  # Channel Pressure (Aftertouch)
+    0xE  # Pitch Bend (default range = ±2 semitones)
+)
+
+GM1_DEFAULT_SETTINGS = {
+    'bend': 0,
+    'volume': 100,  # (0-127)
+    'controllers': 'normal'
+}
+
+GENERAL_MIDI_SOUND_SET_GROUPINGS = {}
+for group in (
+        ((0, 8), "Piano"),
+        ((8, 16), "Chromatic Percussion"),
+        ((16, 24), "Organ"),
+        ((24, 32), "Guitar"),
+        ((33, 40), "Bass"),
+        ((40, 48), "Strings"),
+        ((48, 56), "Ensemble"),
+        ((56, 64), "Brass"),
+        ((64, 72), "Reed"),
+        ((72, 80), "Pipe"),
+        ((80, 88), "Synth Lead"),
+        ((88, 96), "Synth Pad"),
+        ((96, 104), "Synth Effects"),
+        ((104, 112), "Ethnic"),
+        ((112, 120), "Percussive"),
+        ((120, 128), "Sound Effects"),
+):
+    for prog_num in range(*group[0]):
+        GENERAL_MIDI_SOUND_SET_GROUPINGS[prog_num] = group[1]
+
+GENERAL_MIDI_SOUND_SET = (
+    "Acoustic Grand Piano",
+    "Bright Acoustic Piano",
+    "Electric Grand Piano",
+    "Honky-tonk Piano",
+    "Electric Piano 1",
+    "Electric Piano 2",
+    "Harpsichord",
+    "Clavi",
+    "Celesta",
+    "Glockenspiel",
+    "Music Box",
+    "Vibraphone",
+    "Marimba",
+    "Xylophone",
+    "Tubular Bells",
+    "Dulcimer",
+    "Drawbar Organ",
+    "Percussive Organ",
+    "Rock Organ",
+    "Church Organ",
+    "Reed Organ",
+    "Accordion",
+    "Harmonica",
+    "Tango Accordion",
+    "Acoustic Guitar (nylon",
+    "Acoustic Guitar (steel)",
+    "Electric Guitar (jazz)",
+    "Electric Guitar (clean)",
+    "Electric Guitar (muted",
+    "Overdriven Guitar",
+    "Distortion Guitar",
+    "Guitar harmonics",
+    "Acoustic Bass",
+    "Electric Bass (finger)",
+    "Electric Bass (pick)",
+    "Fretless Bass",
+    "Slap Bass 1",
+    "Slap Bass 2",
+    "Synth Bass 1",
+    "Synth Bass 2",
+    "Violin",
+    "Viola",
+    "Cello",
+    "Contrabass",
+    "Tremolo Strings",
+    "Pizzicato Strings",
+    "Orchestral Harp",
+    "Timpani",
+    "String Ensemble 1",
+    "String Ensemble 2",
+    "SynthStrings 1",
+    "SynthStrings 2",
+    "Choir Aahs",
+    "Voice Oohs",
+    "Synth Voice",
+    "Orchestra Hit",
+    "Trumpet",
+    "Trombone",
+    "Tuba",
+    "Muted Trumpet",
+    "French Horn",
+    "Brass Section",
+    "SynthBrass 1",
+    "SynthBrass 2",
+    "Soprano Sax",
+    "Alto Sax",
+    "Tenor Sax",
+    "Baritone Sax",
+    "Oboe",
+    "English Horn",
+    "Bassoon",
+    "Clarinet",
+    "Piccolo",
+    "Flute",
+    "Recorder",
+    "Pan Flute",
+    "Blown Bottle",
+    "Shakuhachi",
+    "Whistle",
+    "Ocarina",
+    "Lead 1 (square)",
+    "Lead 2 (sawtooth)",
+    "Lead 3 (calliope)",
+    "Lead 4 (chiff)",
+    "Lead 5 (charang)",
+    "Lead 6 (voice)",
+    "Lead 7 (fifths)",
+    "Lead 8 (bass + lead)",
+    "Pad 1 (new age)",
+    "Pad 2 (warm)",
+    "Pad 3 (polysynth)",
+    "Pad 4 (choir)",
+    "Pad 5 (bowed)",
+    "Pad 6 (metallic)",
+    "Pad 7 (halo)",
+    "Pad 8 (sweep)",
+    "FX 1 (rain)",
+    "FX 2 (soundtrack)",
+    "FX 3 (crystal)",
+    "FX 4 (atmosphere)",
+    "FX 5 (brightness)",
+    "FX 6 (goblins)",
+    "FX 7 (echoes)",
+    "FX 8 (sci-fi)",
+    "Sitar",
+    "Banjo",
+    "Shamisen",
+    "Koto",
+    "Kalimba",
+    "Bag pipe",
+    "Fiddle",
+    "Shanai",
+    "Tinkle Bell",
+    "Agogo",
+    "Steel Drums",
+    "Woodblock",
+    "Taiko Drum",
+    "Melodic Tom",
+    "Synth Drum",
+    "Reverse Cymbal",
+    "Guitar Fret Noise",
+    "Breath Noise",
+    "Seashore",
+    "Bird Tweet",
+    "Telephone Ring",
+    "Helicopter",
+    "Applause",
+    "Gunshot",
+)
+
+GENERAL_MIDI_PERCUSSION_MAP = {  # Channel 10
+    35: "Acoustic Bass Drum",
+    51: "Ride Cymbal 1",
+    67: "High Agogo",
+    36: "Bass Drum 1",
+    52: "Chinese Cymbal",
+    68: "Low Agogo",
+    37: "Side Stick",
+    53: "Ride Bell",
+    69: "Cabasa",
+    38: "Acoustic Snare",
+    54: "Tambourine",
+    70: "Maracas",
+    39: "Hand Clap",
+    55: "Splash Cymbal",
+    71: "Short Whistle",
+    40: "Electric Snare",
+    56: "Cowbell",
+    72: "Long Whistle",
+    41: "Low Floor Tom",
+    57: "Crash Cymbal 2",
+    73: "Short Guiro",
+    42: "Closed Hi Hat",
+    58: "Vibraslap",
+    74: "Long Guiro",
+    43: "High Floor Tom",
+    59: "Ride Cymbal 2",
+    75: "Claves",
+    44: "Pedal Hi-Hat",
+    60: "Hi Bongo",
+    76: "Hi Wood Block",
+    45: "Low Tom",
+    61: "Low Bongo",
+    77: "Low Wood Block",
+    46: "Open Hi-Hat",
+    62: "Mute Hi Conga",
+    78: "Mute Cuica",
+    47: "Low-Mid Tom",
+    63: "Open Hi Conga",
+    79: "Open Cuica",
+    48: "Hi Mid Tom",
+    64: "Low Conga",
+    80: "Mute Triangle",
+    49: "Crash Cymbal 1",
+    65: "High Timbale",
+    81: "Open Triangle",
+    50: "High Tom",
+    66: "Low Timbale",
+}
 
 ###
 # MIDI TIME CODE (MTC)
