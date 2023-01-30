@@ -617,3 +617,20 @@ def create() -> None:
                 dpg.add_text(title)
                 dpg.add_input_text(source='syx_sub_id2_name', readonly=True, width=250)
                 tooltip_preconv(title, 'syx_sub_id2_name', 'syx_sub_id2_val')
+
+
+def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Callback to toggle the window visibility.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
+
+    dpg.configure_item('mon_win', show=not dpg.is_item_visible('mon_win'))

@@ -7,10 +7,12 @@
 """
 History window and management.
 """
+from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
 
 from midiexplorer.__config__ import DEBUG
+from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
 from midiexplorer.gui.windows.hist.data import init_details_table_data, clear_hist_data_table
 
 
@@ -91,3 +93,20 @@ def create() -> None:
         with dpg.group(parent='hist_btns', horizontal=True):
             dpg.add_checkbox(tag='hist_data_table_autoscroll', label="Auto-Scroll", default_value=True)
             dpg.add_button(label="Clear", callback=clear_hist_data_table)
+
+
+def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Callback to toggle the window visibility.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
+
+    dpg.configure_item('hist_win', show=not dpg.is_item_visible('hist_win'))

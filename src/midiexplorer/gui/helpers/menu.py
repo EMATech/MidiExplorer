@@ -28,6 +28,9 @@ def create() -> None:
     midiexplorer.gui.windows.about.create()
 
     with dpg.viewport_menu_bar():
+        with dpg.menu(label="File"):
+            dpg.add_menu_item(label="Exit", callback=dpg.stop_dearpygui)
+
         if DEBUG:  # FIXME: Currently unstable
             with dpg.menu(label="Configuration"):
                 dpg.add_menu_item(label="Load", callback=midiexplorer.gui.helpers.config.load_file)
@@ -35,9 +38,45 @@ def create() -> None:
                 dpg.add_menu_item(label="Save as", callback=midiexplorer.gui.helpers.config.save_file_as)
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 
+        with dpg.menu(label="Tools"):
+            if DEBUG:
+                dpg.add_menu_item(label="Standard MIDI File",
+                                  shortcut="F5",
+                                  check=True,
+                                  default_value=True,
+                                  callback=midiexplorer.gui.windows.smf.toggle)
+            dpg.add_menu_item(label="Connections",
+                              shortcut="F1",
+                              check=True,
+                              default_value=True,
+                              callback=midiexplorer.gui.windows.conn.toggle)
+            dpg.add_menu_item(label="History",
+                              shortcut="F2",
+                              check=True,
+                              default_value=True,
+                              callback=midiexplorer.gui.windows.hist.toggle)
+            dpg.add_menu_item(label="Monitor",
+                              shortcut="F3",
+                              check=True,
+                              default_value=True,
+                              callback=midiexplorer.gui.windows.mon.toggle)
+            dpg.add_menu_item(label="Generator",
+                              shortcut="F4",
+                              check=True,
+                              default_value=True,
+                              callback=midiexplorer.gui.windows.gen.toggle)
+            dpg.add_menu_item(label="Log",
+                              shortcut="F12",
+                              check=True,
+                              default_value=DEBUG,
+                              callback=midiexplorer.gui.windows.log.toggle)
+
         with dpg.menu(label="Display"):
-            dpg.add_menu_item(label="Toggle Fullscreen (F11)", callback=dpg.toggle_viewport_fullscreen)
-            dpg.add_menu_item(label="Toggle Log (F12)", callback=midiexplorer.gui.windows.log.toggle)
+            dpg.add_menu_item(label="Toggle Fullscreen",
+                              shortcut="F11",
+                              check=True,
+                              default_value=False,
+                              callback=dpg.toggle_viewport_fullscreen)
 
         with dpg.menu(label="Help"):
             if DEBUG:

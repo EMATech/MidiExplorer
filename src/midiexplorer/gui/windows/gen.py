@@ -57,6 +57,23 @@ def create() -> None:
         )
 
 
+def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Callback to toggle the window visibility.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
+
+    dpg.configure_item('gen_win', show=not dpg.is_item_visible('gen_win'))
+
+
 def decode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """Callback to decode raw MIDI message input.
 
