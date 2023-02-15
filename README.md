@@ -169,10 +169,16 @@ Features & TODO
 - [x] Generator data window
 - [ ] **(WIP)** Standard MIDI file window
 - [x] Log window
-    - [ ] To file
+    - [ ] Insert comment
+    - [ ] Save to file
         - [ ] Overwrite
         - [ ] Append
 - [ ] Actions (Menus and/or keyboard shortcuts)
+    - [x] Toggle connections (F1)
+    - [x] Toggle history (F2)
+    - [x] Toggle monitor (F3)
+    - [x] Toggle generator (F4)
+    - [x] Toggle standard MIDI file (F5)
     - [x] Toggle full-screen (F11)
     - [x] Toggle log (F12)
     - [ ] Save & restore windows state  
