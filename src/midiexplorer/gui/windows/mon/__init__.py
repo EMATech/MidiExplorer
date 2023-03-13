@@ -113,18 +113,44 @@ def create() -> None:
     # DEAR PYGUI THEME for activated buttons
     # ---------------------------------------
     with dpg.theme(tag='__act'):
+        red = (255, 0, 0)
+        light_red = (128, 0, 0)
         with dpg.theme_component(dpg.mvButton):
             dpg.add_theme_color(
                 tag='__act_but_col',
                 target=dpg.mvThemeCol_Button,
-                value=(255, 0, 0),  # red
+                value=red,
+            )
+        with dpg.theme_component(dpg.mvSliderInt):
+            dpg.add_theme_color(
+                tag='__act_sli_col',  # TODO: allow customizing
+                target=dpg.mvThemeCol_SliderGrab,
+                value=red,
+            )
+            dpg.add_theme_color(
+                tag='__act_sli_bg_col',  # TODO: allow customizing
+                target=dpg.mvThemeCol_FrameBg,
+                value=light_red,
             )
     with dpg.theme(tag='__force_act'):
+        magenta = (170, 0, 170)
+        light_magenta = (85, 0, 85)
         with dpg.theme_component(dpg.mvButton):
             dpg.add_theme_color(
                 tag='__force_act_col',
                 target=dpg.mvThemeCol_Button,
-                value=(170, 0, 170),  # light magenta
+                value=magenta,  # light magenta
+            )
+        with dpg.theme_component(dpg.mvSliderInt):
+            dpg.add_theme_color(
+                tag='__force_act_sli_col',  # TODO: allow customizing
+                target=dpg.mvThemeCol_SliderGrab,
+                value=magenta,
+            )
+            dpg.add_theme_color(
+                tag='__force_act_sli_bg_col',  # TODO: allow customizing
+                target=dpg.mvThemeCol_FrameBg,
+                value=light_magenta,
             )
 
     # -------------------
@@ -437,6 +463,16 @@ def create() -> None:
 
             _update_eox_category(sender=None, app_data=None, user_data=eox_categories)
 
+        # ---------------
+        # Running Status
+        # ---------------
+        if DEBUG:
+            # TODO: implement
+            with dpg.collapsing_header(label="Running Status", default_open=False):
+                dpg.add_child_window(tag='mon_running_status_container', height=20, border=False)
+                # FIXME: unimplemented upstream (page A-1)
+                dpg.add_text("Not implemented yet", parent='mon_running_status_container')
+
         # ------
         # Notes
         # ------
@@ -470,8 +506,15 @@ def create() -> None:
 
             label = _verticalize(name)
 
-            dpg.add_button(tag=f'note_{index}', label=label, parent='keyboard', width=width, height=height,
-                           pos=(xpos, ypos))
+            dpg.add_slider_int(
+                tag=f'note_{index}', parent='keyboard', width=width, height=height,
+                format=label,  # Used instead of label to display properly
+                pos=(xpos, ypos),
+                vertical=True,
+                min_value=0, max_value=127,
+                enabled=True,  # Required for theme color to apply properly
+            )
+
             tooltip_conv(
                 f"English Alphabetical:\t{midiexplorer.midi.notes.MIDI_NOTES_ALPHA_EN[index]}\n"
                 f"Syllabic:{' ':12}\t{midiexplorer.midi.notes.MIDI_NOTES_SYLLABIC[index]}\n"
@@ -487,21 +530,11 @@ def create() -> None:
             else:
                 bxpos += width + margin
 
-        # ---------------
-        # Running Status
-        # ---------------
-        if DEBUG:
-            # TODO: implement
-            with dpg.collapsing_header(label="Running Status", default_open=False):
-                dpg.add_child_window(tag='mon_running_status_container', height=20, border=False)
-                # FIXME: unimplemented upstream (page A-1)
-                dpg.add_text("Not implemented yet", parent='mon_running_status_container')
-
         # ------------
         # Controllers
         # ------------
         with dpg.collapsing_header(label="Controllers", default_open=True):
-            dpg.add_child_window(tag='mon_controllers_container', height=192, border=False)
+            dpg.add_child_window(tag='mon_controllers_container', height=400, border=False)
 
         with dpg.table(tag='mon_controllers', parent='mon_controllers_container', header_row=False,
                        policy=dpg.mvTable_SizingFixedFit):
@@ -510,21 +543,28 @@ def create() -> None:
             for _i in range(17):
                 dpg.add_table_column()
 
+            num_controllers = 128
+            group_controllers_by = 8
             rownum = 0
-            with dpg.table_row(tag=f'ctrls_{rownum}'):
-                dpg.add_text("Controllers")
-                dpg.add_text("")
-
+            dpg.add_table_row(tag=f'ctrls_{rownum}', parent='mon_controllers')
+            #    dpg.add_text("Controllers")
+            #    dpg.add_text("")
             # TODO: add preference to separate reserved CC120-127
-            for controller in range(128):
-                dpg.add_button(tag=f'mon_cc_{controller}', label=f"{controller:3d}", parent=f'ctrls_{rownum}')
-                tooltip_conv(midiexplorer.midi.constants.CONTROLLER_NUMBERS[controller], controller, blen=7)
-                newrownum = int((controller + 1) / 16)
-                if newrownum > rownum and newrownum != 8:
+            for controller in range(num_controllers):
+                with dpg.group(horizontal=True, parent=f'ctrls_{rownum}'):
+                    dpg.add_button(tag=f'mon_cc_{controller}', label=f"{controller:3d}")
+                    tooltip_conv(midiexplorer.midi.constants.CONTROLLER_NUMBERS[controller], controller, blen=7)
+                    dpg.add_input_text(tag=f'mon_cc_val_{controller}', enabled=False, width=50)
+                    with dpg.tooltip(dpg.last_item()):
+                        dpg.add_text(f"{midiexplorer.midi.constants.CONTROLLER_NUMBERS[controller]} Value:")
+                        dpg.add_text(source=f'mon_cc_val_{controller}')
+                        # TODO: hex and bin realtime conversions
+                newrownum = (controller + 1) // group_controllers_by
+                if newrownum > rownum:
                     rownum = newrownum
                     dpg.add_table_row(tag=f'ctrls_{rownum}', parent='mon_controllers')
-                    dpg.add_text("", parent=f'ctrls_{rownum}')
-                    dpg.add_text("", parent=f'ctrls_{rownum}')
+                    # dpg.add_text("", parent=f'ctrls_{rownum}')
+                    # dpg.add_text("", parent=f'ctrls_{rownum}')
             del rownum
 
         ###
@@ -534,6 +574,11 @@ def create() -> None:
 
         ###
         # TODO: Registered parameter decoding?
+        ###
+        # Value timegraph
+
+        ###
+        # TODO: Polyphonic Key Pressure (Aftertouch)
         ###
         # Value timegraph
 
@@ -548,7 +593,7 @@ def create() -> None:
         # Value timegraph
 
         ###
-        # TODO: Aftertouch
+        # TODO: Channel Pressure (Aftertouch)
         ###
         # Value timegraph
 

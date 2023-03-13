@@ -123,15 +123,18 @@ def mon(indicator: int | str, static: bool = False) -> None:
     # logger.log_debug(f"Blink {delay} until: {dpg.get_value(target)}")
 
 
-def note_on(number: int | str, static: bool = False) -> None:
+def note_on(number: int | str, static: bool = False, velocity: int = None) -> None:
     """Illuminates the note.
 
     :param number: MIDI note number.
     :param static: Live or static mode.
+    :param velocity: Note velocity
 
     """
     theme = get_theme(static)
     dpg.bind_item_theme(f'note_{number}', theme)
+    if velocity is not None:
+        dpg.set_value(f'note_{number}', velocity)
 
 
 def note_off(number: int | str, static: bool = False) -> None:
@@ -143,6 +146,12 @@ def note_off(number: int | str, static: bool = False) -> None:
     """
     theme = get_theme(static, disable=True)
     dpg.bind_item_theme(f'note_{number}', theme)
+    dpg.set_value(f'note_{number}', 0)
+
+
+def cc(number: int | str, value: int | str, static: bool = False) -> None:
+    mon(f'cc_{number}', static)
+    dpg.set_value(f'mon_cc_val_{number}', value)
 
 
 def _reset_indicator(indicator):

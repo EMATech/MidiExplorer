@@ -12,7 +12,7 @@ import mido
 from dearpygui import dearpygui as dpg
 
 from midiexplorer.gui.helpers.convert import set_value_preconv
-from midiexplorer.gui.windows.mon.blink import mon, note_on, note_off, reset_mon
+from midiexplorer.gui.windows.mon.blink import mon, note_on, note_off, reset_mon, cc
 from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
 from midiexplorer.midi.decoders.sysex import DecodedUniversalSysExPayload, DecodedSysEx
 
@@ -78,14 +78,14 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
         if 'on' in data.type and not (
                 dpg.get_value('zero_velocity_note_on_is_note_off') and data.velocity == NOTE_OFF_VELOCITY
         ):
-            note_on(data.note, static)
+            note_on(data.note, static, data.velocity)
         else:
             note_off(data.note, static)
     elif 'polytouch' == data.type:
         if static:
             note_on(data.note, static)
     elif 'control_change' == data.type:
-        mon(f'cc_{data.control}', static)
+        cc(data.control, data.value, static)
     elif 'program_change' == data.type:
         # TODO: Optionally decode General MIDI names.
         pass
