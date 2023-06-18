@@ -6,10 +6,13 @@ midiexplorer.ini
 /.github/
 /.pytest_cache/
 /.run/
+/build/
 /dist/
 /midiexplorer.build/
+/midiexplorer.dist/
+/midiexplorer.onefile-build/
+/midiexplorer.cmd
+/midiexplorer.exe
 /RELEASE.md
 /STYLE.md
 /TODO.md
-/midiexplorer.cmd
-/midiexplorer.exe

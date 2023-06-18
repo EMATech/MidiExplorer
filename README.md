@@ -66,8 +66,7 @@ First alpha released!
 
 Testers welcome ;)
 
-
-Installation
+Installation (Python)
 ------------
 
 ### Install Python 3.10
@@ -101,6 +100,17 @@ python3 -m pip install --user pipx
 pipx install midiexplorer
 ```
 
+Installation (Native)
+---------------------
+
+### Nuitka (alpha)
+
+You may also build a compiled, single-file executable from a properly configured venv using:
+
+```console
+python -m nuitka --follow-imports --include-package=rtmidi --include-package=mido --include-package=dearpygui --include-package=dearpygui_ext --include-package=midiexplorer --include-package-data=midiexplorer --onefile --disable-console --windows-icon-from-ico=src\midiexplorer\icons\midiexplorer.ico src/midiexplorer
+```
+
 Features & TODO
 ---------------
 
@@ -127,6 +137,18 @@ Features & TODO
     - [x] [PyPi](https://pypi.org)
         - [x] Using [Hatch](https://hatch.pypa.io)
     - [ ] [PyInstaller](https://pyinstaller.org)
+    - [ ] *WIP* [Nuitka](https://nuitka.net)
+        - [x] Microsoft Windows
+        - [ ] Apple Mac OS X
+        - [ ] GNU/Linux
+    - [ ] [PyOxidiser](https://github.com/indygreg/PyOxidizer)?
+    - Installers
+        - [x] Microsoft Windows
+            - [ ] [NSIS](https://nsis.sourceforge.io)?
+            - [ ] [WiX](https://wixtoolset.org)?
+        - [ ] Apple Mac OS X
+        - [ ] GNU/Linux
+            - [ ] AppImage?
 - [ ] Continuous Integration? (GitHub Actions workflow)
 
 ### MIDI protocols
@@ -307,265 +329,265 @@ Features & TODO
 - [x] Virtual Debug Probe
     - [x] Read raw input
     - [x] Thru support
-    - [x] Activity monitor
-        - [x] Settings
-            - [x] Colors
-                - [x] Live
-                - [x] Selected
-            - [x] Persistence
-            - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
-            - [x] Display EOX as either a System Common or a System Exclusive message
-            - [x] Notation
-                - [x] English Alphabetical
-                - [x] Syllabic
-                - [x] German Alphabetical
-        - [ ] Stateless
-            - [x] Message type
-                - [x] Channel
-                - [x] System
+- [x] Activity monitor
+    - [x] Settings
+        - [x] Colors
+            - [x] Live
+            - [x] Selected
+        - [x] Persistence
+        - [x] Note-On with velocity set to 0 is Note-Off (Per specification)
+        - [x] Display EOX as either a System Common or a System Exclusive message
+        - [x] Notation
+            - [x] English Alphabetical
+            - [x] Syllabic
+            - [x] German Alphabetical
+    - [ ] Stateless
+        - [x] Message type
             - [x] Channel
-            - [x] Controllers
-                - [x] Redefinition of CC91 and CC93   
-                  [RP-023 (MMA)](
-                  https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/renaming-of-cc91-and-cc93)
-                  Renaming of CC91 and CC93  
-                  [RP-023 (AMEI/MSC)](
-                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp23.pdf)
-                  Redefinition of CC91 and CC93
-        - [ ] Stateful
-            - [x] Notes
-                - [x] Keyboard
-                    - [x] Velocity
-                - [ ] Staff
-            - [ ] Controllers
-                - [x] Value
-                - [ ] Data Increment / Decrement  
-                  [RP-018 (MMA)](
-                  https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/response-to-data-increment-decrement-controllers)
-                  Response to Data Inc/Dec Controllers  
-                  [RP-018 (AMEI/MSC)](
-                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp18.pdf)
-                  Response to Data Increment/Decrement Controller
-                - [ ] Sound Controller Defaults  
-                  [RP-021 (MMA)](
-                  https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/sound-controller-defaults-revised)
-                  Sound Controller Defaults (Revised)  
-                  [RP-021 (AMEI/MSC)](
-                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp21.pdf)
-                  Defaults for Sound Controllers
-                - [x] **(Partial decoding)** High Resolution Velocity Prefix  
-                  [CA-031 (MMA)](
-                  https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/high-resolution-velocity-prefix)
-                  CC #88 High Resolution Velocity Prefix  
-                  [CA-031 (AMEI/MSC)](
-                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca-31.pdf)
-                  CC#88 High Resolution Velocity Prefix
-                - [ ] Registered Parameter Numbers (RPN)
-                    - [x] **(Partial decoding)** 00 Pitch Bend Sensitivity
-                    - [x] **(Partial decoding)** 01 Fine Tuning
-                    - [x] **(Partial decoding)** 02 Coarse Tuning
-                        - [x] Redefinition of RPN 01/02  
-                          [RP-022 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/redefinition-of-rpn01-and-rpn02-channel-fine-coarse-tuning)
-                          Redefinition of RPN 01/02  
-                          [RP-022 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp22.pdf)
-                          Channel Fine/Coarse Tuning
-                    - [x] **(Partial decoding)** 03 Tuning Program Select
-                    - [x] **(Partial decoding)** 04 Tuning Bank Select
-                    - [x] **(Partial decoding)** 05 GM2 Modulation Depth Range  
-                      [CA-026 (MMA)](
-                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/modulation-depth-range-rpn)
-                      Modulation Depth Range RPN  
-                      [CA-026 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca26.pdf)
-                      Modulation Depth Range RPN
-                    - [ ] 06 MIDI Polyphonic Expression v1.1 (MPE)  
-                      [RP-053/CA-034/M1-100-UM](
-                      https://www.midi.org/specifications/midi1-specifications/mpe-midi-polyphonic-expression)
-                      MIDI Polyphonic Expression v1.1  
-                      [CA-034 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca034.pdf)
-                      MPE Configuration RPN
-                    - [ ] …
-                    - [ ] 61 (0x3D) Three Dimensional Sound Controller  
-                      [RP-049 (MMA)](
-                      https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/three-dimensional-sound-controllers)
-                      Three Dimensional Sound Controllers  
-                      [RP-049 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp49.pdf)
-                      Three Dimensional Sound Controllers
-                - [ ] Non Registered Parameter Numbers (NRPN)
-            - [ ] Program Changes, Bank Select & Patches
-                - [ ] [General MIDI System (MMA)](
-                  https://www.midi.org/specifications/midi1-specifications/general-midi-specifications)
-                  (GM)
-                    - [ ] Level 1 (GM1/GM-1) (1991)  
-                      [MMA0007/RP-003](
-                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-1)
-                      General MIDI System Level 1  
-                      [RP-015 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp15.pdf)
-                      Response to Reset All Controllers
-                    - [ ] Level 2 (GM2/GM-2) (1999)  
-                      [RP-024/RP-036/RP-037/RP-045 (MMA)](
-                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/general-midi-level-2)
-                      General MIDI 2 v1.2a  
-                      [RP-024 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp24(e).pdf)
-                      General MIDI Level 2 Recommended Practice  
-                      RP-024 [General MIDI 2 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/GM2-v12a.pdf)
-                      v1.2a  
-                      [RP-036 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp36.pdf)
-                      Default Pan Curve  
-                      [RP-037 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp37.pdf)
-                      GM2 MIDI Tuning Amendment
-                    - [ ] Lite (GML) (2001)  
-                      [RP-033 (MMA)](
-                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-lite/general-midi-lite-2)
-                      General MIDI Lite v1.0  
-                      [RP-033 (AMEI/MSC)](
-                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/gml-v1.pdf)
-                      General MIDI Lite v1.0
-                - [ ] Proprietary
-                    - [ ] Roland
-                        - [ ] Linear Arithmetic (LA) (MT-32…) (1987)
-                        - [ ] General Standard (GS) (Sound Canvas…) (1991)
-                    - [ ] Yamaha
-                        - [ ] E**X**tended **G**eneral MIDI (XG)
-                            - [ ] Level 1 (1994)
-                            - [ ] Level 2 (1997)
-                            - [ ] Level 3 (1998)
-                            - [ ] Lite (2002)
-            - [x] System Exclusive (SysEx)
-                - [x] Basic decoding
-                    - [x] Manufacturer ID
-                    - [x] Device ID
-                    - [x] Raw payload
-                - [ ] **(WIP)** Universal System Exclusive
-                  (Realtime & Non-Realtime)
-                    - [x] Sub-IDs 1 & 2 type decoding
-                    - [ ] Payloads decoding
-                        - [ ] MIDI Show Control (MSC)  
-                          [RP-002/RP-014 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-show-control-2)
-                          MIDI Show Control 1.1.1
-                        - [ ] MIDI Time Code (MTC)  
-                          [MMA0001/RP-004/RP-008 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-time-code)
-                          MIDI Time Code v4.2.1
-                        - [ ] Notation information  
-                          [RP-005/RP-006]()
-                        - [ ] File dump  
-                          [RP-009]()
-                        - [ ] MIDI tuning  
-                          [RP-012]()
-                        - [ ] MIDI Machine Control (MMC)  
-                          [MMA-0016/RP-013 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/rp-013-v1-0-midi-machine-control-specification-96-1-4)
-                          MIDI Machine Control 1.0
-                        - [ ] File Reference System Exclusive Message  
-                          [CA-018 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/file-reference-sysex-message)
-                          File Reference System Exclusive Message  
-                          [CA-018 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca18.pdf)
-                          File Reference System Exclusive Message
-                        - [ ] Sample Dump Size, Rate and Name Extensions  
-                          [CA-019 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/sample-dump-size-rate-name-extensions)
-                          Sample Dump Size, Rate and Name Extensions  
-                          [CA-019 (AMEI/MSC)](https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca19.pdf)
-                          Sample Dump Size, Rate and Name Extensions
-                        - [ ] GM2 Midi Tuning Messages  
-                          [CA-020/CA-021/RP-020 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/midi-tuning-updated)
-                          MIDI Tuning Messages  
-                          [CA-020 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca20.pdf)
-                          MIDI Tuning Bank and Dump Extensions  
-                          [CA-021 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca21.pdf)
-                          Scale/Octave Tuning  
-                          [CA-021/Amd1 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca21_amd1.pdf)
-                          Amendment to Scale/Octave Tuning  
-                          [RP-020 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp20.pdf)
-                        - [ ] GM2 Controller Destination Setting  
-                          [CA-022 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/controller-destination-setting)
-                          Controller Destination Setting  
-                          [CA-022 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca22.pdf)
-                          Controller Destination Setting
-                        - [ ] GM2 Key-Based Instrument Controllers  
-                          [CA-023 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/key-based-instrument-controllers)
-                          Key-Based Instrument Controllers  
-                          [CA-023 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca23.pdf)
-                          Key-Based Instrument Controllers
-                        - [ ] GM2 Global Parameter Control  
-                          [CA-024 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/global-parameter-control)
-                          Global Parameter Control  
-                          [CA-024 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca24.pdf)
-                          Global Parameter Control
-                        - [ ] GM2 Master Fine & Coarse Tuning  
-                          [CA-025 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/master-fine-course-tuning)
-                          Master Fine/Coarse Tuning  
-                          [CA-025 (AMEI/MSC)]
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca25.pdf)
-                          Master Fine/Coarse Tuning
-                        - [ ] GM2 System Level 2 Message  
-                          [CA-027 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca27.pdf)
-                          General MIDI Level 2 Universal System Exclusive Message
-                        - [ ] Extension 00-01 to File Reference SysEx Message  
-                          [CA-028 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca28.pdf)
-                          Extension 00-01 to File Reference Sysex Message
-                        - [ ] GM-Lite Scalable Polyphony MIDI Specification (SP-MIDI)  
-                          [RP-034/RP-035 (MMA)](ç
-                          https://www.midi.org/specifications/file-format-specifications/mobile-midi/scalable-polyphony-midi-sp-midi-2)
-                          Scalable Polyphony MIDI Specification and Device Profiles v1.0b  
-                          [RP-034/RP-035 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/sp-midi_all_v1a.pdf)
-                          Scalable Polyphony MIDI Specification and Device Profiles v1.0a
-                        - [ ] GM-Lite Maximum Instantaneous Polyphony (MIP)  
-                          [CA-029 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/spmidi-ca29.pdf)
-                          Maximum Instantaneous Polyphony (MIP)
-                        - [ ] Mobile Phone Control Message  
-                          [RP-046 (MMA)](
-                          https://www.midi.org/specifications/file-format-specifications/mobile-midi/mobile-phone-control-message)
-                          Mobile Phone Control Message  
-                          [CA-030 (MMA)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca-30.pdf)
-                          Mobile Phone Control Universal Real Time System Exclusive Message
-                        - [ ] MIDI Visual Control (MVC)  
-                          [CA-032/RP-050 (MMA)](
-                          https://www.midi.org/specifications/midi1-specifications/midi-visual-control)
-                          MIDI Visual Control Specification v1.0  
-                          [CA-032 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca32.pdf)
-                          MIDI Visual Control Universal Non Realtime System Exclusive Message  
-                          [RP-050 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp50spec(mvc).pdf)
-                          MIDI Visual Control Specification v1.0
-                        - [ ] MIDI Capability Inquiry (MIDI-CI)  
-                          [CA-035 (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca035.pdf)
-                          MIDI Capability Inquiry (MIDI-CI) Specification  
-                          [CA-035 Spec (AMEI/MSC)](
-                          https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca035-spec.pdf)
-                          MIDI Capability Inquiry (MIDI-CI) v1.0
+            - [x] System
+        - [x] Channel
+        - [x] Controllers
+            - [x] Redefinition of CC91 and CC93   
+              [RP-023 (MMA)](
+              https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/renaming-of-cc91-and-cc93)
+              Renaming of CC91 and CC93  
+              [RP-023 (AMEI/MSC)](
+              https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp23.pdf)
+              Redefinition of CC91 and CC93
+    - [ ] Stateful
+        - [x] Notes
+            - [x] Keyboard
+                - [x] Velocity
+            - [ ] Staff
+        - [ ] Controllers
+            - [x] Value
+            - [ ] Data Increment / Decrement  
+              [RP-018 (MMA)](
+              https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/response-to-data-increment-decrement-controllers)
+              Response to Data Inc/Dec Controllers  
+              [RP-018 (AMEI/MSC)](
+              https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp18.pdf)
+              Response to Data Increment/Decrement Controller
+            - [ ] Sound Controller Defaults  
+              [RP-021 (MMA)](
+              https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/sound-controller-defaults-revised)
+              Sound Controller Defaults (Revised)  
+              [RP-021 (AMEI/MSC)](
+              https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp21.pdf)
+              Defaults for Sound Controllers
+            - [x] **(Partial decoding)** High Resolution Velocity Prefix  
+              [CA-031 (MMA)](
+              https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/high-resolution-velocity-prefix)
+              CC #88 High Resolution Velocity Prefix  
+              [CA-031 (AMEI/MSC)](
+              https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca-31.pdf)
+              CC#88 High Resolution Velocity Prefix
+            - [ ] Registered Parameter Numbers (RPN)
+                - [x] **(Partial decoding)** 00 Pitch Bend Sensitivity
+                - [x] **(Partial decoding)** 01 Fine Tuning
+                - [x] **(Partial decoding)** 02 Coarse Tuning
+                    - [x] Redefinition of RPN 01/02  
+                      [RP-022 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/redefinition-of-rpn01-and-rpn02-channel-fine-coarse-tuning)
+                      Redefinition of RPN 01/02  
+                      [RP-022 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp22.pdf)
+                      Channel Fine/Coarse Tuning
+                - [x] **(Partial decoding)** 03 Tuning Program Select
+                - [x] **(Partial decoding)** 04 Tuning Bank Select
+                - [x] **(Partial decoding)** 05 GM2 Modulation Depth Range  
+                  [CA-026 (MMA)](
+                  https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/modulation-depth-range-rpn)
+                  Modulation Depth Range RPN  
+                  [CA-026 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca26.pdf)
+                  Modulation Depth Range RPN
+                - [ ] 06 MIDI Polyphonic Expression v1.1 (MPE)  
+                  [RP-053/CA-034/M1-100-UM](
+                  https://www.midi.org/specifications/midi1-specifications/mpe-midi-polyphonic-expression)
+                  MIDI Polyphonic Expression v1.1  
+                  [CA-034 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca034.pdf)
+                  MPE Configuration RPN
+                - [ ] …
+                - [ ] 61 (0x3D) Three Dimensional Sound Controller  
+                  [RP-049 (MMA)](
+                  https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/three-dimensional-sound-controllers)
+                  Three Dimensional Sound Controllers  
+                  [RP-049 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp49.pdf)
+                  Three Dimensional Sound Controllers
+            - [ ] Non Registered Parameter Numbers (NRPN)
+        - [ ] Program Changes, Bank Select & Patches
+            - [ ] [General MIDI System (MMA)](
+              https://www.midi.org/specifications/midi1-specifications/general-midi-specifications)
+              (GM)
+                - [ ] Level 1 (GM1/GM-1) (1991)  
+                  [MMA0007/RP-003](
+                  https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-1)
+                  General MIDI System Level 1  
+                  [RP-015 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp15.pdf)
+                  Response to Reset All Controllers
+                - [ ] Level 2 (GM2/GM-2) (1999)  
+                  [RP-024/RP-036/RP-037/RP-045 (MMA)](
+                  https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/general-midi-level-2)
+                  General MIDI 2 v1.2a  
+                  [RP-024 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp24(e).pdf)
+                  General MIDI Level 2 Recommended Practice  
+                  RP-024 [General MIDI 2 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/GM2-v12a.pdf)
+                  v1.2a  
+                  [RP-036 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp36.pdf)
+                  Default Pan Curve  
+                  [RP-037 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp37.pdf)
+                  GM2 MIDI Tuning Amendment
+                - [ ] Lite (GML) (2001)  
+                  [RP-033 (MMA)](
+                  https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-lite/general-midi-lite-2)
+                  General MIDI Lite v1.0  
+                  [RP-033 (AMEI/MSC)](
+                  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/gml-v1.pdf)
+                  General MIDI Lite v1.0
+            - [ ] Proprietary
+                - [ ] Roland
+                    - [ ] Linear Arithmetic (LA) (MT-32…) (1987)
+                    - [ ] General Standard (GS) (Sound Canvas…) (1991)
+                - [ ] Yamaha
+                    - [ ] E**X**tended **G**eneral MIDI (XG)
+                        - [ ] Level 1 (1994)
+                        - [ ] Level 2 (1997)
+                        - [ ] Level 3 (1998)
+                        - [ ] Lite (2002)
+        - [x] System Exclusive (SysEx)
+            - [x] Basic decoding
+                - [x] Manufacturer ID
+                - [x] Device ID
+                - [x] Raw payload
+            - [ ] **(WIP)** Universal System Exclusive
+              (Realtime & Non-Realtime)
+                - [x] Sub-IDs 1 & 2 type decoding
+                - [ ] Payloads decoding
+                    - [ ] MIDI Show Control (MSC)  
+                      [RP-002/RP-014 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-show-control-2)
+                      MIDI Show Control 1.1.1
+                    - [ ] MIDI Time Code (MTC)  
+                      [MMA0001/RP-004/RP-008 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-time-code)
+                      MIDI Time Code v4.2.1
+                    - [ ] Notation information  
+                      [RP-005/RP-006]()
+                    - [ ] File dump  
+                      [RP-009]()
+                    - [ ] MIDI tuning  
+                      [RP-012]()
+                    - [ ] MIDI Machine Control (MMC)  
+                      [MMA-0016/RP-013 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/rp-013-v1-0-midi-machine-control-specification-96-1-4)
+                      MIDI Machine Control 1.0
+                    - [ ] File Reference System Exclusive Message  
+                      [CA-018 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/file-reference-sysex-message)
+                      File Reference System Exclusive Message  
+                      [CA-018 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca18.pdf)
+                      File Reference System Exclusive Message
+                    - [ ] Sample Dump Size, Rate and Name Extensions  
+                      [CA-019 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/sample-dump-size-rate-name-extensions)
+                      Sample Dump Size, Rate and Name Extensions  
+                      [CA-019 (AMEI/MSC)](https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca19.pdf)
+                      Sample Dump Size, Rate and Name Extensions
+                    - [ ] GM2 Midi Tuning Messages  
+                      [CA-020/CA-021/RP-020 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/midi-tuning-updated)
+                      MIDI Tuning Messages  
+                      [CA-020 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca20.pdf)
+                      MIDI Tuning Bank and Dump Extensions  
+                      [CA-021 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca21.pdf)
+                      Scale/Octave Tuning  
+                      [CA-021/Amd1 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca21_amd1.pdf)
+                      Amendment to Scale/Octave Tuning  
+                      [RP-020 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp20.pdf)
+                    - [ ] GM2 Controller Destination Setting  
+                      [CA-022 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/controller-destination-setting)
+                      Controller Destination Setting  
+                      [CA-022 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca22.pdf)
+                      Controller Destination Setting
+                    - [ ] GM2 Key-Based Instrument Controllers  
+                      [CA-023 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/key-based-instrument-controllers)
+                      Key-Based Instrument Controllers  
+                      [CA-023 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca23.pdf)
+                      Key-Based Instrument Controllers
+                    - [ ] GM2 Global Parameter Control  
+                      [CA-024 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/global-parameter-control)
+                      Global Parameter Control  
+                      [CA-024 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca24.pdf)
+                      Global Parameter Control
+                    - [ ] GM2 Master Fine & Coarse Tuning  
+                      [CA-025 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/master-fine-course-tuning)
+                      Master Fine/Coarse Tuning  
+                      [CA-025 (AMEI/MSC)]
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca25.pdf)
+                      Master Fine/Coarse Tuning
+                    - [ ] GM2 System Level 2 Message  
+                      [CA-027 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca27.pdf)
+                      General MIDI Level 2 Universal System Exclusive Message
+                    - [ ] Extension 00-01 to File Reference SysEx Message  
+                      [CA-028 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca28.pdf)
+                      Extension 00-01 to File Reference Sysex Message
+                    - [ ] GM-Lite Scalable Polyphony MIDI Specification (SP-MIDI)  
+                      [RP-034/RP-035 (MMA)](ç
+                      https://www.midi.org/specifications/file-format-specifications/mobile-midi/scalable-polyphony-midi-sp-midi-2)
+                      Scalable Polyphony MIDI Specification and Device Profiles v1.0b  
+                      [RP-034/RP-035 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/sp-midi_all_v1a.pdf)
+                      Scalable Polyphony MIDI Specification and Device Profiles v1.0a
+                    - [ ] GM-Lite Maximum Instantaneous Polyphony (MIP)  
+                      [CA-029 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/spmidi-ca29.pdf)
+                      Maximum Instantaneous Polyphony (MIP)
+                    - [ ] Mobile Phone Control Message  
+                      [RP-046 (MMA)](
+                      https://www.midi.org/specifications/file-format-specifications/mobile-midi/mobile-phone-control-message)
+                      Mobile Phone Control Message  
+                      [CA-030 (MMA)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca-30.pdf)
+                      Mobile Phone Control Universal Real Time System Exclusive Message
+                    - [ ] MIDI Visual Control (MVC)  
+                      [CA-032/RP-050 (MMA)](
+                      https://www.midi.org/specifications/midi1-specifications/midi-visual-control)
+                      MIDI Visual Control Specification v1.0  
+                      [CA-032 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca32.pdf)
+                      MIDI Visual Control Universal Non Realtime System Exclusive Message  
+                      [RP-050 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp50spec(mvc).pdf)
+                      MIDI Visual Control Specification v1.0
+                    - [ ] MIDI Capability Inquiry (MIDI-CI)  
+                      [CA-035 (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca035.pdf)
+                      MIDI Capability Inquiry (MIDI-CI) Specification  
+                      [CA-035 Spec (AMEI/MSC)](
+                      https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca035-spec.pdf)
+                      MIDI Capability Inquiry (MIDI-CI) v1.0
 - [x] Generator
     - [x] Decode raw hex string
     - [x] Generate raw output
