@@ -7,16 +7,34 @@
 """
 About window layout and content.
 """
-import pathlib
+import array
+import importlib.metadata
+import importlib.resources
 import platform
 from typing import Any, Optional
 
 import mido
+from PIL import Image
 from dearpygui import dearpygui as dpg
 
 import midiexplorer.__about__
+from midiexplorer import icons
 from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+
+
+def load_icon(img_file: str) -> (int, int, [float]):
+    """Alternative to dpg.load_image that works properly with pathlib.Path!
+
+    Borrowed from https://github.com/hoffstadt/DearPyGui/issues/1796#issuecomment-1189513319
+    and modified to remove numpy dependency.
+    """
+    with importlib.resources.open_binary(midiexplorer.icons, img_file) as fh:
+        image = Image.open(fh)
+        width, height = image.size
+        data = array.array('B', image.tobytes())
+    data = [(a / 255.0) for a in data]
+    return width, height, data
 
 
 def create() -> None:
@@ -41,8 +59,7 @@ def create() -> None:
         # ----
         # Logo
         # ----
-        module_root = pathlib.Path(midiexplorer.__file__).parent
-        width, height, _, data = dpg.load_image(f'{module_root}/icons/midiexplorer_{logo_size}.png')
+        width, height, data = load_icon(f'midiexplorer_{logo_size}.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='logo')
         with dpg.drawlist(width=width, height=height):
@@ -65,7 +82,7 @@ def create() -> None:
         # License
         # -------
         dpg.add_text("License", color=title_color)
-        width, height, _, data = dpg.load_image(f'{module_root}/icons/gplv3-or-later-sm.png')
+        width, height, data = load_icon('gplv3-or-later-sm.png')
         with dpg.texture_registry():
             dpg.add_static_texture(width, height, data, tag='gpl_logo')
         with dpg.drawlist(width=width, height=height):
