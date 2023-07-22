@@ -188,15 +188,17 @@ CONTROLLER_NUMBERS = {
     91: "Reverb Send Level",
     # Amended by RP-023. Was "Effects 1 Depth". Formerly and recommended default: External Effects Depth.
     92: "Effects 2 Depth",  # formerly and recommended default: Tremolo Depth
-    93: "Chorus Send Level",  # Amended by RP-024. Was "Effects 3 Depth". Formerly and recommended default: Chorus Depth
-    94: "Effects 4 Depth",  # formerly and recommended default: Celeste (Detune) Depth
+    93: "Chorus Send Level",
+    # Amended by RP-024. Was "Effects 3 Depth". Formerly and recommended default: Chorus Depth
+    94: "Effects 4 Depth",
+    # formerly and recommended default: Celeste (Detune) Depth
     95: "Effects 5 Depth",  # formerly and recommended default: Phaser Depth
     96: "Data increment",
     97: "Data decrement",
     98: "Non-Registered Parameter Number LSB",
     99: "Non-Registered Parameter Number MSB",
-    100: "Resistered Parameter Number LSB",
-    101: "Resistered Parameter Number MSB",
+    100: "Registered Parameter Number LSB",
+    101: "Registered Parameter Number MSB",
     102: "Undefined",
     103: "Undefined",
     104: "Undefined",
