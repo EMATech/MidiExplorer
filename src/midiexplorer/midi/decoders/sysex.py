@@ -24,9 +24,8 @@ System Exclusive Decoders.
 
 import functools
 
+import midi_const
 import mido
-
-import midiexplorer.midi.constants
 
 
 class DecodedSysExId:
@@ -62,7 +61,7 @@ class DecodedSysExId:
             index = self._raw
         else:
             index = self._raw[0]
-        group = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_GROUPS.get(index, "Undefined")
+        group = midi_const.SYSTEM_EXCLUSIVE_ID_GROUPS.get(index, "Undefined")
         return group
 
     @functools.cached_property
@@ -73,16 +72,16 @@ class DecodedSysExId:
             index = self._raw
         else:
             index = self._raw[1]
-        region = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID_REGIONS.get(index, "N.A.")
+        region = midi_const.SYSTEM_EXCLUSIVE_ID_REGIONS.get(index, "N.A.")
         return region
 
     @functools.cached_property
     def name(self) -> str:
         name: str = "Undefined"
         if self._len == 1:
-            name = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(self._raw, "Undefined")
+            name = midi_const.SYSTEM_EXCLUSIVE_ID.get(self._raw, "Undefined")
         else:
-            name = midiexplorer.midi.constants.SYSTEM_EXCLUSIVE_ID.get(
+            name = midi_const.SYSTEM_EXCLUSIVE_ID.get(
                 self._raw[0], {}
             ).get(
                 self._raw[1], {}
@@ -125,13 +124,18 @@ class DecodedUniversalNonRealTimeSysExPayload(DecodedUniversalSysExPayload):
         super().__init__(identifier, contents)
         next_byte: int = 0
         self.sub_id1_value = self._raw[next_byte]
-        self.sub_id1_name = midiexplorer.midi.constants. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(self.sub_id1_value, "Undefined")
-        if self.sub_id1_value in midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1:
+        self.sub_id1_name = midi_const. \
+            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
+            self.sub_id1_value, "Undefined"
+            )
+        if self.sub_id1_value in midi_const.NON_REAL_TIME_SUB_ID_2_FROM_1:
             next_byte += 1
             self.sub_id2_value = self._raw[next_byte]
-            self.sub_id2_name = midiexplorer.midi.constants.NON_REAL_TIME_SUB_ID_2_FROM_1.get(self.sub_id1_value).get(
-                self.sub_id2_value, "Undefined")
+            self.sub_id2_name = midi_const.NON_REAL_TIME_SUB_ID_2_FROM_1.get(
+                self.sub_id1_value
+                ).get(
+                self.sub_id2_value, "Undefined"
+            )
 
 
 class DecodedUniversalRealTimeSysExPayload(DecodedUniversalSysExPayload):
@@ -141,13 +145,18 @@ class DecodedUniversalRealTimeSysExPayload(DecodedUniversalSysExPayload):
         super().__init__(identifier, contents)
         next_byte: int = 0
         self.sub_id1_value = self._raw[next_byte]
-        self.sub_id1_name = midiexplorer.midi.constants. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(self.sub_id1_value, "Undefined")
-        if self.sub_id1_value in midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1:
+        self.sub_id1_name = midi_const. \
+            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
+            self.sub_id1_value, "Undefined"
+            )
+        if self.sub_id1_value in midi_const.REAL_TIME_SUB_ID_2_FROM_1:
             next_byte += 1
             self.sub_id2_value = self._raw[next_byte]
-            self.sub_id2_name = midiexplorer.midi.constants.REAL_TIME_SUB_ID_2_FROM_1.get(self.sub_id1_value).get(
-                self.sub_id2_value, "Undefined")
+            self.sub_id2_name = midi_const.REAL_TIME_SUB_ID_2_FROM_1.get(
+                self.sub_id1_value
+                ).get(
+                self.sub_id2_value, "Undefined"
+            )
 
 
 class DecodedSysEx:

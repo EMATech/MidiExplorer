@@ -10,11 +10,13 @@ Monitor data management.
 
 import mido
 from dearpygui import dearpygui as dpg
+from midi_const import NOTE_OFF_VELOCITY
 
 from midiexplorer.gui.helpers.convert import set_value_preconv
-from midiexplorer.gui.windows.mon.blink import mon, note_on, note_off, reset_mon, cc
-from midiexplorer.midi.constants import NOTE_OFF_VELOCITY
-from midiexplorer.midi.decoders.sysex import DecodedUniversalSysExPayload, DecodedSysEx
+from midiexplorer.gui.windows.mon.blink import cc, mon, note_off, note_on, \
+    reset_mon
+from midiexplorer.midi.decoders.sysex import DecodedSysEx, \
+    DecodedUniversalSysExPayload
 
 
 def _update_gui_sysex(decoded: DecodedSysEx):

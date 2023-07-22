@@ -8,14 +8,16 @@
 History data management.
 """
 
-from typing import Callable, Any, Optional
+from typing import Any, Callable, Optional
 
+import midi_const
 import mido
 from dearpygui import dearpygui as dpg
 
-import midiexplorer.midi
+import midiexplorer.midi.mido2standard
 from midiexplorer.__config__ import DEBUG
-from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.gui.helpers.callbacks.debugging import \
+    enable as enable_dpg_cb_debugging
 from midiexplorer.gui.helpers.constants.slots import Slots
 from midiexplorer.gui.helpers.convert import tooltip_conv
 from midiexplorer.gui.windows.mon import notation_modes
@@ -130,8 +132,10 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
                 dpg.add_text(dec_label)
 
         # Status
-        status_byte = midiexplorer.midi.mido2standard.get_status_by_type(data.type)
-        stat_label = midiexplorer.midi.constants.STATUS_BYTES[status_byte]
+        status_byte = midiexplorer.midi.mido2standard.get_status_by_type(
+            data.type
+            )
+        stat_label = midi_const.STATUS_BYTES[status_byte]
         dpg.add_text(stat_label)
         if hasattr(data, 'channel'):
             status_nibble = int((status_byte - data.channel) / 16)
@@ -239,7 +243,7 @@ def decode(data: mido.Message) -> tuple[int, int, int, int, int, int, int]:
     elif 'control_change' == data.type:
         data0_name = "Controller"
         data0_val: int = data.control
-        data0_dec = midiexplorer.midi.constants.CONTROLLER_NUMBERS.get(data.control)
+        data0_dec = midi_const.CONTROLLER_NUMBERS.get(data.control)
         data1_name = "Value"
         data1_val: int = data.value
     elif 'program_change' == data.type:

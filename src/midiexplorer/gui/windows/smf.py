@@ -10,13 +10,14 @@ Standard MIDI File (SMF) window and management.
 import re
 from typing import Any, Optional
 
+import midi_const
 from dearpygui import dearpygui as dpg
-from mido import MidiFile, MetaMessage, Message
+from mido import Message, MetaMessage, MidiFile
 
-import midiexplorer.midi.constants
 from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers import smf
-from midiexplorer.gui.helpers.callbacks.debugging import enable as enable_dpg_cb_debugging
+from midiexplorer.gui.helpers.callbacks.debugging import \
+    enable as enable_dpg_cb_debugging
 
 
 def create() -> None:
@@ -159,7 +160,7 @@ def populate(file_bytes: bytes, midifile: MidiFile):
 
                 with dpg.tree_node(label="Header", default_open=True, selectable=True):
                     dpg.configure_item(dpg.last_item(), callback=_selected_decode, user_data=range(0, 7))
-                    smf_format = midiexplorer.midi.constants.SMF_HEADER_FORMATS[midifile.type]
+                    smf_format = midi_const.SMF_HEADER_FORMATS[midifile.type]
                     dpg.add_tree_node(label=f"Format: {midifile.type} ({smf_format})", leaf=True, selectable=True)
                     dpg.add_tree_node(label=f"Number of tracks: {len(midifile.tracks)}", leaf=True, selectable=True)
                     # FIXME: Upstream: mido. Support SMPTE division format.
