@@ -692,6 +692,11 @@ Features & TODO
       [RP-047 (AMEI/MSC)](
       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp47.pdf)
       ID3 Metadata for XMF Files
+    - [ ] Support karaoke formats?
+        - [ ] .KAR Tune 1000 Corp. [CA] MIDI Karaoke file type 1 (Soft Karaoke)
+        - [ ] .MID+.TXK KaraDOS
+        - [ ] .CRT Tune 1000 Corp Soft Concert
+        - [ ] .ST3 Creative Labs [KR] Star 3 / Real Orche
     - [ ] Support proprietary formats?
         - [ ] Alesis
             - [ ] DataDisk (v1.x)
