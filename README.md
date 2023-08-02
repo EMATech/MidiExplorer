@@ -713,6 +713,7 @@ Features & TODO
             - [ ] MC-50, MC-500
         - [ ] Yamaha
             - [ ] E-SEQ (Clavinova, Disklavier, DOM-30, DRC-20)
+            - [ ] XF
     - [ ] Converter
         - [ ] SMF between types
         - [ ] From/to other formats?
