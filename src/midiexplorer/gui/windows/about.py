@@ -111,7 +111,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.""")
 Used under the terms of the PSF License Agreement.""",
                      bullet=True)
 
-        dpg.add_text(f"""mido {mido.__version__}
+        dpg.add_text(f"""mido {mido.version_info}
 Copyright (c) 2013-infinity Ole Martin Bjørndalen
 Used under the terms of the MIT License.""",
                      bullet=True)
