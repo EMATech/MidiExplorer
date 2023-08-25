@@ -28,7 +28,7 @@ def init() -> None:
     # MIDO and backend versions
     # -------------------------
     logger.log_debug("Using MIDO:")
-    logger.log_debug(f"\t - version: {mido.__version__}")
+    logger.log_debug(f"\t - version: {mido.version_info}")
     logger.log_debug(f"\t - backend: {mido.backend.name}")
 
     # -------------------------
