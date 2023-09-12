@@ -16,8 +16,9 @@ from mido import Message, MetaMessage, MidiFile
 
 from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers import smf
-from midiexplorer.gui.helpers.callbacks.debugging import \
+from midiexplorer.gui.helpers.callbacks.debugging import (
     enable as enable_dpg_cb_debugging
+)
 
 
 def create() -> None:
@@ -46,6 +47,7 @@ def create() -> None:
             no_close=False,
             collapsed=False,
             pos=[posx, posy],
+            show=False if not DEBUG else True,
     ):
         ###
         # MENU
@@ -127,7 +129,7 @@ def populate(file_bytes: bytes, midifile: MidiFile):
                     dpg.add_table_column(label=f"{index:02X}")
                 dpg.add_table_column(label="Decoded (ASCII)")
 
-                digits = len(hex(file_size)) + 1
+                digits = len(hex(file_size)) - 2  # Remove 0x
                 for offset in range(0x00, file_size + 1, 0x10):
                     # Update progress indicator
                     progress.value((offset / file_size) / 2)
@@ -136,9 +138,11 @@ def populate(file_bytes: bytes, midifile: MidiFile):
                         chunk = file_bytes[offset:offset + 0x0F + 1]
                         for index in range(0x00, 0x0F + 1):
                             try:
-                                dpg.add_selectable(label=f"{chunk[index]:02X}",
-                                                   callback=_selected_hex,
-                                                   user_data=(offset, index))
+                                dpg.add_selectable(
+                                    label=f"{chunk[index]:02X}",
+                                    # callback=_selected_hex,  # FIXME
+                                    user_data=(offset, index)
+                                )
                             except IndexError:  # We may reach the end of the file earlier than the table width
                                 dpg.add_text()
                         dotted_ascii = re.sub(r'[^\x32-\x7f]', '.', chunk.decode('ascii', errors='replace'))
@@ -159,7 +163,11 @@ def populate(file_bytes: bytes, midifile: MidiFile):
                 dpg.add_tree_node(label=f"Size: {file_size} bytes", leaf=True)
 
                 with dpg.tree_node(label="Header", default_open=True, selectable=True):
-                    dpg.configure_item(dpg.last_item(), callback=_selected_decode, user_data=range(0, 7))
+                    dpg.configure_item(
+                        dpg.last_item(),
+                        # callback=_selected_decode,  # FIXME
+                        user_data=range(0, 7),
+                    )
                     smf_format = midi_const.SMF_HEADER_FORMATS[midifile.type]
                     dpg.add_tree_node(label=f"Format: {midifile.type} ({smf_format})", leaf=True, selectable=True)
                     dpg.add_tree_node(label=f"Number of tracks: {len(midifile.tracks)}", leaf=True, selectable=True)

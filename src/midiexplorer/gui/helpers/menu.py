@@ -39,12 +39,6 @@ def create() -> None:
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 
         with dpg.menu(label="Tools"):
-            if DEBUG:
-                dpg.add_menu_item(label="Standard MIDI File",
-                                  shortcut="F5",
-                                  check=True,
-                                  default_value=True,
-                                  callback=midiexplorer.gui.windows.smf.toggle)
             dpg.add_menu_item(label="Connections",
                               shortcut="F1",
                               check=True,
@@ -65,6 +59,13 @@ def create() -> None:
                               check=True,
                               default_value=True,
                               callback=midiexplorer.gui.windows.gen.toggle)
+            dpg.add_menu_item(
+                label="Standard MIDI File",
+                shortcut="F5",
+                check=True,
+                default_value=True,
+                callback=midiexplorer.gui.windows.smf.toggle
+                )
             dpg.add_menu_item(label="Log",
                               shortcut="F12",
                               check=True,

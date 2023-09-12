@@ -16,10 +16,12 @@ from dearpygui import dearpygui as dpg
 import midiexplorer.midi.mido2standard
 import midiexplorer.midi.notes
 from midiexplorer.__config__ import DEBUG
-from midiexplorer.gui.helpers.callbacks.debugging import \
+from midiexplorer.gui.helpers.callbacks.debugging import (
     enable as enable_dpg_cb_debugging
-from midiexplorer.gui.helpers.convert import add_string_value_preconv, \
-    tooltip_conv, tooltip_preconv
+)
+from midiexplorer.gui.helpers.convert import (
+    add_string_value_preconv, tooltip_conv, tooltip_preconv
+)
 from midiexplorer.gui.windows.mon.blink import get_supported_indicators
 from midiexplorer.gui.windows.mon.settings import eox_categories, notation_modes
 

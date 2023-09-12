@@ -16,8 +16,8 @@ import midiexplorer.fonts
 import midiexplorer.icons
 import midiexplorer.midi
 from midiexplorer.__config__ import DEBUG, INIT_FILENAME
-from midiexplorer.gui.helpers import logger, constants, menu
-from midiexplorer.gui.windows import conn, hist, mon, gen, smf
+from midiexplorer.gui.helpers import constants, logger, menu
+from midiexplorer.gui.windows import conn, gen, hist, mon, smf
 from midiexplorer.midi.timestamp import Timestamp
 
 
@@ -55,8 +55,7 @@ def init():
     midiexplorer.gui.windows.hist.create()
     midiexplorer.gui.windows.mon.create()
     midiexplorer.gui.windows.gen.create()
-    if DEBUG:
-        midiexplorer.gui.windows.smf.create()
+    midiexplorer.gui.windows.smf.create()
 
     # ---------------------
     # Initial configuration
