@@ -72,7 +72,12 @@ def _update_notation_mode(sender: int | str, app_data: Any, user_data: Optional[
 
     # Update keyboard
     for index in range(0, 128):  # All MIDI notes
-        dpg.set_item_label(f'note_{index}', _verticalize(user_data.get(dpg.get_value('notation_mode')).get(index)))
+        dpg.configure_item(
+            f'note_{index}',
+            format=_verticalize(
+                user_data.get(dpg.get_value('notation_mode')).get(index)
+            )
+        )
 
 
 def create() -> None:
