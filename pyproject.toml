@@ -89,14 +89,16 @@ classifiers = [
     'Topic :: Utilities',
     'Typing :: Typed',
 ]  # https://pypi.org/classifiers/
-dynamic = ['version']
+dynamic = [
+    'version',
+]
 
 [project.urls]
 Homepage = 'https://github.com/ematech/midiexplorer'
 Issues = 'https://github.com/ematech/midiexplorer/issues'
 
 [project.gui-scripts]
-midiexplorer = "midiexplorer.__main__:main"
+midiexplorer = 'midiexplorer.__main__:main'
 
 [tool.hatch.version]
 path = 'src/midiexplorer/__about__.py'
@@ -104,23 +106,26 @@ path = 'src/midiexplorer/__about__.py'
 [tool.hatch.envs.default]
 dependencies = [
     'pylint',
-    'darglint',
+    'darglint2',
     'pytest',
     'pytest-cov',
 ]
 [tool.hatch.envs.default.scripts]
 srclint = 'pylint src/'
-doclint = 'darglint -s sphinx src/'
+doclint = 'darglint2 -s sphinx src/'
 lint = 'pylint && doclint'
 cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=hatch_demo --cov=tests'
 no-cov = 'cov --no-cov'
 
 [[tool.hatch.envs.test.matrix]]
-python = ['310']
+python = [
+    '310',
+    '311',
+]
 
 [tool.hatch.envs.docs]
 dependencies = [
-    "sphinx"
+    'sphinx',
 ]
 
 [tool.coverage.run]
@@ -157,4 +162,6 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/midiexplorer"]
+packages = [
+    'src/midiexplorer',
+]

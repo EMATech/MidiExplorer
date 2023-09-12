@@ -136,6 +136,8 @@ Features & TODO
 - [x] [Packaging](https://packaging.python.org)
     - [x] [PyPi](https://pypi.org)
         - [x] Using [Hatch](https://hatch.pypa.io)
+            - [ ] Get version for Git
+              using [hatch-vcs](https://github.com/ofek/hatch-vcs)
     - [ ] [PyInstaller](https://pyinstaller.org)
     - [ ] *WIP* [Nuitka](https://nuitka.net)
         - [x] Microsoft Windows
@@ -324,6 +326,7 @@ Features & TODO
 #### Modules
 
 - [ ] Plugins based architecture?
+    - [ ] Using [pluggy](https://github.com/pytest-dev/pluggy)?
 - [ ] Instances management?  
   (Add/Remove, multiple instances of a module…)
 - [x] Virtual Debug Probe
@@ -776,7 +779,7 @@ Legal notice
 ![GPLv3](
 https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/assets/sources/gplv3-or-later.svg)
 
-Author: ©2021-2022 Raphaël Doursenaud.
+Author: ©2021-2023 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).
 

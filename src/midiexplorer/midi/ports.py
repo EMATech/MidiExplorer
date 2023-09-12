@@ -105,7 +105,7 @@ class MidiInPort(MidiPort):
     dest: None | MidiOutPort | str = None  # We can only open the port once. Therefore, only one destination exists.
 
     @property
-    def mode(self) -> None:
+    def mode(self) -> str:
         """Gives the mode in which the port operates.
 
         :return: Either 'callback' or 'polling'.
