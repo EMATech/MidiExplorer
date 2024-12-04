@@ -73,6 +73,10 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
 
     dpg.configure_item('gen_win', show=not dpg.is_item_visible('gen_win'))
 
+    menu_item = 'menu_tools_generator'
+    if sender != menu_item:  # Update menu checkmark when coming from the shortcut handler
+        dpg.set_value(menu_item, not dpg.get_value(menu_item))
+
 
 def decode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
     """Callback to decode raw MIDI message input.

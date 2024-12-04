@@ -49,3 +49,7 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
     dpg.configure_item('log_win', show=not dpg.is_item_visible('log_win'))
+
+    menu_item = 'menu_tools_log'
+    if sender != menu_item:  # Update menu checkmark when coming from the shortcut handler
+        dpg.set_value(menu_item, not dpg.get_value(menu_item))

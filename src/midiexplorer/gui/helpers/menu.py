@@ -39,34 +39,39 @@ def create() -> None:
                 dpg.add_menu_item(label="Reset", callback=midiexplorer.gui.helpers.config.clear)
 
         with dpg.menu(label="Tools"):
+            # Don't forget to update keyboard shortcuts!
             dpg.add_menu_item(label="Connections",
+                              tag='menu_tools_connections',
                               shortcut="F1",
                               check=True,
                               default_value=True,
                               callback=midiexplorer.gui.windows.conn.toggle)
             dpg.add_menu_item(label="History",
+                              tag='menu_tools_history',
                               shortcut="F2",
                               check=True,
                               default_value=True,
                               callback=midiexplorer.gui.windows.hist.toggle)
             dpg.add_menu_item(label="Monitor",
+                              tag='menu_tools_monitor',
                               shortcut="F3",
                               check=True,
                               default_value=True,
                               callback=midiexplorer.gui.windows.mon.toggle)
             dpg.add_menu_item(label="Generator",
+                              tag='menu_tools_generator',
                               shortcut="F4",
                               check=True,
                               default_value=True,
                               callback=midiexplorer.gui.windows.gen.toggle)
-            dpg.add_menu_item(
-                label="Standard MIDI File",
-                shortcut="F5",
-                check=True,
-                default_value=True,
-                callback=midiexplorer.gui.windows.smf.toggle
-                )
+            dpg.add_menu_item(label="Standard MIDI File",
+                              tag='menu_tools_smf',
+                              shortcut="F5",
+                              check=True,
+                              default_value=DEBUG,
+                              callback=midiexplorer.gui.windows.smf.toggle)
             dpg.add_menu_item(label="Log",
+                              tag='menu_tools_log',
                               shortcut="F12",
                               check=True,
                               default_value=DEBUG,
@@ -74,6 +79,7 @@ def create() -> None:
 
         with dpg.menu(label="Display"):
             dpg.add_menu_item(label="Toggle Fullscreen",
+                              tag='menu_display_fullscreen',
                               shortcut="F11",
                               check=True,
                               default_value=False,

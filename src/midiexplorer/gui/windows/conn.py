@@ -640,6 +640,10 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
 
     dpg.configure_item('conn_win', show=not dpg.is_item_visible('conn_win'))
 
+    menu_item = 'menu_tools_connections'
+    if sender != menu_item:  # Update menu checkmark when coming from the shortcut handler
+        dpg.set_value(menu_item, not dpg.get_value(menu_item))
+
 
 def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data: mido.Message) -> None:
     """Handles received MIDI data and echoes "Soft Thru" messages.

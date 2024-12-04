@@ -9,6 +9,7 @@ GUI elements (DearPy GUI).
 """
 import importlib
 import pathlib
+from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
 
@@ -19,7 +20,9 @@ from midiexplorer.__config__ import DEBUG, INIT_FILENAME
 from midiexplorer.gui.helpers import constants, logger, menu
 from midiexplorer.gui.windows import conn, gen, hist, mon, smf
 from midiexplorer.midi.timestamp import Timestamp
-
+from midiexplorer.gui.helpers.callbacks.debugging import (
+    enable as enable_dpg_cb_debugging
+)
 
 def init():
     """Initializes the GUI.
@@ -67,6 +70,8 @@ def init():
 
     # ------------------
     # Keyboard shortcuts
+    #
+    # Don't forget to update menus!
     # ------------------
     with dpg.handler_registry():
         # F1: connections
@@ -80,7 +85,7 @@ def init():
         # F5: SMF
         dpg.add_key_press_handler(key=dpg.mvKey_F5, callback=midiexplorer.gui.windows.smf.toggle)
         # Fullscreen on F11
-        dpg.add_key_press_handler(key=dpg.mvKey_F11, callback=dpg.toggle_viewport_fullscreen)
+        dpg.add_key_press_handler(key=dpg.mvKey_F11, callback=midiexplorer.gui.toggle_fullscreen)
         # Log on F12
         dpg.add_key_press_handler(key=dpg.mvKey_F12, callback=midiexplorer.gui.windows.log.toggle)
 
@@ -141,3 +146,24 @@ def init():
     )
     dpg.setup_dearpygui()
     dpg.show_viewport()
+
+
+def toggle_fullscreen(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
+    """Callback to toggle the window visibility.
+
+    :param sender: argument is used by DPG to inform the callback
+                   which item triggered the callback by sending the tag
+                   or 0 if trigger by the application.
+    :param app_data: argument is used DPG to send information to the callback
+                     i.e. the current value of most basic widgets.
+    :param user_data: argument is Optionally used to pass your own python data into the function.
+
+    """
+    if DEBUG:
+        enable_dpg_cb_debugging(sender, app_data, user_data)
+
+    dpg.toggle_viewport_fullscreen()
+
+    menu_item = 'menu_display_fullscreen'
+    if sender != menu_item:  # Update menu checkmark when coming from the shortcut handler
+        dpg.set_value(menu_item, not dpg.get_value(menu_item))

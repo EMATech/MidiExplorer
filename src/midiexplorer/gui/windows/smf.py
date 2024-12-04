@@ -93,6 +93,10 @@ def toggle(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
 
     dpg.configure_item('smf_win', show=not dpg.is_item_visible('smf_win'))
 
+    menu_item = 'menu_tools_smf'
+    if sender != menu_item:  # Update menu checkmark when coming from the shortcut handler
+        dpg.set_value(menu_item, not dpg.get_value(menu_item))
+
 
 def init():
     clear()
