@@ -177,7 +177,7 @@ def link_node_callback(sender: int | str,
     pin2: dpg.mvNodeAttribute = app_data[1]
     _, pin1_label, _, pin2_label = _pins_nodes_labels(pin1, pin2)
 
-    logger.log_debug(f"Connection between pins: '{pin1}' & '{pin2}'.")
+    logger.log_debug(f"Connection between pins: '{pin1}' ({pin1_label}) & '{pin2}' ({pin2_label}).")
 
     # Only allow one link per pin for now
     # TODO: Automatically add merger node when linked to multiple nodes.
@@ -667,7 +667,7 @@ def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data
     if isinstance(port, MidiOutPort):
         logger.log_debug(f"Echoing MIDI data to midi output {port.label}")
         port.port.send(midi_data)
-    if dest == 'probe_in':
+    if dest == dpg.get_alias_id('probe_in'):
         probe_thru_user_data = dpg.get_item_user_data('probe_thru')
         if probe_thru_user_data:
             # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")

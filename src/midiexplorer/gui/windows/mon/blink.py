@@ -131,8 +131,7 @@ def note_on(number: int | str, static: bool = False, velocity: int = None) -> No
     :param velocity: Note velocity
 
     """
-    theme = get_theme(static)
-    dpg.bind_item_theme(f'note_{number}', theme)
+    dpg.enable_item(f'note_{number}')
     if velocity is not None:
         dpg.set_value(f'note_{number}', velocity)
 
@@ -144,8 +143,10 @@ def note_off(number: int | str, static: bool = False) -> None:
     :param static: Live or static mode.
 
     """
-    theme = get_theme(static, disable=True)
-    dpg.bind_item_theme(f'note_{number}', theme)
+    if static:
+        dpg.enable_item(f'note_{number}')
+    else:
+        dpg.disable_item(f'note_{number}')
     dpg.set_value(f'note_{number}', 0)
 
 
@@ -184,9 +185,8 @@ def reset_mon(static: bool = False) -> None:
         if not static or dpg.get_value(f'{indicator}_active_until') == float('inf'):
             _reset_indicator(indicator)
 
-    for index in range(0, 128):  # All MIDI notes
-        if not static or dpg.get_item_theme(f'note_{index}') == '__force_act':
-            note_off(index)
+    for note_number in range(0, 128):  # All MIDI notes
+            note_off(note_number, not static)
 
     if not static:
         for decoder in get_supported_decoders():

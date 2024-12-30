@@ -18,12 +18,12 @@ requires-python = '>=3.10'
 # https://peps.python.org/pep-0508
 # https://peps.python.org/pep-0440/#version-specifiers
 dependencies = [
-    'dearpygui>=1.8,<1.11',
-    'dearpygui-ext~=0.9.5',
+    'dearpygu~=2.0.0',
+    'dearpygui-ext~=2.0.0',
     'midi_const~=0.1.0',
     'mido~=1.3.0', # FIXME: currently using custom 1.2.11a1 with EOX, running status and delta time support
     'python-rtmidi~=1.5.5', # While it's mido's default backend, we explicitly require it for some features.
-    'Pillow>=9.5,<10.4',
+    'pillow~=11.0.0',
 ]
 license = { file = 'LICENSE' }
 authors = [
@@ -60,6 +60,9 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3 :: Only',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Topic :: Artistic Software',
     'Topic :: Communications',
     # 'Topic :: Documentation :: Sphinx',  # TODO
@@ -121,6 +124,8 @@ no-cov = 'cov --no-cov'
 python = [
     '310',
     '311',
+    '312',
+    '313',
 ]
 
 [tool.hatch.envs.docs]

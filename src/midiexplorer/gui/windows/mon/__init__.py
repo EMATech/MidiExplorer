@@ -73,11 +73,11 @@ def _update_notation_mode(sender: int | str, app_data: Any, user_data: Optional[
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # Update keyboard
-    for index in range(0, 128):  # All MIDI notes
+    for note_number in range(0, 128):  # All MIDI notes
         dpg.configure_item(
-            f'note_{index}',
+            f'note_{note_number}',
             format=_verticalize(
-                user_data.get(dpg.get_value('notation_mode')).get(index)
+                user_data.get(dpg.get_value('notation_mode')).get(note_number)
             )
         )
 
@@ -121,9 +121,11 @@ def create() -> None:
     # ---------------------------------------
     # DEAR PYGUI THEME for activated buttons
     # ---------------------------------------
+    red = (255, 0, 0)
+    dark_red = (128, 0, 0)
+    magenta = (170, 0, 170)
+    dark_magenta = (85, 0, 85)
     with dpg.theme(tag='__act'):
-        red = (255, 0, 0)
-        light_red = (128, 0, 0)
         with dpg.theme_component(dpg.mvButton):
             dpg.add_theme_color(
                 tag='__act_but_col',
@@ -132,34 +134,32 @@ def create() -> None:
             )
         with dpg.theme_component(dpg.mvSliderInt):
             dpg.add_theme_color(
-                tag='__act_sli_col',  # TODO: allow customizing
+                tag='__act_sli_col',
                 target=dpg.mvThemeCol_SliderGrab,
                 value=red,
             )
             dpg.add_theme_color(
-                tag='__act_sli_bg_col',  # TODO: allow customizing
+                tag='__act_sli_bg_col',
                 target=dpg.mvThemeCol_FrameBg,
-                value=light_red,
+                value=dark_red,
             )
     with dpg.theme(tag='__force_act'):
-        magenta = (170, 0, 170)
-        light_magenta = (85, 0, 85)
         with dpg.theme_component(dpg.mvButton):
             dpg.add_theme_color(
-                tag='__force_act_col',
+                tag='__force_act_but_col',
                 target=dpg.mvThemeCol_Button,
-                value=magenta,  # light magenta
+                value=magenta,
             )
         with dpg.theme_component(dpg.mvSliderInt):
             dpg.add_theme_color(
-                tag='__force_act_sli_col',  # TODO: allow customizing
+                tag='__force_act_sli_col',
                 target=dpg.mvThemeCol_SliderGrab,
                 value=magenta,
             )
             dpg.add_theme_color(
-                tag='__force_act_sli_bg_col',  # TODO: allow customizing
+                tag='__force_act_sli_bg_col',
                 target=dpg.mvThemeCol_FrameBg,
-                value=light_magenta,
+                value=dark_magenta,
             )
 
     # -------------------
@@ -187,13 +187,7 @@ def create() -> None:
             # --------
             # Settings
             # --------
-            with dpg.menu(label="Settings"):
-                with dpg.group():
-                    dpg.add_text("Live color:")
-                    dpg.add_color_picker(source='__act_but_col')
-                with dpg.group():
-                    dpg.add_text("Selected color:")
-                    dpg.add_color_picker(source='__force_act_col')
+            with dpg.menu(label="Display"):
                 with dpg.group(horizontal=True):
                     dpg.add_text("Persistence:")
                     dpg.add_slider_float(
@@ -203,6 +197,42 @@ def create() -> None:
                         callback=lambda:
                         dpg.set_value('mon_blink_duration', dpg.get_value('mon_blink_duration_slider'))
                     )
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Notation:")
+                    dpg.add_radio_button(
+                        items=list(notation_modes.keys()),
+                        default_value=next(iter(notation_modes.values())),  # First value
+                        source='notation_mode',
+                        callback=_update_notation_mode,
+                        user_data=notation_modes
+                    )
+            with dpg.menu(label="Colors"):
+                dpg.add_text("Buttons")
+                with dpg.group(horizontal=True):
+                    with dpg.group():
+                            dpg.add_text("Live color:")
+                            dpg.add_color_picker(source='__act_but_col')
+                    with dpg.group():
+                        dpg.add_text("Selected color:")
+                        dpg.add_color_picker(source='__force_act_but_col')
+                dpg.add_text("Sliders")
+                with dpg.group(horizontal=True):
+                    with dpg.group():
+                            dpg.add_text("Live color:")
+                            dpg.add_color_picker(source='__act_sli_col')
+                    with dpg.group():
+                        dpg.add_text("Selected color:")
+                        dpg.add_color_picker(source='__force_act_sli_col')
+                dpg.add_text("Sliders background")
+                with dpg.group(horizontal=True):
+                    with dpg.group():
+                            dpg.add_text("Live color:")
+                            dpg.add_color_picker(source='__act_sli_bg_col')
+                    with dpg.group():
+                        dpg.add_text("Selected color:")
+                        dpg.add_color_picker(source='__force_act_sli_bg_col')
+
+            with dpg.menu(label="Advanced"):
                 with dpg.group(horizontal=True):
                     dpg.add_text("Zero (0) velocity Note On is Note Off:")
                     dpg.add_checkbox(label="(default, MIDI specification compliant)",
@@ -216,16 +246,6 @@ def create() -> None:
                         callback=_update_eox_category,
                         user_data=eox_categories
                     )
-                with dpg.group(horizontal=True):
-                    dpg.add_text("Notation:")
-                    dpg.add_radio_button(
-                        items=list(notation_modes.keys()),
-                        default_value=next(iter(notation_modes.values())),  # First value
-                        source='notation_mode',
-                        callback=_update_notation_mode,
-                        user_data=notation_modes
-                    )
-
         # TODO: Panic button to reset all monitored states.
 
         # -----
@@ -549,7 +569,7 @@ def create() -> None:
                 pos=(xpos, ypos),
                 vertical=True,
                 min_value=0, max_value=127,
-                enabled=True,  # Required for theme color to apply properly
+                enabled=False,  # Required for theme color to apply properly
             )
 
             tooltip_conv(
