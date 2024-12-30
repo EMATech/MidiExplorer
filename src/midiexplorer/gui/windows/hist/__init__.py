@@ -28,7 +28,7 @@ def _add_table_columns():
     dpg.add_table_column(label="Channel")
     dpg.add_table_column(label="Data 1")
     dpg.add_table_column(label="Data 2")
-
+    dpg.add_table_column(label="Select", width_fixed=True, width=0, no_header_width=True, no_header_label=True)
 
 def create() -> None:
     """Creates the history window.
@@ -59,7 +59,10 @@ def create() -> None:
         # -------------------
         # History data table
         # -------------------
-        dpg.add_child_window(tag='hist_table_container', height=470, border=False)
+        hist_table_height = 470
+        if DEBUG:
+            hist_table_height = 355
+        dpg.add_child_window(tag='hist_table_container', height=hist_table_height, border=False)
 
         # Separate headers
         # FIXME: workaround table scrolling not implemented upstream yet to have static headers
@@ -76,11 +79,16 @@ def create() -> None:
         # TODO: timegraph?
 
         # Content details
-        dpg.add_child_window(parent='hist_table_container', tag='hist_det', label="Details", height=420, border=False)
+        hist_det_height = 420
+        if DEBUG:
+            hist_det_height = 305
+        dpg.add_child_window(parent='hist_table_container', tag='hist_det', label="Details", height=hist_det_height, border=False)
         with dpg.table(parent='hist_det',
                        tag='hist_data_table',
                        header_row=False,  # FIXME: True when table scrolling will be implemented upstream
                        freeze_rows=0,  # FIXME: 1 when table scrolling will be implemented upstream
+                       row_background=True,
+                       borders_innerV=True,
                        policy=dpg.mvTable_SizingStretchSame,
                        # scrollY=True,  # FIXME: Scroll the table instead of the window when available upstream
                        ):

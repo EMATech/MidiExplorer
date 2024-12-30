@@ -99,10 +99,7 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
                        before=f'hist_data_{previous_data}'):
 
         # Source
-        target = f'selectable_{hist_data_counter}'
-        dpg.add_selectable(label=source, span_columns=True, tag=target)
-        selectables.append(target)
-        dpg.configure_item(target, callback=_selection, user_data=selectables)
+        dpg.add_text(source)
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(source)
 
@@ -168,6 +165,11 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
             prefix1 = data1_name + ": "
         tooltip_conv(prefix1 + xstr(data1_dec if data1_dec else data1_val), data1_val, blen=7)
 
+        # Selectable
+        target = f'selectable_{hist_data_counter}'
+        dpg.add_selectable(span_columns=True, tag=target, callback=_selection)
+        selectables.append(target)
+
     # TODO: per message type color coding
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
 
@@ -192,11 +194,13 @@ def _selection(sender, app_data, user_data):
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
+    global selectables
+
     if DEBUG:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
     # FIXME: add a data structure tracking selected items to only deselect the one(s)
-    for item in user_data:
+    for item in selectables:
         if item != sender:
             dpg.set_value(item, False)
 
