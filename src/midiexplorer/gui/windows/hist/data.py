@@ -100,8 +100,6 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
 
         # Source
         dpg.add_text(source)
-        with dpg.tooltip(dpg.last_item()):
-            dpg.add_text(source)
 
         # Destination
         dpg.add_text(destination)
