@@ -66,18 +66,20 @@ First alpha released!
 
 Testers welcome ;)
 
-Installation (Python)
+Installation
 ------------
 
-### Install Python 3.10
+### Standard
+
+#### Install Python 3.10
 
 From [python.org](https://www.python.org/downloads/windows/) (*recommended*) or your favorite package manager.
 
-### Install PipX
+#### Install PipX
 
 Follow the instructions for your operating system.
 
-#### Microsoft Windows
+##### Microsoft Windows
 
 In a terminal
 
@@ -88,22 +90,19 @@ py -m pipx ensurepath
 
 *Close and reopen your terminal.*
 
-#### Mac OS X / Linux
+##### Mac OS X / Linux
 
 ```console
 python3 -m pip install --user pipx
 ```
 
-### Install MIDI Explorer
+#### Install MIDI Explorer
 
 ```console
 pipx install midiexplorer
 ```
 
-Installation (Native)
----------------------
-
-### Nuitka (alpha)
+### Native using Nuitka (alpha)
 
 You may also build a compiled, single-file executable from a properly configured venv using:
 
