@@ -127,18 +127,18 @@ Features & TODO
 ### Quality
 
 - [ ] Linting
-    - [ ] Code style checks? ([PEP8](https://peps.python.org/pep-0008) pycodestyle)
-    - [ ] Docstrings? (darglint)
-    - [ ] Typechecking? (mypy)
-- [ ] Unit tests? (pytest)
+    - [ ] Code style checks? ([PEP8](https://peps.python.org/pep-0008) `pycodestyle`)
+    - [ ] Docstrings? (`darglint`)
+    - [ ] Typechecking? (`mypy`)
+- [ ] Unit tests? (`pytest`)
     - [ ] Coverage
 - [x] [Packaging](https://packaging.python.org)
     - [x] [PyPi](https://pypi.org)
         - [x] Using [Hatch](https://hatch.pypa.io)
-            - [ ] Get version for Git
+            - [ ] Get version from Git
               using [hatch-vcs](https://github.com/ofek/hatch-vcs)
     - [ ] [PyInstaller](https://pyinstaller.org)
-    - [ ] *WIP* [Nuitka](https://nuitka.net)
+    - [ ] *(WIP)* [Nuitka](https://nuitka.net)
         - [x] Microsoft Windows
         - [ ] Apple Mac OS X
         - [ ] GNU/Linux
@@ -154,34 +154,35 @@ Features & TODO
 
 ### MIDI protocols
 
-- [x] **(WIP)** [v1.0](https://www.midi.org/specifications/midi1-specifications)  
-  includes RP-001/RP-002/RP-003/RP-004/RP-005/RP-006/RP-007/RP-008/RP-009/RP-010/RP-011/RP-012/RP-013/RP-014  
+- [x] *(WIP)* [v1.0](https://www.midi.org/specifications/midi1-specifications)  
+  includes `RP-001`/`RP-002`/`RP-003`/`RP-004`/`RP-005`/`RP-006`/`RP-007`/
+  `RP-008`/`RP-009`/`RP-010`/`RP-011`/`RP-012`/`RP-013`/`RP-014`  
   (1983 - February 1996)  
   Using a [modified mido](https://github.com/mido/mido/pull/370)
 - [ ] [v2.0](https://www.midi.org/specifications/midi-2-0-specifications)  
-  (Planned long term: after v1.0 and all its extensions are fully stable)
+  *(Planned long term: after v1.0 and all its extensions are fully stable)*
 
 ### Platform support
 
 - [x] Microsoft Windows
     - [x] WinMM aka [Windows Multimedia MME API](https://docs.microsoft.com/fr-fr/windows/win32/api/mmeapi/)  
-      via mido's RtMidi backend
+      via `mido`'s RtMidi backend
     - [ ] WinRt aka [UWP Windows Runtime API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.midi)  
       [RtMidi related  issue](https://github.com/thestk/rtmidi/issues/145)
 - [x] Apple Mac OS X
     - [x] Core MIDI  
-      via mido's RtMidi backend
+      via `mido`'s RtMidi backend
     - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html)  
-      (Should work but untested ATM)
+      *(Should work but untested ATM)*
 - [x] GNU/Linux
     - [x] ALSA
         - [x] [Sequencer API](https://www.alsa-project.org/alsa-doc/alsa-lib/seq.html)  
-          via mido's RtMidi backend
+          via `mido`'s RtMidi backend
         - [ ] [RawMidi API](https://www.alsa-project.org/alsa-doc/alsa-lib/rawmidi.html)
-    - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html)
-      (Should work but untested ATM)
+    - [ ] [JACK MIDI](https://jackaudio.org/api/group__MIDIAPI.html)  
+      *(Should work but untested ATM)*
     - [ ] OSS?  
-      (Legacy API)
+      *(Legacy API)*
 
 ### Interactive GUI
 
@@ -194,22 +195,32 @@ Features & TODO
     - [x] Outputs
     - [x] Modules
 - [x] History window (Table)
-- [x] Monitor data window (Decoding with live feedback)
-- [x] Generator data window
-- [ ] **(WIP)** Standard MIDI file window
-- [x] Log window
+    - [x] Decoding of selected message
     - [ ] Insert comment
+- [x] Monitor data window
+    - [x] Live feedback & decoding
+    - [x] Historical data decoding
+    - [ ] Generator decoding/encoding?
+    - [ ] SMF message event decoding
+- [x] Generator data window
+- [ ] *(WIP)* Standard MIDI file window
+    - [x] Open file
+    - [ ] *(WIP)* HEX/ASCII view
+    - [ ] *(WIP)* Chunks decoding into a tree structure
+    - [ ] Data highlighting
+    - [ ] Message event decoding
+- [x] Log window
     - [ ] Save to file
         - [ ] Overwrite
         - [ ] Append
 - [ ] Actions (Menus and/or keyboard shortcuts)
-    - [x] Toggle connections (F1)
-    - [x] Toggle history (F2)
-    - [x] Toggle monitor (F3)
-    - [x] Toggle generator (F4)
-    - [x] Toggle standard MIDI file (F5)
-    - [x] Toggle full-screen (F11)
-    - [x] Toggle log (F12)
+    - [x] Toggle connections (`F1`)
+    - [x] Toggle history (`F2`)
+    - [x] Toggle monitor (`F3`)
+    - [x] Toggle generator (`F4`)
+    - [x] Toggle standard MIDI file (`F5`)
+    - [x] Toggle full-screen (`F11`)
+    - [x] Toggle log (`F12`)
     - [ ] Save & restore windows state  
       (Buggy at the moment)
 
@@ -232,7 +243,7 @@ Features & TODO
       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/RP27v10spec.pdf)
       MIDI Media Adaptation Layer for IEEE-1394 v1.0
         - [ ] OS Level?  
-          (Probably works but no hardware to test with)
+          *(Probably works but no hardware to test with)*
         - [ ] Direct Access?
     - [ ] Bluetooth Low Energy (BLE-MIDI)  
       [RP-052 (MMA)](
@@ -250,9 +261,9 @@ Features & TODO
       https://www.midi.org/specifications/midi-transports-specifications/rtp-midi)  
       [IETF RFC 6295](https://www.rfc-editor.org/rfc/rfc6295.txt)
       RTP Payload Format for MIDI
-        - [x] **(Partial)** OS Level  
+        - [x] *(Partial)* OS Level  
           Requires [rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html) for Microsoft Windows  
-          (Works with Microsoft Windows. Untested on other OS)
+          *(Works with Microsoft Windows. Untested on other OSes)*
         - [ ] Direct Access?
     - [ ] Virtual
         - [ ] OS Level  
@@ -260,7 +271,7 @@ Features & TODO
         - [ ] Native  
           Provided by RtMidi for Linux & Apple Mac OS X
     - [ ] Custom Hardware  
-      (Planned in the near future. Prototyping in progress.)
+      *(Planned in the near future. Prototyping in progress.)*
         - [ ] 5-Pin DIN  
           [CA-033 (MMA)](
           https://www.midi.org/specifications/midi-transports-specifications/5-pin-din-electrical-specs)
@@ -286,12 +297,12 @@ Features & TODO
           https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp48a(spec).pdf)
           Mobile Musical Interface Specification v1.0.2
 - [x] ~~Select mido backend?~~  
-  (Only RtMidi suits our needs)
+  *(Only RtMidi suits our needs)*
 - [x] Input reading modes
     - [x] Polling
     - [x] Callback
 - [ ] ~~Sort by ID/Name~~  
-  (Forced name sorting is enough for now)
+  *(Forced name sorting is enough for now)*
 - [ ] Connections
     - [x] Port to probe
     - [x] Probe to port
@@ -321,6 +332,10 @@ Features & TODO
     - [ ] Per source
     - [ ] Per channel
     - [ ] Per message type
+- [ ] Filtering
+- [ ] Reverse order (Newest first)
+- [ ] Insert comments
+- [ ] Save/Restore
 
 #### Modules
 
@@ -370,14 +385,14 @@ Features & TODO
               [RP-018 (AMEI/MSC)](
               https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp18.pdf)
               Response to Data Increment/Decrement Controller
-            - [ ] Sound Controller Defaults  
+            - [x] *(Partial decoding)* Sound Controller Defaults  
               [RP-021 (MMA)](
               https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/sound-controller-defaults-revised)
               Sound Controller Defaults (Revised)  
               [RP-021 (AMEI/MSC)](
               https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp21.pdf)
               Defaults for Sound Controllers
-            - [x] **(Partial decoding)** High Resolution Velocity Prefix  
+            - [x] *(Partial decoding)* High Resolution Velocity Prefix  
               [CA-031 (MMA)](
               https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/high-resolution-velocity-prefix)
               CC #88 High Resolution Velocity Prefix  
@@ -385,9 +400,9 @@ Features & TODO
               https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca-31.pdf)
               CC#88 High Resolution Velocity Prefix
             - [ ] Registered Parameter Numbers (RPN)
-                - [x] **(Partial decoding)** 00 Pitch Bend Sensitivity
-                - [x] **(Partial decoding)** 01 Fine Tuning
-                - [x] **(Partial decoding)** 02 Coarse Tuning
+                - [x] *(Partial decoding)* 00 Pitch Bend Sensitivity
+                - [x] *(Partial decoding)* 01 Fine Tuning
+                - [x] *(Partial decoding)* 02 Coarse Tuning
                     - [x] Redefinition of RPN 01/02  
                       [RP-022 (MMA)](
                       https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/redefinition-of-rpn01-and-rpn02-channel-fine-coarse-tuning)
@@ -395,9 +410,9 @@ Features & TODO
                       [RP-022 (AMEI/MSC)](
                       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp22.pdf)
                       Channel Fine/Coarse Tuning
-                - [x] **(Partial decoding)** 03 Tuning Program Select
-                - [x] **(Partial decoding)** 04 Tuning Bank Select
-                - [x] **(Partial decoding)** 05 GM2 Modulation Depth Range  
+                - [x] *(Partial decoding)* 03 Tuning Program Select
+                - [x] *(Partial decoding)* 04 Tuning Bank Select
+                - [x] *(Partial decoding)* 05 GM2 Modulation Depth Range  
                   [CA-026 (MMA)](
                   https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/modulation-depth-range-rpn)
                   Modulation Depth Range RPN  
@@ -469,8 +484,7 @@ Features & TODO
                 - [x] Manufacturer ID
                 - [x] Device ID
                 - [x] Raw payload
-            - [ ] **(WIP)** Universal System Exclusive
-              (Realtime & Non-Realtime)
+            - [ ] *(WIP)* Universal System Exclusive (Realtime & Non-Realtime)
                 - [x] Sub-IDs 1 & 2 type decoding
                 - [ ] Payloads decoding
                     - [ ] MIDI Show Control (MSC)  
@@ -544,7 +558,7 @@ Features & TODO
                       [CA-025 (MMA)](
                       https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-2/master-fine-course-tuning)
                       Master Fine/Coarse Tuning  
-                      [CA-025 (AMEI/MSC)]
+                      [CA-025 (AMEI/MSC)](
                       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca25.pdf)
                       Master Fine/Coarse Tuning
                     - [ ] GM2 System Level 2 Message  
@@ -556,7 +570,7 @@ Features & TODO
                       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/ca28.pdf)
                       Extension 00-01 to File Reference Sysex Message
                     - [ ] GM-Lite Scalable Polyphony MIDI Specification (SP-MIDI)  
-                      [RP-034/RP-035 (MMA)](ç
+                      [RP-034/RP-035 (MMA)](
                       https://www.midi.org/specifications/file-format-specifications/mobile-midi/scalable-polyphony-midi-sp-midi-2)
                       Scalable Polyphony MIDI Specification and Device Profiles v1.0b  
                       [RP-034/RP-035 (AMEI/MSC)](
@@ -595,11 +609,11 @@ Features & TODO
     - [x] Generate raw output
     - [ ] Buffer/Clipboard any message (raw or decoded) to output
 - [ ] File formats
-    - [ ] *WIP* Standard MIDI File (SMF)  
+    - [ ] *(WIP)* Standard MIDI File (SMF)  
       [RP-001 (MMA)](
       https://www.midi.org/specifications/file-format-specifications/standard-midi-files/rp-001-v1-0-standard-midi-files-specification-96-1-4-pdf)
       Standard MIDI Files 1.0
-        - [ ] *WIP* Analyzer
+        - [ ] *(WIP)* Analyzer
         - [ ] Player
         - [ ] Recorder
         - [ ] Extensions
@@ -662,7 +676,7 @@ Features & TODO
     - [ ] RMID  
       [RP-029 (AMEI/MSC)](
       https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp29spec(rmid)4.pdf)
-      Bundling SMF and DLS data in an "RMID" File
+      Bundling 'SMF' and 'DLS' data in an 'RMID' File
     - [ ] eXtensible Music Format (XMF)  
       [RP-030/RP-031/RP-032/RP-039/RP-040/RP-042/RP-043/RP-045/RP-047 (MMA)](
       https://www.midi.org/specifications/file-format-specifications/xmf-extensible-music-format/extensible-music-format-xmf-2)
@@ -747,7 +761,7 @@ Features & TODO
 
 ### MIDI implementation charts
 
-- [x] reStrucuredText (reST) Templates
+- [x] reStrucuredText (`reST`) Templates
     - [x] v1.0 (MIDI 1.0)
     - [x] v2.0  
       [RP-028 (MMA)](
@@ -778,7 +792,7 @@ Legal notice
 ![GPLv3](
 https://raw.githubusercontent.com/EMATech/midiexplorer/main/data/assets/sources/gplv3-or-later.svg)
 
-Author: ©2021-2023 Raphaël Doursenaud.
+Author: ©2021-2025 Raphaël Doursenaud.
 
 This software is released under the terms of the GNU General Public License, version 3.0 or later (GPL-3.0-or-later).
 
