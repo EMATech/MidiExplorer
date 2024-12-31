@@ -479,6 +479,9 @@ def create() -> None:
                         dpg.add_menu_item(label="Merger")
                         dpg.add_menu_item(label="Splitter")
 
+            with dpg.menu(label="Tip"):
+                dpg.add_text("Remove a link: Ctrl+Click")
+
         with dpg.node_editor(
                 tag='connections_editor',
                 callback=link_node_callback,
