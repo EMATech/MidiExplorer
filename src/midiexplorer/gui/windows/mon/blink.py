@@ -70,6 +70,9 @@ def get_supported_indicators() -> list:
 
 def get_supported_decoders() -> list:
     decoders = [
+        'pc_num',
+        'pc_group_name',
+        'pc_name',
         'syx_id_group',
         'syx_id_region',
         'syx_id_name',

@@ -7,7 +7,7 @@
 """
 Monitor data management.
 """
-
+import midi_const
 import mido
 from dearpygui import dearpygui as dpg
 from midi_const import NOTE_OFF_VELOCITY
@@ -89,8 +89,11 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
     elif 'control_change' == data.type:
         cc(data.control, data.value, static)
     elif 'program_change' == data.type:
-        # TODO: Optionally decode General MIDI names.
-        pass
+        dpg.set_value('pc_num', data.program)
+        # Decode General MIDI names.
+        dpg.set_value('pc_group_name', midi_const.GENERAL_MIDI_SOUND_SET_GROUPINGS[data.program])
+        dpg.set_value('pc_name', midi_const.GENERAL_MIDI_SOUND_SET[data.program])
+        # TODO: Optionally decode other modes names.
     elif 'aftertouch' == data.type:
         # TODO: display
         pass
@@ -109,5 +112,3 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
     elif 'song_select' == data.type:
         # TODO: display
         pass
-
-

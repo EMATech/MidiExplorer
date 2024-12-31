@@ -435,11 +435,11 @@ Features & TODO
                   https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp49.pdf)
                   Three Dimensional Sound Controllers
             - [ ] Non Registered Parameter Numbers (NRPN)
-        - [ ] Program Changes, Bank Select & Patches
-            - [ ] [General MIDI System (MMA)](
+        - [x] *(WIP)* Program Changes, Bank Select & Patches
+            - [ ] *(WIP)* [General MIDI System (MMA)](
               https://www.midi.org/specifications/midi1-specifications/general-midi-specifications)
               (GM)
-                - [ ] Level 1 (GM1/GM-1) (1991)  
+                - [ ] *(WIP)* Level 1 (GM1/GM-1) (1991)  
                   [MMA0007/RP-003](
                   https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-1)
                   General MIDI System Level 1  
@@ -484,7 +484,7 @@ Features & TODO
                 - [x] Manufacturer ID
                 - [x] Device ID
                 - [x] Raw payload
-            - [ ] *(WIP)* Universal System Exclusive (Realtime & Non-Realtime)
+            - [x] *(WIP)* Universal System Exclusive (Realtime & Non-Realtime)
                 - [x] Sub-IDs 1 & 2 type decoding
                 - [ ] Payloads decoding
                     - [ ] MIDI Show Control (MSC)  

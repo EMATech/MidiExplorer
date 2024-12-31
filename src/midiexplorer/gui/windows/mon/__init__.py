@@ -103,6 +103,12 @@ def create() -> None:
         # ----------------------------
         for indicator in get_supported_indicators():
             dpg.add_float_value(tag=f'{indicator}_active_until', default_value=0)  # seconds
+        # ----------------
+        # Program decoding
+        # ----------------
+        dpg.add_string_value(tag='pc_num')
+        dpg.add_string_value(tag='pc_group_name')
+        dpg.add_string_value(tag='pc_name')
         # ---------------
         # SysEx decoding
         # ---------------
@@ -533,7 +539,7 @@ def create() -> None:
         # ------
         # Notes
         # ------
-        with dpg.collapsing_header(label="Notes", default_open=True):
+        with dpg.collapsing_header(label="Notes", default_open=not DEBUG):
             dpg.add_child_window(tag='mon_notes_container', height=180, border=False)
 
         # TODO: Staff?
@@ -587,10 +593,15 @@ def create() -> None:
             else:
                 bxpos += width + margin
 
+        ###
+        # TODO: Polyphonic Key Pressure (Aftertouch)
+        ###
+        # Value timegraph
+
         # ------------
         # Controllers
         # ------------
-        with dpg.collapsing_header(label="Controllers", default_open=True):
+        with dpg.collapsing_header(label="Controllers", default_open=not DEBUG):
             dpg.add_child_window(tag='mon_controllers_container', height=400, border=False)
 
         with dpg.table(tag='mon_controllers', parent='mon_controllers_container', header_row=False,
@@ -645,15 +656,38 @@ def create() -> None:
         ###
         # Value timegraph
 
+        # --------------
+        # Program change
+        # --------------
         ###
-        # TODO: Polyphonic Key Pressure (Aftertouch)
+        # TODO: Bank Select?
+        #       Value timegraph
         ###
-        # Value timegraph
+        mon_prog_height=70
+        if DEBUG:
+            mon_prog_height=120
 
-        ###
-        # TODO: Program change status? (+ Bank Select?)
-        ###
-        # Value timegraph
+        with dpg.collapsing_header(label="Program", default_open=True):
+            with dpg.child_window(tag='mon_program_container', height=mon_prog_height, border=False):
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Num")
+                    dpg.add_input_text(source='pc_num', readonly=True, width=50)  # 0-127
+                if DEBUG:
+                    with dpg.group(horizontal=True):
+                        dpg.add_text("Resource")
+                        # TODO: Autoset on receiving Defined Universal Sysex non real time
+                        dpg.add_combo(["GM", "GM2", "GS", "XG"], default_value="GM")
+                        # TODO: Add logo
+                    with dpg.group(horizontal=True):  # TODO: Not GM modes only
+                        dpg.add_text("Bank")
+                        dpg.add_input_text(source='pc_bank_num', readonly=True, width=50)  # 0-16383
+                        dpg.add_input_text(source='pc_bank_name', readonly=True, width=250)
+                with dpg.group(horizontal=True):  # TODO: GM mode only
+                    dpg.add_text("Group")
+                    dpg.add_input_text(source='pc_group_name', readonly=True, width=250)
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Name")
+                    dpg.add_input_text(source='pc_name', readonly=True, width=250)
 
         ###
         # TODO: Pitch bend change
@@ -687,7 +721,7 @@ def create() -> None:
         # -----------------
         # System Exclusive
         # -----------------
-        with dpg.collapsing_header(label="System Exclusive", default_open=True):
+        with dpg.collapsing_header(label="System Exclusive", default_open=not DEBUG):
 
             with dpg.child_window(tag='mon_sysex_container', height=120, border=False):
                 with dpg.group():
