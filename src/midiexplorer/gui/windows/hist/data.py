@@ -206,7 +206,7 @@ def _selection(sender, app_data, user_data):
         dpg.get_item_children(
             dpg.get_item_parent(sender),
             slot=Slots.MOST
-        )[7]
+        )[6]
     )
     message = mido.Message.from_hex(raw_message)
     midiexplorer.gui.windows.mon.data.update_gui_monitor(message, static=True)
