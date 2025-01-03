@@ -213,30 +213,15 @@ def create() -> None:
                         user_data=notation_modes
                     )
             with dpg.menu(label="Colors"):
-                dpg.add_text("Buttons")
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                            dpg.add_text("Live color:")
-                            dpg.add_color_picker(source='__act_but_col')
-                    with dpg.group():
-                        dpg.add_text("Selected color:")
-                        dpg.add_color_picker(source='__force_act_but_col')
-                dpg.add_text("Sliders")
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                            dpg.add_text("Live color:")
-                            dpg.add_color_picker(source='__act_sli_col')
-                    with dpg.group():
-                        dpg.add_text("Selected color:")
-                        dpg.add_color_picker(source='__force_act_sli_col')
-                dpg.add_text("Sliders background")
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                            dpg.add_text("Live color:")
-                            dpg.add_color_picker(source='__act_sli_bg_col')
-                    with dpg.group():
-                        dpg.add_text("Selected color:")
-                        dpg.add_color_picker(source='__force_act_sli_bg_col')
+                dpg.add_separator(label="Buttons")
+                dpg.add_color_edit(source='__act_but_col', no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Live")
+                dpg.add_color_edit(source='__force_act_but_col', no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Selected")
+                dpg.add_separator(label="Sliders")
+                dpg.add_color_edit(source='__act_sli_col', no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Live")
+                dpg.add_color_edit(source='__force_act_sli_col', no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Selected")
+                dpg.add_text("Background")
+                dpg.add_color_edit(source='__act_sli_bg_col', no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Live")
+                dpg.add_color_edit(source='__force_act_sli_bg_col',  no_alpha=True, display_mode=dpg.mvColorEdit_hex, label="Selected")
 
             with dpg.menu(label="Advanced"):
                 with dpg.group(horizontal=True):
