@@ -661,7 +661,7 @@ def create() -> None:
                     with dpg.group(horizontal=True):
                         dpg.add_text("Resource")
                         # TODO: Autoset on receiving Defined Universal Sysex non real time
-                        dpg.add_combo(["GM", "GM2", "GS", "XG"], default_value="GM")
+                        dpg.add_combo(["GM", "GM2", "GS", "XG"], default_value="GM", fit_width=True)
                         # TODO: Add logo
                     with dpg.group(horizontal=True):  # TODO: Not GM modes only
                         dpg.add_text("Bank")
