@@ -65,10 +65,9 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
     mon(data.type, static)
 
     # Channel
-    chan_val = None
     if hasattr(data, 'channel'):
         mon('c', static)  # CHANNEL
-        mon(data.channel, static)
+        mon(data.channel, static)  # Channel #
     else:
         mon('s', static)  # SYSTEM
 
