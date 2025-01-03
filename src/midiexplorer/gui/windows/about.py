@@ -162,8 +162,8 @@ Used under the terms of the Creative Commons Attribution 4.0 International licen
         dpg.add_text("Trademarks", color=title_color)
         dpg.add_text(
             """MIDI is a trademark of the MIDI Manufacturers Association (MMA) in the United States of America.
-            This is not a registered trademark in the European Union and France where I reside.
-            Other trademarks are property of their respective owners and used fairly for descriptive and nominative purposes only."""
+This is not a registered trademark in the European Union and France where I reside.
+Other trademarks are property of their respective owners and used fairly for descriptive and nominative purposes only."""
         )
 
 
