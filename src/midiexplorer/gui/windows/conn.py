@@ -486,6 +486,8 @@ def create() -> None:
                 tag='connections_editor',
                 callback=link_node_callback,
                 delink_callback=delink_node_callback,
+                minimap=True,
+                minimap_location=dpg.mvNodeMiniMap_Location_BottomRight,
                 # TODO: handle delinking in a right-click popup on the link. Upstream?
         ):
             with dpg.node(
