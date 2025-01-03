@@ -83,6 +83,7 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
         else:
             note_off(data.note, static)
     elif 'polytouch' == data.type:
+        # TODO: display
         if static:
             note_on(data.note, static)
     elif 'control_change' == data.type:

@@ -363,7 +363,8 @@ Features & TODO
             - [x] Channel
             - [x] System
         - [x] Channel
-        - [x] Controllers
+        - [X] Note
+        - [x] Controller
             - [x] Redefinition of CC91 and CC93   
               [RP-023 (MMA)](
               https://www.midi.org/specifications/midi1-specifications/midi-1-addenda/renaming-of-cc91-and-cc93)
@@ -375,6 +376,7 @@ Features & TODO
         - [x] Notes
             - [x] Keyboard
                 - [x] Velocity
+                - [ ] Polyphonic Key Pressure (After Touch)
             - [ ] Staff
         - [ ] Controllers
             - [x] Value
