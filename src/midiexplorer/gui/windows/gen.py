@@ -36,19 +36,20 @@ def create() -> None:
             collapsed=False,
             pos=[900, posy],
     ):
-        dpg.add_input_text(
-            tag='generator_raw_message',
-            label="Raw Message",
-            hint="XXYYZZ (HEX)",
-            hexadecimal=True,
-            callback=decode,
-        )
-        dpg.add_input_text(
-            label="Decoded",
-            readonly=True,
-            hint="Automatically decoded raw message",
-            tag='generator_decoded_message',
-        )
+        with dpg.group(tag='generator_container'):
+            dpg.add_input_text(
+                tag='generator_raw_message',
+                label="Raw Message",
+                hint="XXYYZZ (HEX)",
+                hexadecimal=True,
+                callback=decode,
+            )
+            dpg.add_input_text(
+                label="Decoded",
+                readonly=True,
+                hint="Automatically decoded raw message",
+                tag='generator_decoded_message',
+            )
         dpg.add_button(
             tag="generator_send_button",
             label="Send",

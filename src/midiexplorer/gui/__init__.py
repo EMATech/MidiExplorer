@@ -126,9 +126,12 @@ def init():
     if DEBUG:
         dpg.bind_item_font('mon_midi_mode', 'mono_font')
     dpg.bind_item_font('mon_status_container', 'mono_font')
-    dpg.bind_item_font('mon_controllers_container', 'mono_font')
-    dpg.bind_item_font('mon_sysex_container', 'mono_font')
     dpg.bind_item_font('mon_notes_container', 'mono_font')
+    dpg.bind_item_font('mon_controllers_container', 'mono_font')
+    dpg.bind_item_font('mon_program_container', 'mono_font')
+    dpg.bind_item_font('mon_sysex_container', 'mono_font')
+
+    dpg.bind_item_font('generator_container', 'mono_font')
 
     if DEBUG:
         dpg.bind_item_font('smf_container', 'mono_font')
