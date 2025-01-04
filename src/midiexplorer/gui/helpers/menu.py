@@ -68,7 +68,7 @@ def create() -> None:
                               tag='menu_tools_smf',
                               shortcut="F5",
                               check=True,
-                              default_value=DEBUG,
+                              default_value=False,
                               callback=midiexplorer.gui.windows.smf.toggle)
             dpg.add_menu_item(label="Log",
                               tag='menu_tools_log',

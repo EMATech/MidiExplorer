@@ -47,7 +47,7 @@ def create() -> None:
             no_close=False,
             collapsed=False,
             pos=[posx, posy],
-            show=False if not DEBUG else True,
+            show=False,
     ):
         ###
         # MENU
