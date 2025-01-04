@@ -34,4 +34,3 @@ def add(timestamp: Timestamp, source: str, data: mido.Message) -> None:
         logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
 
     midiexplorer.gui.windows.mon.data.update_gui_monitor(data)
-    midiexplorer.gui.windows.hist.data.add(data, source, "Probe", timestamp, delta)

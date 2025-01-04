@@ -23,6 +23,7 @@ from midiexplorer.gui.helpers.logger import Logger
 from midiexplorer.gui.helpers.probe import add
 from midiexplorer.midi.ports import MidiInPort, MidiOutPort, midi_in_queue, midi_in_lock
 from midiexplorer.midi.timestamp import Timestamp
+from midiexplorer.gui.windows import hist
 
 
 def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
@@ -301,7 +302,7 @@ def input_mode_callback(sender: int | str, app_data: bool, user_data: Optional[A
     if DEBUG:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
-    pin_user_data = dpg.get_item_user_data('probe_in')
+    pin_user_data: MidiInPort = dpg.get_item_user_data('probe_in')
     if pin_user_data:
         if app_data == 'Polling':
             pin_user_data.polling()
@@ -661,7 +662,7 @@ def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data
     """
     logger = Logger()
 
-    logger.log_debug(f"Received MIDI data from {source} to {dest} at {timestamp}: {midi_data}")
+    logger.log_debug(f"Received MIDI data from {source} to {dest} at {timestamp.value}: {midi_data}")
 
     port = None
     try:
@@ -672,12 +673,29 @@ def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data
     if isinstance(port, MidiOutPort):
         logger.log_debug(f"Echoing MIDI data to midi output {port.label}")
         port.port.send(midi_data)
+
+    dest_label = dest
+    # Decode destination name
+    if isinstance(dest, int):
+        module_label = dpg.get_item_label(dpg.get_item_parent(dest))
+        if module_label == "INPUTS" or module_label == "OUTPUTS":
+            module_label = ""
+        else:
+            module_label += ": "
+        dest_label = module_label + dpg.get_item_label(dest)
+    # logger.log(dest_label)
+
+    hist.data.add(midi_data, source, dest_label, timestamp)
+
+    # FIXME: Should probably be hooked from the probe module
+    # logger.log(f"'probe_in' alias ID: {dpg.get_alias_id('probe_in')}")
     if dest == dpg.get_alias_id('probe_in'):
-        probe_thru_user_data = dpg.get_item_user_data('probe_thru')
-        if probe_thru_user_data:
-            # logger.log_debug(f"Probe thru has user data: {probe_thru_user_data}")
+        probe_thru_user_data: MidiOutPort = dpg.get_item_user_data('probe_thru')
+        if probe_thru_user_data:  # Handle soft-thru
+            # logger.log(f"Probe thru has user data: {probe_thru_user_data}")
             logger.log_debug("Echoing MIDI data to probe thru")
             probe_thru_user_data.port.send(midi_data)
+            hist.data.add(midi_data, "PROBE: Thru", probe_thru_user_data.port.name, timestamp)
         add(
             timestamp=timestamp,
             source=source,
