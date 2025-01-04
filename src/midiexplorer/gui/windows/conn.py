@@ -145,7 +145,7 @@ def _get_pin_text(pin: int | str) -> str:
         # Extract from I/O
         mvgroup = dpg.get_item_children(pin, slot=Slots.MOST)[0]
         mvtext_index = 0
-        if platform.system() == "Windows":  # We have port indexe numbers
+        if platform.system() == "Windows":  # We have port index numbers
             mvtext_index = 1
         mvtext = dpg.get_item_children(mvgroup, slot=Slots.MOST)[mvtext_index]
         text = dpg.get_value(mvtext)
@@ -157,7 +157,7 @@ def link_node_callback(sender: int | str,
                        user_data: Optional[Any]) -> None:
     """Callback called when a link between two nodes is created.
 
-    Sets up the underlying data flow, updates DPG internal state and  visual cues.
+    Sets up the underlying data flow, updates DPG internal state and visual cues.
 
     :param sender: argument is used by DPG to inform the callback
                    which item triggered the callback by sending the tag
