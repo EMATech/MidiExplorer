@@ -68,7 +68,7 @@ def create() -> None:
         # -----
         # Title
         # -----
-        dpg.add_text("MIDI Explorer", color=title_color)
+        dpg.add_text(midiexplorer.APPLICATION_NAME, color=title_color)
         dpg.add_text(f"Version {midiexplorer.__about__.__version__}.")
         dpg.add_text("Yet another MIDI monitor, analyzer, debugger and manipulation tool.")
 

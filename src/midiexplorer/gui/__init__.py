@@ -138,7 +138,7 @@ def init():
     vp_width = 1920
     vp_height = 1080
     dpg.create_viewport(
-        title='MIDI Explorer',
+        title=midiexplorer.APPLICATION_NAME,
         width=vp_width,
         height=vp_height,
         small_icon=small_icon,
