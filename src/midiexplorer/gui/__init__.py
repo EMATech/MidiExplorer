@@ -7,11 +7,12 @@
 """
 GUI elements (DearPy GUI).
 """
-import importlib
+import importlib.resources
 import pathlib
 from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
+from dearpygui_ext.logger import mvLogger
 
 import midiexplorer.fonts
 import midiexplorer.icons
@@ -33,7 +34,7 @@ def init():
     # Initialized ASAP
     # ----------------
     midiexplorer.gui.windows.log.create()
-    logger = midiexplorer.gui.helpers.logger.Logger('log_win')
+    logger: mvLogger = midiexplorer.gui.helpers.logger.Logger('log_win')
     if DEBUG:
         logger.log_level = midiexplorer.gui.helpers.logger.MvLogger.TRACE
     else:
@@ -100,6 +101,7 @@ def init():
     # -----
     # Icons must be set before showing viewport (Can also be set when instantiating the viewport)
     icons_root = importlib.resources.files(midiexplorer.icons)
+    logger.log(f"Icons root: {icons_root}")
     small_icon = str(icons_root.joinpath('midiexplorer.ico'))
     large_icon = str(icons_root.joinpath('midiexplorer.ico'))
 
@@ -108,7 +110,7 @@ def init():
     # -----
     # https://dearpygui.readthedocs.io/en/latest/documentation/fonts.html
     fonts_root = importlib.resources.files(midiexplorer.fonts)
-    print(fonts_root)
+    logger.log(f"Fonts root: {fonts_root}")
     with dpg.font_registry():
         dpg.add_font(str(fonts_root.joinpath('Roboto-Regular.ttf')), 14, tag='default_font')
         dpg.add_font(str(fonts_root.joinpath('RobotoMono-Regular.ttf')), 14, tag='mono_font')
