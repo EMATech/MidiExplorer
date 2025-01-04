@@ -306,6 +306,7 @@ Features & TODO
 - [ ] Connections
     - [x] Port to probe
     - [x] Probe to port
+    - [x] Generator to port
     - [x] Port to port
     - [ ] Port to any module
     - [ ] Any module to port
