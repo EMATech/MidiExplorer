@@ -20,11 +20,12 @@ from midiexplorer.gui.helpers.callbacks.debugging import \
     enable as enable_dpg_cb_debugging
 from midiexplorer.gui.helpers.constants.slots import Slots
 from midiexplorer.gui.helpers.convert import tooltip_conv
+from midiexplorer.gui.helpers.logger import Logger
 from midiexplorer.gui.windows.mon import notation_modes
 from midiexplorer.midi.timestamp import Timestamp
 
 S2MS = 1000  # Seconds to milliseconds ratio
-MAX_SIZE = 180  # Data table struggles with too many elements.
+MAX_SIZE = 250  # Data table struggles with too many elements.
 
 ###
 # GLOBAL VARIABLES
@@ -32,15 +33,7 @@ MAX_SIZE = 180  # Data table struggles with too many elements.
 # FIXME: global variables should ideally be eliminated as they are a poor programming style
 ###
 hist_data_counter = 0
-selectables = []
-
-
-def init_details_table_data() -> None:
-    """Initial table data for reverse scrolling.
-
-    """
-    with dpg.table_row(parent='hist_data_table', label='hist_data_0'):
-        pass
+selected = None
 
 
 def clear_hist_data_table(
@@ -55,32 +48,33 @@ def clear_hist_data_table(
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    global selectables, hist_data_counter
+    global hist_data_counter, selected
 
     if DEBUG:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
-    selectables.clear()
     hist_data_counter = 0
+    selected = None
 
     dpg.delete_item('hist_data_table', children_only=True, slot=Slots.MOST)
-    init_details_table_data()
 
 
-def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp, delta=None) -> None:
+def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp) -> None:
     """Adds data to the history table.
 
     :param data: Midi message
     :param source: Source name
     :param destination: Destination name
     :param timestamp: Message data timestamp
-    :param delta: Time delta since previous message in seconds
 
     """
-    global hist_data_counter, selectables
+    global hist_data_counter, selected
 
-    # TODO: insert new data at the top of the table
-    previous_data = hist_data_counter
+    logger = Logger()
+
+    # Unselect
+    if selected is not None:
+        dpg.set_value(selected, False)  # Deselect all items upon receiving new data
 
     # Flush data after a certain amount to avoid memory leak issues
     # TODO: add setting
@@ -88,31 +82,47 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
         # TODO: serialize chunk somewhere to allow unlimited scrolling when implemented
         clear_hist_data_table()
 
-    hist_data_counter += 1
-
     chan_val, data0_name, data0_val, data0_dec, data1_name, data1_val, data1_dec = decode(data)
 
-    if delta is None:
+    # FIXME: data.time can also be 0 when using rtmidi time delta. How do we discriminate? Use another property in mido?
+    if data.time and DEBUG:
+        logger.log_debug("Timing: Using rtmidi time delta")
+        delta = data.time
+    else:
+        logger.log_debug("Timing: Rtmidi time delta not available. Computing timestamp locally.")
+        # FIXME: this delta is not relative to the same message train but to every handled messages!
         delta = timestamp.delta
 
-    with dpg.table_row(parent='hist_data_table', label=f'hist_data_{hist_data_counter}',
-                       before=f'hist_data_{previous_data}'):
+    # Reversed order
+    before = 0
+    if dpg.get_value('hist_data_table_mode') == "Reversed" and hist_data_counter != 0:
+        before = f'hist_data_{hist_data_counter - 1}'
 
-        # Source
-        dpg.add_text(source)
-
-        # Destination
-        dpg.add_text(destination)
+    with dpg.table_row(
+            tag=f'hist_data_{hist_data_counter}',
+            parent='hist_data_table',
+            before=before,
+    ):
 
         # Timestamp (s)
-        dpg.add_text(f"{timestamp.value:n}")
+        dpg.add_text(f"{timestamp.value:12.4f}")
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(f"{timestamp.value}")
 
         # Delta (ms)
-        dpg.add_text(f"{delta * S2MS:n}")
+        dpg.add_text(f"{delta * S2MS:12.4f}")
         with dpg.tooltip(dpg.last_item()):
             dpg.add_text(f"{delta * S2MS}")
+
+        # Source
+        dpg.add_text(source)
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(source)
+
+        # Destination
+        dpg.add_text(destination)
+        with dpg.tooltip(dpg.last_item()):
+            dpg.add_text(destination)
 
         # Raw message
         raw_label = data.hex()
@@ -121,7 +131,7 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
 
         # Decoded message
         if DEBUG:
-            dec_label = repr(data)
+            dec_label = str(data)
             dpg.add_text(dec_label)
             with dpg.tooltip(dpg.last_item()):
                 dpg.add_text(dec_label)
@@ -129,7 +139,7 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
         # Status
         status_byte = midiexplorer.midi.mido2standard.get_status_by_type(
             data.type
-            )
+        )
         stat_label = midi_const.STATUS_BYTES[status_byte]
         dpg.add_text(stat_label)
         if hasattr(data, 'channel'):
@@ -142,22 +152,24 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
         chan_label = "Global"
         if chan_val is not None:
             chan_label = chan_val + 1  # Human-readable format
-        dpg.add_text(chan_label)
+        dpg.add_text(f'{chan_label: >2}')
         tooltip_conv(chan_label, chan_val, hlen=1, dlen=2, blen=4)
 
         # Helper function equivalent to str() but avoids displaying 'None'.
         xstr: Callable[[Any], str] = lambda s: '' if s is None else str(s)
 
+        # Data 1
         if data0_dec:
             dpg.add_text(str(data0_dec))
         else:
-            dpg.add_text(xstr(data0_val))
+            dpg.add_text(f'{xstr(data1_val): >3}')
         prefix0 = ""
         if data0_name:
             prefix0 = data0_name + ": "
         tooltip_conv(prefix0 + xstr(data0_dec if data0_dec else data0_val), data0_val, blen=7)
 
-        dpg.add_text(xstr(data1_val))
+        # Data 2
+        dpg.add_text(f'{xstr(data1_val): >3}')
         prefix1 = ""
         if data1_name:
             prefix1 = data1_name + ": "
@@ -165,20 +177,16 @@ def add(data: mido.Message, source: str, destination: str, timestamp: Timestamp,
 
         # Selectable
         target = f'selectable_{hist_data_counter}'
-        dpg.add_selectable(span_columns=True, tag=target, callback=_selection)
-        selectables.append(target)
+        dpg.add_selectable(span_columns=True, tag=target, callback=_selection, user_data=data)
+
+    hist_data_counter += 1
 
     # TODO: per message type color coding
     # dpg.highlight_table_row(table_id, i, [255, 0, 0, 100])
 
     # Autoscroll
-    if dpg.get_value('hist_data_table_autoscroll'):
-        dpg.set_y_scroll('hist_det', -1.0)
-
-    # Single selection
-    # FIXME: add a data structure tracking selected items to only deselect the one(s)
-    for item in selectables:
-        dpg.set_value(item, False)  # Deselect all items upon receiving new data
+    if dpg.get_value('hist_data_table_mode') == "Auto-Scroll":
+         dpg.set_y_scroll('hist_data_table', -1.0)
 
 
 def _selection(sender, app_data, user_data):
@@ -192,24 +200,25 @@ def _selection(sender, app_data, user_data):
     :param user_data: argument is Optionally used to pass your own python data into the function.
 
     """
-    global selectables
+    global selected
 
     if DEBUG:
         enable_dpg_cb_debugging(sender, app_data, user_data)
 
-    # FIXME: add a data structure tracking selected items to only deselect the one(s)
-    for item in selectables:
-        if item != sender:
-            dpg.set_value(item, False)
+    # Single selection
+    if selected is not None:
+            dpg.set_value(selected, False)
+    selected = sender
 
-    raw_message = dpg.get_value(
-        dpg.get_item_children(
-            dpg.get_item_parent(sender),
-            slot=Slots.MOST
-        )[6]
-    )
-    message = mido.Message.from_hex(raw_message)
+    message = user_data
     midiexplorer.gui.windows.mon.data.update_gui_monitor(message, static=True)
+
+    # TODO: prevent overwriting user input
+    if dpg.get_value('hist_data_to_gen'):
+        dpg.set_value('generator_raw_message', message.hex())
+        dpg.set_value('generator_decoded_message', message)
+        dpg.set_item_user_data('generator_send_button', message)
+        dpg.enable_item('generator_send_button')
 
 
 def decode(data: mido.Message) -> tuple[int, int, int, int, int, int, int]:

@@ -694,8 +694,9 @@ def handle_received_data(timestamp: Timestamp, source: str, dest: str, midi_data
         if probe_thru_user_data:  # Handle soft-thru
             # logger.log(f"Probe thru has user data: {probe_thru_user_data}")
             logger.log_debug("Echoing MIDI data to probe thru")
+            thru_timestamp = Timestamp()
             probe_thru_user_data.port.send(midi_data)
-            hist.data.add(midi_data, "PROBE: Thru", probe_thru_user_data.port.name, timestamp)
+            hist.data.add(midi_data, "PROBE: Thru", probe_thru_user_data.port.name, thru_timestamp)
         add(
             timestamp=timestamp,
             source=source,

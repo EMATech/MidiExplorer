@@ -104,7 +104,7 @@ def decode(sender: int | str, app_data: Any, user_data: Optional[Any]) -> None:
 
     if warning is None:
         logger.log_debug(f"Raw message {app_data} decoded to: {decoded!r}.")
-        dpg.set_value('generator_decoded_message', repr(decoded))
+        dpg.set_value('generator_decoded_message', decoded)
         dpg.enable_item('generator_send_button')
         dpg.set_item_user_data('generator_send_button', decoded)
     else:

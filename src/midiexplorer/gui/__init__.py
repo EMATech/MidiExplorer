@@ -120,7 +120,6 @@ def init():
     log_win_textbox = dpg.get_item_children('log_win', slot=midiexplorer.gui.helpers.constants.slots.Slots.MOST)[2]
     dpg.bind_item_font(log_win_textbox, 'mono_font')
 
-    dpg.bind_item_font('hist_data_table_headers', 'mono_font')
     dpg.bind_item_font('hist_data_table', 'mono_font')
 
     if DEBUG:
