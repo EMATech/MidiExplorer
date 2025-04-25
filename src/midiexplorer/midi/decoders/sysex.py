@@ -8,7 +8,7 @@
 System Exclusive Decoders.
 """
 
-# TODO: separate into dedicated subdecoders?
+# TODO: separate into dedicated sub decoders?
 
 # TODO: decode sample dump standard (page 35)
 # ACK, NAK, Wait, Cancel & EOF
@@ -27,7 +27,12 @@ import functools
 import midi_const
 import mido
 
+"""
+System exclusive ID decoder.
 
+Denoted "ID number" in the specification.
+Frequently referred to as "Manufacturer ID".
+"""
 class DecodedSysExId:
     def __init__(self, value: int | tuple[int]):
         length: int
@@ -191,6 +196,6 @@ class DecodedSysEx:
         return self._raw[self._device_id_byte + 1:]
 
     @functools.cached_property
-    def payload(self) -> DecodedSysExPayload:
+    def payload(self) -> DecodedSysExPayload | DecodedUniversalRealTimeSysExPayload | DecodedUniversalNonRealTimeSysExPayload:
         decoder = DecodedSysExPayload.get_decoder(self.identifier)
         return decoder(self.identifier, self._payload)
