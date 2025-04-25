@@ -88,9 +88,20 @@ def update_gui_monitor(data: mido.Message, static: bool = False) -> None:
             note_on(data.note, static)
     elif 'control_change' == data.type:
         cc(data.control, data.value, static)
+        # TODO: track CC0 & CC32 for bank select detection just before a Program Change message
     elif 'program_change' == data.type:
-        dpg.set_value('pc_num', data.program)
+        # FIXME: should only be set when both have been received just before the Program Change
+        bank_select_msb = dpg.get_value('mon_cc_val_0')
+        bank_select_lsb = dpg.get_value('mon_cc_val_32')
+        dpg.set_value(
+            'pc_bank_num',
+            int(127 * bank_select_lsb + bank_select_msb)
+        )
+        # FIXME: decode depending on the selected standard
+        dpg.set_value('pc_bank_name', "TODO")
+        set_value_preconv('pc_num', data.program)
         # Decode General MIDI names.
+        # FIXME: decode depending on the selected standard
         dpg.set_value('pc_group_name', midi_const.GENERAL_MIDI_SOUND_SET_GROUPINGS[data.program])
         dpg.set_value('pc_name', midi_const.GENERAL_MIDI_SOUND_SET[data.program])
         # TODO: Optionally decode other modes names.

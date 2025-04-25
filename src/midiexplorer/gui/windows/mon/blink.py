@@ -14,6 +14,7 @@ from dearpygui import dearpygui as dpg
 
 from midiexplorer.__config__ import DEBUG
 from midiexplorer.midi.timestamp import Timestamp
+from midiexplorer.gui.helpers.convert import set_value_preconv
 
 
 @functools.lru_cache()  # Only compute once
@@ -155,8 +156,7 @@ def note_off(number: int | str, static: bool = False) -> None:
 
 def cc(number: int | str, value: int | str, static: bool = False) -> None:
     mon(f'cc_{number}', static)
-    dpg.set_value(f'mon_cc_val_{number}', value)
-
+    set_value_preconv(f'mon_cc_val_{number}', int(value))
 
 def _reset_indicator(indicator):
     # EOX is a special case since we have two alternate representations.

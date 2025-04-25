@@ -106,7 +106,9 @@ def create() -> None:
         # ----------------
         # Program decoding
         # ----------------
-        dpg.add_string_value(tag='pc_num')
+        add_string_value_preconv(tag='pc_num')
+        dpg.add_string_value(tag='pc_bank_num')
+        dpg.add_string_value(tag='pc_bank_name')
         dpg.add_string_value(tag='pc_group_name')
         dpg.add_string_value(tag='pc_name')
         # ---------------
@@ -597,6 +599,8 @@ def create() -> None:
             #    dpg.add_text("")
             # TODO: add preference to separate reserved CC120-127
             for controller in range(num_controllers):
+                with dpg.value_registry():
+                    add_string_value_preconv(tag=f'mon_cc_val_{controller}')
                 with dpg.group(horizontal=True, parent=f'ctrls_{rownum}'):
                     dpg.add_button(
                         tag=f'mon_cc_{controller}', label=f"{controller:3d}"
@@ -606,14 +610,12 @@ def create() -> None:
                         blen=7
                         )
                     dpg.add_input_text(
-                        tag=f'mon_cc_val_{controller}', enabled=False, width=50
+                        source=f'mon_cc_val_{controller}', enabled=False, width=50
                         )
-                    with dpg.tooltip(dpg.last_item()):
-                        dpg.add_text(
-                            f"{midi_const.CONTROLLER_NUMBERS[controller]} Value:"
-                            )
-                        dpg.add_text(source=f'mon_cc_val_{controller}')
-                        # TODO: hex and bin realtime conversions
+                    tooltip_preconv(
+                        f'{midi_const.CONTROLLER_NUMBERS[controller]} Value',
+                        values_source=f'mon_cc_val_{controller}',
+                    )
                 newrownum = (controller + 1) // group_controllers_by
                 if newrownum > rownum:
                     rownum = newrownum
@@ -647,20 +649,22 @@ def create() -> None:
 
         with dpg.collapsing_header(label="Program", default_open=True):
             with dpg.child_window(tag='mon_program_container', height=mon_prog_height, border=False):
-                with dpg.group(horizontal=True):
-                    dpg.add_text("Num")
-                    dpg.add_input_text(source='pc_num', readonly=True, width=50)  # 0-127
                 if DEBUG:
                     with dpg.group(horizontal=True):
-                        dpg.add_text("Resource")
-                        # TODO: Autoset on receiving Defined Universal Sysex non real time
-                        dpg.add_combo(["GM", "GM2", "GS", "XG"], default_value="GM", fit_width=True)
-                        # TODO: Add logo
-                    with dpg.group(horizontal=True):  # TODO: Not GM modes only
+                        dpg.add_text("Standard")
+                        # TODO: Autoset upon receiving Defined Universal Sysex non real time
+                        dpg.add_combo(["None", "GM", "GM2", "GS", "XG"], default_value="GM", fit_width=True)
+                        # TODO: Add logos?
+                    with dpg.group(horizontal=True):
                         dpg.add_text("Bank")
-                        dpg.add_input_text(source='pc_bank_num', readonly=True, width=50)  # 0-16383
-                        dpg.add_input_text(source='pc_bank_name', readonly=True, width=250)
-                with dpg.group(horizontal=True):  # TODO: GM mode only
+                        dpg.add_input_text(source='pc_bank_num', readonly=True,
+                                           width=50)  # 0-16383  # TODO: add popup with LSB & MSB?
+                        dpg.add_input_text(source='pc_bank_name', readonly=True, width=250)  # TODO: Not GM modes only
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Number")
+                    dpg.add_input_text(source='pc_num', readonly=True, width=50)  # 0-127
+                    tooltip_preconv("Program Number", values_source='pc_num')
+                with dpg.group(horizontal=True):  # TODO: GM modes only
                     dpg.add_text("Group")
                     dpg.add_input_text(source='pc_group_name', readonly=True, width=250)
                 with dpg.group(horizontal=True):
