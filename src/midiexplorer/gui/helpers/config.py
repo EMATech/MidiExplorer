@@ -10,6 +10,7 @@ Configuration file management.
 # FIXME: store preferences/settings
 
 import os.path
+from pathlib import Path
 
 from dearpygui import dearpygui as dpg
 
@@ -24,7 +25,7 @@ def _do_load(_, app_data) -> None:
 
     """
     # FIXME: Does not work after creating the viewport!
-    dpg.configure_app(init_file=app_data['file_path_name'], load_init_file=True)
+    dpg.configure_app(load_init_file=app_data['file_path_name'])
 
 
 def _do_save_as(_, app_data) -> None:
@@ -56,7 +57,7 @@ def create_selectors() -> None:
             show=False,
             modal=True,
             directory_selector=False,
-            default_filename=INIT_FILENAME,
+            default_filename=Path(INIT_FILENAME).stem,
             callback=_do_load,
             file_count=100,
     ):
@@ -69,7 +70,7 @@ def create_selectors() -> None:
             show=False,
             modal=True,
             directory_selector=False,
-            default_filename=INIT_FILENAME,
+            default_filename=Path(INIT_FILENAME).stem,
             callback=_do_save_as,
     ):
         dpg.add_file_extension('.ini')

@@ -35,34 +35,26 @@ def create() -> None:
     """Creates the history window.
 
     """
-    # -------------------------
-    # History window size
-    # --------------------------
-    # TODO: compute dynamically?
-    hist_win_height = 510
-    hist_win_y = 530
-    if DEBUG:
-        hist_win_height = 395
-        hist_win_y = 530 - 110
 
     # --------------------
     # History window
     # --------------------
     with dpg.window(
-            label="History",
             tag='hist_win',
-            width=900,
-            height=hist_win_height,
+            label="History",
+            use_internal_label=False,
+            width=dpg.get_viewport_width()/2,
+            height=(dpg.get_viewport_height()/3*2)-20,
             no_close=True,
             collapsed=False,
-            pos=[0, hist_win_y]
+            pos=[0, (dpg.get_viewport_height()/3)+20],
     ):
         # -------------------
         # History data table
         # -------------------
 
         # Buttons
-        with dpg.group(parent='hist_win', horizontal=True):
+        with dpg.group(horizontal=True):
             dpg.add_text("Order:")
             dpg.add_radio_button(items=("Reversed", "Auto-Scroll"), label="Mode", tag='hist_data_table_mode',
                                  default_value="Reversed", horizontal=True)
@@ -75,7 +67,6 @@ def create() -> None:
         # Content details
         with dpg.table(
                 tag='hist_data_table',
-                parent='hist_win',
                 header_row=True,
                 #clipper= True,
                 policy=dpg.mvTable_SizingStretchProp,

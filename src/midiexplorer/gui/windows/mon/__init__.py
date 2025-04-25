@@ -168,25 +168,18 @@ def create() -> None:
                 value=dark_magenta,
             )
 
-    # -------------------
-    # Monitor window size
-    # -------------------
-    # TODO: compute dynamically?
-    mon_win_height = 910
-    if DEBUG:
-        mon_win_height = 685
-
     # --------------
     # Monitor window
     # --------------
     with dpg.window(
             tag='mon_win',
             label="Monitor",
-            width=1005,
-            height=mon_win_height,
+            use_internal_label=False,
+            width=dpg.get_viewport_width()/2,
+            height=dpg.get_viewport_height()/3*2,
             no_close=True,
             collapsed=False,
-            pos=[900, 20]
+            pos=[dpg.get_viewport_width()/2, 20],
     ):
 
         with dpg.menu_bar():

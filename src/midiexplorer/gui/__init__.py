@@ -8,7 +8,6 @@
 GUI elements (DearPy GUI).
 """
 import importlib.resources
-import pathlib
 from typing import Any, Optional
 
 from dearpygui import dearpygui as dpg
@@ -17,38 +16,65 @@ from dearpygui_ext.logger import mvLogger
 import midiexplorer.fonts
 import midiexplorer.icons
 import midiexplorer.midi
-from midiexplorer.__config__ import DEBUG, INIT_FILENAME
+from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers import constants, logger, menu
+from midiexplorer.gui.helpers.logger import Logger
 from midiexplorer.gui.windows import conn, gen, hist, mon, smf
-from midiexplorer.midi.timestamp import Timestamp
 from midiexplorer.gui.helpers.callbacks.debugging import (
     enable as enable_dpg_cb_debugging
 )
+
 
 def init():
     """Initializes the GUI.
 
     """
+
+    # --------
+    # Viewport
+    # --------
+    Logger.log("Creating viewport")
+    # FIXME: compute dynamically?
+    vp_width = 1920
+    vp_height = 1080
+    dpg.create_viewport(
+        title=midiexplorer.APPLICATION_NAME,
+        #    small_icon=small_icon,  # Set later
+        #    large_icon=large_icon,  # Set later
+        width=vp_width,
+        height=vp_height,
+        x_pos=0,
+        y_pos=0,
+        vsync=True,
+        always_on_top=DEBUG,
+        decorated=not DEBUG,
+    )
+
     # ----------------
     # Logging system
     # Initialized ASAP
     # ----------------
+    Logger.log("Initializing logging window")
     midiexplorer.gui.windows.log.create()
     logger: mvLogger = midiexplorer.gui.helpers.logger.Logger('log_win')
     if DEBUG:
-        logger.log_level = midiexplorer.gui.helpers.logger.MvLogger.TRACE
+        logger.log_level = midiexplorer.gui.helpers.logger.LoggingLevel.TRACE
     else:
-        logger.log_level = midiexplorer.gui.helpers.logger.MvLogger.INFO
-    logger.log_debug(f"Application started at {Timestamp.START_TIME}")
+        logger.log_level = midiexplorer.gui.helpers.logger.LoggingLevel.INFO
+    logger.log_debug(f"Logger started")
 
     # ----------------
     # MIDI I/O system
     # Initialized ASAP
     # ----------------
+    logger.log("Initializing MIDI I/O")
     try:
         midiexplorer.midi.init()
-    except ValueError:
+    except ValueError as e:
+        logger.log_critical(f"Unable to initialize MIDI I/O: {e}")
         # TODO: error popup?
+        #       We need a window!
+        # TODO: bail out?
         pass
 
     # -------
@@ -60,14 +86,6 @@ def init():
     midiexplorer.gui.windows.mon.create()
     midiexplorer.gui.windows.gen.create()
     midiexplorer.gui.windows.smf.create()
-
-    # ---------------------
-    # Initial configuration
-    # ---------------------
-    if not DEBUG:
-        # FIXME: not stable
-        if pathlib.Path(INIT_FILENAME).exists():
-            dpg.configure_app(init_file=INIT_FILENAME)
 
     # ------------------
     # Keyboard shortcuts
@@ -104,6 +122,8 @@ def init():
     logger.log(f"Icons root: {icons_root}")
     small_icon = str(icons_root.joinpath('midiexplorer.ico'))
     large_icon = str(icons_root.joinpath('midiexplorer.ico'))
+    dpg.set_viewport_small_icon(small_icon)
+    dpg.set_viewport_large_icon(large_icon)
 
     # -----
     # Fonts
@@ -135,19 +155,6 @@ def init():
     if DEBUG:
         dpg.bind_item_font('smf_container', 'mono_font')
 
-    # --------
-    # Viewport
-    # --------
-    # FIXME: compute dynamically?
-    vp_width = 1920
-    vp_height = 1080
-    dpg.create_viewport(
-        title=midiexplorer.APPLICATION_NAME,
-        width=vp_width,
-        height=vp_height,
-        small_icon=small_icon,
-        large_icon=large_icon
-    )
     dpg.setup_dearpygui()
     dpg.show_viewport()
 

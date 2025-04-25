@@ -44,11 +44,12 @@ def create() -> None:
     with dpg.window(
             tag='about_win',
             label="About",
+            use_internal_label=False,
             modal=True,
             no_collapse=True,
             no_background=False,
             no_move=True,
-            pos=(640, 0),
+            pos=(dpg.get_viewport_width()/3, 0),
             autosize=True,
             show=False,
     ):
@@ -124,7 +125,7 @@ Copyright (c) 2003-2021 Gary P. Scavone
 Used under the terms of the MIT License.""",
                      indent=text_indent)
 
-        dpg.add_text(f"""Dear PyGui {dpg.get_dearpygui_version()}.
+        dpg.add_text(f"""Dear PyGui {dpg.get_app_configuration()['version']}.
 Copyright (c) 2021 Dear PyGui, LLC
 Used under the terms of the MIT License.""",
                      bullet=True)

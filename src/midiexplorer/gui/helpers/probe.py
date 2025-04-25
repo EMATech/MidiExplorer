@@ -8,7 +8,6 @@ import mido
 
 import midiexplorer.gui.windows.hist.data
 import midiexplorer.gui.windows.mon.data
-from midiexplorer.__config__ import DEBUG
 from midiexplorer.gui.helpers.logger import Logger
 from midiexplorer.midi.timestamp import Timestamp
 

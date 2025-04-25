@@ -26,9 +26,10 @@ def create() -> None:
     with dpg.window(
             tag='log_win',
             label="Log",
-            width=1905,
-            height=230,
-            pos=[0, 815],
+            use_internal_label=False,
+            width=dpg.get_viewport_width(),
+            height=dpg.get_viewport_height()/4,
+            pos=[0, dpg.get_viewport_height()/4*3],
             show=DEBUG,
     ):
         pass
