@@ -548,7 +548,7 @@ def create() -> None:
                     dpg.add_text("Out", indent=2)
 
             if DEBUG:  # Unstable feature
-                with dpg.node(label="SMF Recorder/Player",
+                with dpg.node(label="SMF RECORDER/PLAYER",
                               pos=[360, 200]):
                     with dpg.node_attribute(
                             tag='smf_in',
@@ -558,19 +558,19 @@ def create() -> None:
                     ):
                         dpg.add_text("In", indent=2)
                     with dpg.node_attribute(
-                            tag='smf_out',
-                            attribute_type=dpg.mvNode_Attr_Output,
-                            shape=dpg.mvNode_PinShape_Triangle,
-                            label="Out",
-                    ):
-                        dpg.add_text("Out", indent=2)
-                    with dpg.node_attribute(
                             tag='smf_thru',
                             attribute_type=dpg.mvNode_Attr_Output,
                             shape=dpg.mvNode_PinShape_Triangle,
                             label="Thru",
                     ):
                         dpg.add_text("Thru", indent=2)
+                    with dpg.node_attribute(
+                            tag='smf_out',
+                            attribute_type=dpg.mvNode_Attr_Output,
+                            shape=dpg.mvNode_PinShape_Triangle,
+                            label="Out",
+                    ):
+                        dpg.add_text("Out", indent=2)
 
             if DEBUG:  # TODO: implement
                 with dpg.node(label="FILTER/TRANSLATOR",
