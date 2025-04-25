@@ -129,6 +129,24 @@ def init():
     # Fonts
     # -----
     # https://dearpygui.readthedocs.io/en/latest/documentation/fonts.html
+
+    # FIXME: Improve font rendering on Windows.
+    #        The following method doesn’t yield satisfying results on 1920x1080 monitors.
+    #        Needs more testing.
+    # font_multiplier = 1
+    #
+    # class ProcessDpiAwareness(IntEnum):
+    #     # https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/ne-shellscalingapi-process_dpi_awareness
+    #     PROCESS_DPI_UNAWARE = 0
+    #     PROCESS_SYSTEM_DPI_AWARE = 1
+    #     PROCESS_PER_MONITOR_DPI_AWARE = 2
+    #
+    # if sys.platform == 'win32':
+    #     font_multiplier = 2
+    #     dpg.set_global_font_scale(1 / font_multiplier)  # TODO: HiDPI support?
+    #     import ctypes
+    #     ctypes.windll.shcore.SetProcessDpiAwareness(ProcessDpiAwareness.PROCESS_PER_MONITOR_DPI_AWARE)
+
     fonts_root = importlib.resources.files(midiexplorer.fonts)
     logger.log(f"Fonts root: {fonts_root}")
     with dpg.font_registry():

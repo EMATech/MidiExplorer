@@ -18,6 +18,7 @@ MIDI_NOTES_ALPHA_DE = {}
 
 for midi_note in range(128):
     note_index = int(midi_note % 12)
+    # TODO: allow customization because standards don’t seem to agree on a single definition
     octave = int(midi_note / 12) - 1
     MIDI_NOTES_SYLLABIC[midi_note] = f"{NOTES_SYLLABIC[note_index]}{octave}"
     MIDI_NOTES_ALPHA_EN[midi_note] = f"{NOTES_ALPHA_EN[note_index]}{octave}"
