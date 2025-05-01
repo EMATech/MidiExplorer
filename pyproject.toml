@@ -23,7 +23,7 @@ dependencies = [
     'midi_const~=0.1.0',
     'mido~=1.3.0', # FIXME: currently using custom 1.2.11a1 with EOX, running status and delta time support
     'python-rtmidi~=1.5.5', # While it's mido's default backend, we explicitly require it for some features.
-    'pillow~=11.0.0',
+    'pillow>=11.0,<11.3',
 ]
 license = { file = 'LICENSE' }
 authors = [
