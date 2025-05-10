@@ -79,11 +79,11 @@ def get_supported_decoders() -> list:
         'syx_id_name',
         'syx_id_val',
         'syx_device_id',
-        'syx_payload',
         'syx_sub_id1_name',
         'syx_sub_id1_val',
         'syx_sub_id2_name',
         'syx_sub_id2_val',
+        'syx_payload',
     ]
     return decoders
 

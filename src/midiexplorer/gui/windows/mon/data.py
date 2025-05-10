@@ -31,8 +31,11 @@ def _update_gui_sysex(decoded: DecodedSysEx):
     set_value_preconv('syx_id_val', decoded.identifier.value)
     set_value_preconv('syx_device_id', decoded.device_id)
     set_value_preconv('syx_payload', decoded.payload.value)
-    if isinstance(decoded.payload, DecodedUniversalSysExPayload):
+    if not len(decoded.payload.value):
         dpg.hide_item('syx_payload_container')
+    else:
+        dpg.show_item('syx_payload_container')
+    if isinstance(decoded.payload, DecodedUniversalSysExPayload):
         if decoded.payload.sub_id1_value:
             dpg.set_value('syx_sub_id1_name', decoded.payload.sub_id1_name)
             set_value_preconv('syx_sub_id1_val', decoded.payload.sub_id1_value if not None else "")
@@ -48,7 +51,6 @@ def _update_gui_sysex(decoded: DecodedSysEx):
         dpg.show_item('syx_decoded_payload')
     else:
         dpg.hide_item('syx_decoded_payload')
-        dpg.show_item('syx_payload_container')
 
 
 def update_gui_monitor(data: mido.Message, static: bool = False) -> None:

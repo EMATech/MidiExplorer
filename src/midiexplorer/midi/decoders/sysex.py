@@ -23,17 +23,22 @@ System Exclusive Decoders.
 # TODO: decode MMC (page 58 + dedicated spec)
 
 import functools
+from collections import deque
 
 import midi_const
 import mido
 
-"""
-System exclusive ID decoder.
+from midiexplorer.gui import Logger
 
-Denoted "ID number" in the specification.
-Frequently referred to as "Manufacturer ID".
-"""
+
 class DecodedSysExId:
+    """
+    System exclusive ID decoder.
+
+    Denoted "ID number" in the specification.
+    Frequently referred to as "Manufacturer ID".
+    """
+
     def __init__(self, value: int | tuple[int]):
         length: int
         try:
@@ -77,7 +82,7 @@ class DecodedSysExId:
             index = self._raw
         else:
             index = self._raw[1]
-        region = midi_const.SYSTEM_EXCLUSIVE_ID_REGIONS.get(index, "N.A.")
+        region = midi_const.SYSTEM_EXCLUSIVE_ID_REGIONS.get(index, "N/A")
         return region
 
     @functools.cached_property
@@ -98,21 +103,24 @@ class DecodedSysExId:
 
 class DecodedSysExPayload:
     _id = int
-    _raw: int | tuple[int]
+    _raw: deque
 
     def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
         self._id = identifier
-        self._raw = contents
+        if isinstance(contents, int):
+            self._raw = deque([contents])
+        else:
+            self._raw = deque(contents)
 
     @property
     def value(self):
-        return self._raw
+        return tuple(self._raw)
 
     @staticmethod
     def get_decoder(identifier):
-        if identifier.value == 0x7E:
+        if midi_const.SYSTEM_EXCLUSIVE_ID.get(identifier.value) == "Non-Real Time":
             return DecodedUniversalNonRealTimeSysExPayload
-        if identifier.value == 0x7F:
+        if midi_const.SYSTEM_EXCLUSIVE_ID.get(identifier.value) == "Real Time":
             return DecodedUniversalRealTimeSysExPayload
         return DecodedSysExPayload
 
@@ -124,42 +132,38 @@ class DecodedUniversalSysExPayload(DecodedSysExPayload):
 
 class DecodedUniversalNonRealTimeSysExPayload(DecodedUniversalSysExPayload):
     def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
-        if identifier.value != 0x7E:
+        if midi_const.SYSTEM_EXCLUSIVE_ID.get(identifier.value) != "Non-Real Time":
             raise ValueError
         super().__init__(identifier, contents)
-        next_byte: int = 0
-        self.sub_id1_value = self._raw[next_byte]
-        self.sub_id1_name = midi_const. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
-            self.sub_id1_value, "Undefined"
+        self.sub_id1_value = self._raw.popleft()
+        self.sub_id1_name = \
+            midi_const.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_NON_REAL_TIME_SUB_ID_1.get(
+                self.sub_id1_value, "Undefined"
             )
         if self.sub_id1_value in midi_const.NON_REAL_TIME_SUB_ID_2_FROM_1:
-            next_byte += 1
-            self.sub_id2_value = self._raw[next_byte]
+            self.sub_id2_value = self._raw.popleft()
             self.sub_id2_name = midi_const.NON_REAL_TIME_SUB_ID_2_FROM_1.get(
                 self.sub_id1_value
-                ).get(
+            ).get(
                 self.sub_id2_value, "Undefined"
             )
 
 
 class DecodedUniversalRealTimeSysExPayload(DecodedUniversalSysExPayload):
     def __init__(self, identifier: DecodedSysExId, contents: int | tuple[int]):
-        if identifier.value != 0x7F:
+        if midi_const.SYSTEM_EXCLUSIVE_ID.get(identifier.value) != "Real Time":
             raise ValueError
         super().__init__(identifier, contents)
-        next_byte: int = 0
-        self.sub_id1_value = self._raw[next_byte]
-        self.sub_id1_name = midi_const. \
-            DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
-            self.sub_id1_value, "Undefined"
+        self.sub_id1_value = self._raw.popleft()
+        self.sub_id1_name = \
+            midi_const.DEFINED_UNIVERSAL_SYSTEM_EXCLUSIVE_MESSAGES_REAL_TIME_SUB_ID_1.get(
+                self.sub_id1_value, "Undefined"
             )
         if self.sub_id1_value in midi_const.REAL_TIME_SUB_ID_2_FROM_1:
-            next_byte += 1
-            self.sub_id2_value = self._raw[next_byte]
+            self.sub_id2_value = self._raw.popleft()
             self.sub_id2_name = midi_const.REAL_TIME_SUB_ID_2_FROM_1.get(
                 self.sub_id1_value
-                ).get(
+            ).get(
                 self.sub_id2_value, "Undefined"
             )
 
@@ -167,16 +171,27 @@ class DecodedUniversalRealTimeSysExPayload(DecodedUniversalSysExPayload):
 class DecodedSysEx:
     def __init__(self, message: tuple):
         if len(message) < 3:
+            # We need at least 3 bytes:
+            # - 1 ID number byte
+            # - 1 device ID byte
+            # - 1 payload byte
             raise ValueError("Message too short (less than 3 bytes) to be a proper system exclusive message.")
+
         # Scrub EOX if present
         if message[-1] == mido.messages.specs.SYSEX_END:
+            Logger().log_warning("Scrubbing EOX from SysEx payload before decoding!")
             self._raw = message[:-1]
         else:
             self._raw = message
+
         # Determine ID length
         if self._raw[0] == 0x00:
             # 3-byte ID
-            if len(message) < 5:
+            if len(self._raw) < 5:
+                # We need at least 5 bytes:
+                # - 3 ID number bytes
+                # - 1 device ID byte
+                # - 1 payload byte
                 raise ValueError(
                     "Message too short (less than 5 bytes) to be a proper system exclusive message with a 3-byte ID."
                 )
@@ -196,6 +211,8 @@ class DecodedSysEx:
         return self._raw[self._device_id_byte + 1:]
 
     @functools.cached_property
-    def payload(self) -> DecodedSysExPayload | DecodedUniversalRealTimeSysExPayload | DecodedUniversalNonRealTimeSysExPayload:
+    def payload(
+            self
+    ) -> DecodedSysExPayload | DecodedUniversalRealTimeSysExPayload | DecodedUniversalNonRealTimeSysExPayload:
         decoder = DecodedSysExPayload.get_decoder(self.identifier)
         return decoder(self.identifier, self._payload)

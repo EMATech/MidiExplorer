@@ -39,7 +39,7 @@ def main() -> None:
     Logger.log(f"Configuring app using init file: {INIT_FILENAME}")
     dpg.configure_app(
         # FIXME: upstream documentation is misleading.
-        load_init_file=INIT_FILENAME,  # Non-modifiable vendor init file
+        #load_init_file=INIT_FILENAME,  # Non-modifiable vendor init file
         docking=True,
         docking_space=True,
         docking_shift_only=False,

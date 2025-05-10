@@ -704,35 +704,36 @@ def create() -> None:
         # System Exclusive
         # -----------------
         with dpg.collapsing_header(label="System Exclusive", default_open=not DEBUG):
+            # TODO: review height
+            dpg.add_child_window(tag='mon_sysex_container', height=200, border=False)
 
-            with dpg.child_window(tag='mon_sysex_container', height=120, border=False):
-                with dpg.group():
-                    with dpg.group(horizontal=True):
-                        title = "ID"
-                        dpg.add_text(title)
-                        dpg.add_input_text(source='syx_id_region', readonly=True, width=200)
-                        tooltip_preconv(f"{title} (Region)", 'syx_id_region', 'syx_id_val')
-                        dpg.add_input_text(source='syx_id_group', readonly=True, width=200)
-                        tooltip_preconv(f"{title} (Group)", 'syx_id_group', 'syx_id_val')
-                        dpg.add_input_text(source='syx_id_name', readonly=True, width=200)
-                        tooltip_preconv(f"{title} (Name)", 'syx_id_name', 'syx_id_val')
-                    with dpg.group(horizontal=True):
-                        title = "Device ID"
-                        source = 'syx_device_id'
-                        dpg.add_text(title)
-                        dpg.add_input_text(source=source, readonly=True, width=50)
-                        tooltip_preconv(static_title=title, values_source=source)
-                    with dpg.group(horizontal=True, tag='syx_payload_container'):
-                        title = "Undecoded Payload"
-                        dpg.add_text(title)
-                        source = 'syx_payload'
-                        dpg.add_input_text(source=source, readonly=True, width=500)
-                        tooltip_preconv(static_title=title, values_source=source)
-
-                with dpg.group(tag='syx_decoded_payload', show=False):
-                    title = "Decoded Payload"
-                    dpg.add_text(title)
-                    tooltip_preconv(static_title=title, values_source='syx_payload')
+        with dpg.group(parent='mon_sysex_container'):
+            with dpg.group(horizontal=True):
+                # FIXME: Option to display "Manufacturer’s ID" instead?
+                #        Only when an actual manufacturer’s ID is present?
+                title = "ID number"
+                dpg.add_text(title)
+                dpg.add_input_text(source='syx_id_region', readonly=True, width=200)
+                tooltip_preconv(f"{title} (Region)", 'syx_id_region', 'syx_id_val')
+                dpg.add_input_text(source='syx_id_group', readonly=True, width=200)
+                tooltip_preconv(f"{title} (Group)", 'syx_id_group', 'syx_id_val')
+                dpg.add_input_text(source='syx_id_name', readonly=True, width=200)
+                tooltip_preconv(f"{title} (Name)", 'syx_id_name', 'syx_id_val')
+            with dpg.group(horizontal=True):
+                title = "Device ID"
+                dpg.add_text(title)
+                source = 'syx_device_id'
+                dpg.add_input_text(source=source, readonly=True, width=50)
+                tooltip_preconv(static_title=title, values_source=source)
+            with dpg.group(tag='syx_decoded_payload', show=False):
+                title = "Decoded Payload:"
+                dpg.add_text(title)
+            with dpg.group(horizontal=True, tag='syx_payload_container'):
+                title = "Undecoded Payload"
+                dpg.add_text(title)
+                source = 'syx_payload'
+                dpg.add_input_text(source=source, readonly=True, width=500)
+                tooltip_preconv(static_title=title, values_source=source)
 
         # TODO: generate dynamically?
         with dpg.group(parent='syx_decoded_payload'):
