@@ -41,7 +41,7 @@ def _install_input_callback(in_port: MidiInPort, dest: MidiOutPort | str):
     except OSError as e:
         # i.e.: OSError: unknown port 'iRig PRO I/O MIDI IN 0'
         # TODO: popup?
-        logger.log_error(e)
+        logger.log_error(e.strerror)
     if dpg.get_value('input_mode') == 'Callback':
         in_port.callback()
         logger.log_info(f"Attached MIDI receive callback to {in_port.name}!")
@@ -212,7 +212,7 @@ def link_node_callback(sender: int | str,
         except OSError as e:
             # i.e.: OSError: unknown port 'iRig PRO I/O MIDI IN 0'
             # TODO: popup?
-            logger.log_error(e)
+            logger.log_error(e.strerror)
         _install_input_callback(pin1_user_data, pin2)
         _link_nodes(pin1, pin2, sender)
     elif isinstance(pin1_user_data, MidiInPort):
@@ -228,7 +228,7 @@ def link_node_callback(sender: int | str,
         except OSError as e:
             # i.e.: OSError: unknown port 'iRig PRO I/O MIDI IN 0'
             # TODO: popup?
-            logger.log_error(e)
+            logger.log_error(e.strerror)
         module_pin = pin1
         module_target = pin2_user_data
     else:

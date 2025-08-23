@@ -218,7 +218,7 @@ class Logger:
 
     @staticmethod
     def log_error(message: str):
-        Logger.log(message, LoggingLevel.DEBUG)
+        Logger.log(message, LoggingLevel.ERROR)
 
     @staticmethod
     def log_critical(message: str):
